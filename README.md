@@ -5,9 +5,10 @@ A all in one external CSGO Cheat which is most likely undetected by VAC
 ## Features
 
 - Aimbot 
+- Triggerbot 
+- Recoil system
 - Config System 
 - RCS 
-- Triggerbot 
 - Customizable Wallhack 
 - Noflash 
 - Radar 
@@ -54,6 +55,7 @@ Choose your setting and have fun!
 
 ## Notes
 
+One of main developers has been playing with Future (legit, semi-legit cheats primary) for 400+ hours on prime matchmaking, dm, wingman etc and hasn't been banned
 Future has some flaws such as gamecrashes when joining matches
 
 ## Credits To:
