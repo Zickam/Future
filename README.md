@@ -4,24 +4,34 @@ A all in one external CSGO Cheat which is most likely undetected by VAC
 
 ## Features
 
-#Legit
-- Aimbot d
-- Triggerbot 
-- Recoil system
-- Config System 
+--- Legit ---
+- Chams 
+- Rapid fire for pistols
 - RCS 
-- Customizable Wallhack 
-- Noflash 
+- Sound on hit/kill
 - Radar 
 - Bunnyhop 
+- Aimbot
+- Triggerbot 
+- Recoil system
+
+--- Semi-Rage (Rage or similar config) ---
+- Fast-Peek
+- Fake-Lag
+- Teleport
+- Noflash 
+- Customizable Wallhack 
+- Aimbot
+- Triggerbot 
+- Recoil system
+
+--- Other ---
+- Config System 
 - Customizable FOV changer 
-- Auto-updating offsets 
-- Chams 
-- Skinchanger 
-- Slowwalk 
-- Fovchanger 
-- Skinchanger
 - ToxicChat
+- Slowwalk 
+- Auto-updating offsets 
+- Skinchanger
 
 ## Controlls
 Press right shift (unter enter) to hide or bring back the menu \
