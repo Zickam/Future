@@ -4,7 +4,8 @@ A all in one external CSGO Cheat which is most likely undetected by VAC
 
 ## Features
 
-- Aimbot 
+#Legit
+- Aimbot d
 - Triggerbot 
 - Recoil system
 - Config System 
