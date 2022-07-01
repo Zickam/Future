@@ -1,0 +1,146 @@
+{
+  "4": {
+    "name": "Glock",
+    "damage": 30,
+    "armorpen": 94,
+    "accrange": 22
+  },
+  "2": {
+    "name": "Dualberettas",
+    "damage": 38,
+    "armorpen": 18,
+    "accrange": 115
+  },
+  "36": {
+    "name": "P250",
+    "damage": 38,
+    "armorpen": 15,
+    "accrange": 128
+  },
+  "30": {
+    "name": "Tec9",
+    "damage": 33,
+    "armorpen": 24,
+    "accrange": 181
+  },
+  "1": {
+    "name": "Deagle",
+    "damage": 53,
+    "armorpen": 27,
+    "accrange": 186
+  },
+  "35": {
+    "name": "Nova",
+    "damage": 234,
+    "armorpen": 100,
+    "accrange": 3
+  },
+  "25": {
+    "name": "Xm1014",
+    "damage": 120,
+    "armorpen": 160,
+    "accrange": 3
+  },
+  "29": {
+    "name": "Sawedoff",
+    "damage": 256,
+    "armorpen": 150,
+    "accrange": 2
+  },
+  "14": {
+    "name": "M249",
+    "damage": 32,
+    "armorpen": 160,
+    "accrange": 17
+  },
+  "28": {
+    "name": "Negev",
+    "damage": 35,
+    "armorpen": 142,
+    "accrange": 13
+  },
+  "17": {
+    "name": "Mac10",
+    "damage": 29,
+    "armorpen": 115,
+    "accrange": 12
+  },
+  "33": {
+    "name": "MP7",
+    "damage": 29,
+    "armorpen": 125,
+    "accrange": 15
+  },
+  "24": {
+    "name": "UMP45",
+    "damage": 35,
+    "armorpen": 130,
+    "accrange": 11
+  },
+  "19": {
+    "name": "P90",
+    "damage": 26,
+    "armorpen": 138,
+    "accrange": 11
+  },
+  "26": {
+    "name": "Bizon",
+    "damage": 27,
+    "armorpen": 126,
+    "accrange": 11
+  },
+  "13": {
+    "name": "GalilAR",
+    "damage": 30,
+    "armorpen": 155,
+    "accrange": 18
+  },
+  "7": {
+    "name": "AK47",
+    "damage": 36,
+    "armorpen": 155,
+    "accrange": 24
+  },
+  "40": {
+    "name": "SSG08",
+    "damage": 88,
+    "armorpen": 170,
+    "accrange": 52
+  },
+  "39": {
+    "name": "SSG553",
+    "damage": 30,
+    "armorpen": 200,
+    "accrange": 26
+  },
+  "9": {
+    "name": "AWP",
+    "damage": 115,
+    "armorpen": 195,
+    "accrange": 76
+  },
+  "11": {
+    "name": "G3SG1",
+    "damage": 80,
+    "armorpen": 165,
+    "accrange": 73
+  },
+  "27": {
+    "name": "MAG7",
+    "damage": 240,
+    "armorpen": 150,
+    "accrange": 3
+  },
+  "16": {
+    "name": "M4A4",
+    "damage": 33,
+    "armorpen": 140,
+    "accrange": 30
+  },
+  "38": {
+    "name": "SCAR20",
+    "damage": 80,
+    "armorpen": 165,
+    "accrange": 73
+  }
+}
