@@ -58,7 +58,6 @@ Future has some flaws such as gamecrashes when joining matches
 
 ## Credits To:
 
-The unknowncheats and guided hacking community  \
-AlmazS for coding the gui grid system and more
+Me and my friend and friends of my friend
 
 
