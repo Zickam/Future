@@ -1,0 +1,10 @@
+Launch Server.py
+
+cd /root/home/future/db/
+source dbVenv/bin/activate
+python3 Server.py
+
+Grant privileges to table users for user futuredb
+su - postgres
+psql -h localhost futuredb;
+grant all privileges on table users to futuredb;
