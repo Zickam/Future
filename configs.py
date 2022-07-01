@@ -1,2 +1,0 @@
-row_clanid = [42196904, 42197131]
-phrases_for_toxicchat = ["нуб", "noob", "пидорас деактивирован", "сука", "пидорас", "пошел нахуй", "♿", "Get good", "Why so bad", "+1", "Eat some socks", "Catch your potato", "go play roblox", "fuck off", "get better", "lol r3kt", "go play minecraft", "Future V0.8 is best cheat", "imagein getting killed by python", "eat shit", "fucking bots in mm??", "dog"]
