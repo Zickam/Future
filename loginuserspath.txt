@@ -1,1 +1,1 @@
-tC:\Program Files (x86)\Steam\config\loginusers.vdf
+C:\Program Files (x86)\Steam\config\loginusers.vdf
