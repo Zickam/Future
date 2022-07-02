@@ -623,7 +623,6 @@ class LogoDisplayer():
             self.AnimState = 2
             self.starttime = time.time()
             # startanimaton
-
         # display F UTURE
         if self.AnimState == 2:
             self.FLogo_XOffset -= clamp((self.FLogo_XOffset + 160) / framedelta * self.AnimSpeed, -self.Speed, self.Speed)
@@ -656,8 +655,6 @@ class LogoDisplayer():
 
         if self.AnimState < 5:
             pygame.draw.rect(screen, (20, 20, 20), (0, 0, self.res[0], self.res[1]))
-
-
             screen.blit(self.ScaledRest, (self.res[0] / 2 - self.ScaledF.get_width() / 2 - self.RestLogo_XOffset, self.res[1] / 2 - self.ScaledF.get_height() / 2))
             pygame.draw.rect(screen, (20, 20, 20), (self.res[0]/2 + self.ScaledF.get_width()/2 + self.FLogo_XOffset - 1000, 0, 1000, self.res[1]))
             screen.blit(self.ScaledF, (self.res[0] / 2 - self.ScaledF.get_width() / 2 + self.FLogo_XOffset,self.res[1] / 2 - self.ScaledF.get_height() / 2))
@@ -760,14 +757,14 @@ class LoginScreen():
         self.drawloginscreen = True
         self.loadingstate = 0
         self.request_time = time.time()
-        self.correct_pass = True
+        self.correct_pass = False
 
         self.account_name = GetActiveAccount()
-        self.license_is_valid = True
+        self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
 
-        self.correct_acc = True
+        self.correct_acc = CheckIfUserExists(Generator(self.account_name))
         if self.correct_acc:
-            self.correct_pass = True
+            self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
 
         license_path = ""
         license_path = license_path + os.path.dirname(os.path.abspath(__file__))
@@ -870,10 +867,10 @@ class LoginScreen():
 
                                 self.correct_acc_local = CheckValid()
 
-                                self.correct_acc = True
+                                self.correct_acc = CheckIfUserExists(Generator(self.account_name))
                                 if self.correct_acc and self.correct_acc_local:
-                                    self.correct_pass = True
-                                    self.license_is_valid = True
+                                    self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
+                                    self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
 
                             self.request_time = time.time()
 
