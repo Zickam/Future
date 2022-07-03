@@ -72,7 +72,7 @@ class Window():
         self.position = position
         self.CustomMouse = Controller()
         self.Foreground = True
-        self.logo = pygame.image.load("Modules\images\Icon.png")
+        self.logo = pygame.image.load("Data\Images\Icon.png")
         self.starttime = time.time()
 
         self.screen = screen
@@ -403,10 +403,10 @@ class ColorPicker():
         self.State = True
         self.size = size
         self.Outputstate = (0, 0, 0)
-        self.image = pygame.image.load("Modules\images\picker.png")
+        self.image = pygame.image.load("Data\Images\picker.png")
         self.image = pygame.transform.scale(self.image, size)
         # self.image = pygame.draw.circle(self.image, (255, 0, 0), (100, 100), 5)
-        self.picker = pygame.image.load("Modules\images\circle.png")
+        self.picker = pygame.image.load("Data\Images\circle.png")
         self.picker = pygame.transform.scale(self.picker, (self.image.get_width() / 12, self.image.get_height() / 12))
         self.picker_x, self.picker_y = self.position[0] + self.image.get_width() / 2 - self.picker.get_width() / 2, self.position[1] + self.image.get_height() / 2 - self.picker.get_height() / 2
         self.color = (255, 255, 255)
@@ -605,8 +605,8 @@ class LogoDisplayer():
         self.Speed = Speed
         self.AnimSpeed = 5
         self.res = ScreenRes
-        self.FLogo = pygame.image.load("Modules/Original.png")
-        self.RestLogo = pygame.image.load("Modules/Rest.png")
+        self.FLogo = pygame.image.load("Data/Images/Original.png")
+        self.RestLogo = pygame.image.load("Data/Images/Rest.png")
         self.ScaledF = pygame.transform.scale(self.FLogo, (self.FLogo.get_width()*0.35, self.FLogo.get_height()*0.35))
         self.ScaledRest = pygame.transform.scale(self.RestLogo, (self.RestLogo.get_width()*0.35, self.RestLogo.get_height()*0.35))
 
@@ -731,7 +731,7 @@ class LoginScreen():
 
         self.state = False
 
-        self.FLogo = pygame.image.load("Modules/Original.png")
+        self.FLogo = pygame.image.load("Data/Images/Original.png")
         self.res = (410, 220)
         self.textfield_size = (300, 30)
         self.textfield_posz = 20

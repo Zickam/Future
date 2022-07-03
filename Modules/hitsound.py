@@ -4,10 +4,10 @@ import time
 
 mixer.init()
 
-neverlose = mixer.Sound("Modules/neverlose.wav")
-bell = mixer.Sound("Modules/bell.wav")
-cod = mixer.Sound("Modules/cod.wav")
-fatality = mixer.Sound("Modules/fatality.wav")
+neverlose = mixer.Sound("Data/Sounds/neverlose.wav")
+bell = mixer.Sound("Data/Sounds/bell.wav")
+cod = mixer.Sound("Data/Sounds/cod.wav")
+fatality = mixer.Sound("Data/Sounds/fatality.wav")
 
 mixer.Sound.set_volume(neverlose, 0.3)
 mixer.Sound.set_volume(bell, 0.3)

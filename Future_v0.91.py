@@ -34,7 +34,7 @@ is_loading = False
 
 def getskins():
     skinlist = []
-    with open("Modules/skins.json") as file:
+    with open("Data/Structs/skins.json") as file:
         options = json.load(file)
         for element in options:
             skinlist.append(str(element))
@@ -46,7 +46,7 @@ def getweapons():
     dmglist = []
     rangelist = []
     armorpen = []
-    with open("Modules/WeaponSpecs.json") as file:
+    with open("Data/Structs/WeaponSpecs.json") as file:
         options = json.load(file)
         for element in options:
             idlist.append(element)
