@@ -1,6 +1,6 @@
 import keyboard, time
 
-from offsets import dwForceBackward, dwForceLeft, dwForceRight, dwForceForward, m_iCrosshairId, dwForceAttack
+from Offsets.offsets import dwForceLeft, dwForceRight, m_iCrosshairId
 
 delta_time = time.time()
 lastpeek = time.time()

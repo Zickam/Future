@@ -1,7 +1,7 @@
 
 def ThirdpersonFunction(State, pm, client):
 
-    from offsets import dwLocalPlayer, m_iObserverMode, m_iHealth
+    from Offsets.offsets import dwLocalPlayer, m_iObserverMode, m_iHealth
     localPlayer = pm.read_uint(client + dwLocalPlayer)
     health = pm.read_uint(localPlayer + m_iHealth)
     if State:

@@ -1,6 +1,6 @@
 import time
 
-from offsets import m_iTeamNum, dwEntityList, m_clrRender, model_ambient_min
+from Offsets.offsets import m_clrRender, model_ambient_min
 
 time_updated = time.time()
 

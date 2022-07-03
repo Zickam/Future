@@ -1,10 +1,10 @@
 import time
-from offsets import m_bIsScoped, m_bUseCustomAutoExposureMin, m_bUseCustomAutoExposureMax, m_flCustomAutoExposureMin, m_flCustomAutoExposureMax, \
+from Offsets.offsets import m_bIsScoped, m_bUseCustomAutoExposureMin, m_bUseCustomAutoExposureMax, m_flCustomAutoExposureMin, m_flCustomAutoExposureMax, \
     dwGlowObjectManager, m_vecOrigin
 from Modules.configs import row_clanid
 from Modules.ConsoleCommand import SendConsoleCommand
-from pymem import Pymem, process, exception, pattern
-from offsets import dwEntityList, m_iHealth, m_lifeState
+from pymem import process, pattern
+from Offsets.offsets import dwEntityList
 
 statichealth = dict()
 EntityAdded = False
@@ -42,7 +42,6 @@ def RoundStart(entities, pm, client):
                     print("SOMEOME HEALED / ROUNDSTART")
                     return True
 
-import pygame, win32con, win32gui, win32api
 
 crosshair_inited = False
 crosshair = -1

@@ -1,4 +1,4 @@
-from offsets import m_bIsScoped, m_iFOV, m_iFOVStart
+from Offsets.offsets import m_bIsScoped, m_iFOV, m_iFOVStart
 
 def FOVFunction(FOV_reset, FOV_hands, FOV, localplayer, pm, client):
 

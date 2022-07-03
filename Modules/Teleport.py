@@ -1,6 +1,6 @@
 import time
 import keyboard
-from offsets import dwbSendPackets
+from Offsets.offsets import dwbSendPackets
 
 
 starttime = time.time()

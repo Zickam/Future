@@ -1,8 +1,5 @@
-import keyboard
-import pymem
 import pymem.process
-import json, time
-from offsets import *
+from Offsets.offsets import *
 from math import *
 import numpy as np
 

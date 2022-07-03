@@ -4,7 +4,7 @@ import win32api, win32con
 
 import random, keyboard
 
-from offsets import *
+from Offsets.offsets import *
 from Modules.weaponIds import pistols, knives, smgs, snipers, rifles, misc, machine_guns, shotguns
 
 def currWeaponId(localplayer, engine, pm, client):

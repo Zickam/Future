@@ -1,8 +1,6 @@
-from offsets import dwLocalPlayer, m_iCrosshairId, dwEntityList, m_iTeamNum, dwForceAttack, dwClientState_ViewAngles, m_aimPunchAngle, m_aimPunchAngleVel, m_fAccuracyPenalty, m_viewPunchAngle, m_iShotsFired, m_vecVelocity, m_iHealth, m_lifeState, dwForceAttack2, m_bIsScoped, m_fAccuracyPenalty
+from Offsets.offsets import m_iCrosshairId, dwEntityList, m_iTeamNum, dwForceAttack, m_vecVelocity
 
 import time, random, keyboard
-from Modules.weaponIds import pistols, knives, smgs, snipers, rifles, misc, machine_guns, shotguns
-from Modules.RecoilSystem import currWeaponId
 
 Delay = 0
 ResetDelay = False

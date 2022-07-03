@@ -1,27 +1,20 @@
-import datetime
-import sys
-
 from Modules import installer
 
 installer.installerfunction()
-import pygame.time, os, json, pymem, pymem.process, threading, requests, subprocess, time
+import pygame.time, json, pymem, pymem.process, time
 
 from _thread import start_new_thread
 
-from Modules import gui, startcsgo, skinchanger, ConfigManager
+from Modules import gui, startcsgo, ConfigManager
 
-from offsets import *
+from Offsets.offsets import *
 from Modules import BHOP, ChamsFunction, FovFunction, GlowESP, NoFlashFunction, RadarFunction, Thirdperson, \
     Triggerbot, Aimbot, Slowwalk, FakeLag, Teleport, ToxicChat, \
     RecoilSystem, EntitiesIterator, FastPeek, Misc, hitsound
 
-from threading import Thread
 from Modules.gui import Initscreen
 from Modules.gui import LogoDisplayer
 from Offsets.Updater import updateOffsets
-
-
-import ctypes
 
 showCheatFPS = False
 showGUIFPS = False

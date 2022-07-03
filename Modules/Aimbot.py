@@ -1,6 +1,6 @@
 import keyboard
 import random
-from offsets import *
+from Offsets.offsets import *
 import numpy as np
 from math import *
 

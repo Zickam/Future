@@ -1,4 +1,4 @@
-from offsets import m_bSpotted
+from Offsets.offsets import m_bSpotted
 def RadarFunction(entities, pm, client):
 
     try:

@@ -1,5 +1,3 @@
-from offsets import dwGlowObjectManager, m_iTeamNum, m_iGlowIndex, dwEntityList
-
 def GlowESPFunction(entities, Teamred, Teamgreen, Teamblue, Enemyred, Enemygreen, Enemyblue, glow_manager, localplayer, localteam, pm, client):
 
     try:

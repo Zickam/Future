@@ -1,5 +1,5 @@
-import time, pymem, pymem.process
-from offsets import dwbSendPackets
+import time
+from Offsets.offsets import dwbSendPackets
 
 
 starttime = time.time()

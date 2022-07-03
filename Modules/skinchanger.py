@@ -1,8 +1,5 @@
-import pymem, keyboard, json
-
-
 def changeskin(State, Skin, Weapon, pm, client, engine_pointer):
-    from offsets import dwEntityList, m_hMyWeapons, m_iItemDefinitionIndex, m_OriginalOwnerXuidLow, m_nFallbackPaintKit, m_iItemIDHigh, m_iAccountID, m_nFallbackStatTrak, m_nFallbackSeed, m_flFallbackWear, dwLocalPlayer
+    pass
 
 
     #for i in range(0, 8):

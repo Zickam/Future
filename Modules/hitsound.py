@@ -1,5 +1,5 @@
 from pygame import mixer
-from offsets import dwEntityList, m_iCrosshairId, m_iHealth
+from Offsets.offsets import dwEntityList, m_iCrosshairId, m_iHealth
 import time
 
 mixer.init()

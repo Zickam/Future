@@ -1,4 +1,4 @@
-from offsets import m_flFlashMaxAlpha, m_flFlashDuration
+from Offsets.offsets import m_flFlashMaxAlpha, m_flFlashDuration
 def NoFlashFunction(localplayer, pm, client):
 
     is_flashed = pm.read_float(localplayer + m_flFlashDuration)

@@ -3,6 +3,8 @@ import subprocess
 import json
 import requests
 
+offsets_file = "Offsets/offsets.py"
+
 def updateOffsets():
     try:
 
@@ -19,10 +21,10 @@ def updateOffsets():
             signatures = json_data["signatures"]
             netvars = json_data["netvars"]
 
-        with open("offsets.py", "w") as file:
+        with open(offsets_file, "w") as file:
             file.write("")
 
-        with open("offsets.py", "a") as file:
+        with open(offsets_file, "a") as file:
             for i in signatures:
                 file.write("{} = {}\n".format(i, hex(signatures[i])))
 

@@ -1,7 +1,6 @@
 from Modules import ConsoleCommand
 import random
-from offsets import *
-from Modules import Aimbot
+from Offsets.offsets import *
 import time
 from Modules.configs import *
 

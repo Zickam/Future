@@ -1,4 +1,4 @@
-from offsets import dwEntityList, m_iTeamNum, m_iHealth, m_lifeState, m_iGlowIndex, m_dwBoneMatrix
+from Offsets.offsets import dwEntityList, m_iTeamNum, m_iHealth, m_lifeState, m_iGlowIndex, m_dwBoneMatrix
 
 Index = 0
 

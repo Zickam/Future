@@ -1,6 +1,6 @@
 import keyboard, time
 from pynput.mouse import Controller
-from offsets import dwForceJump, m_fFlags, dwForceRight, dwForceLeft
+from Offsets.offsets import dwForceJump, m_fFlags, dwForceRight, dwForceLeft
 
 def BHOPFunction(pm, client, localplayer, Autostrafesens, AutoStrafe):
 

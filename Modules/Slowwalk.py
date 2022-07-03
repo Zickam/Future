@@ -1,6 +1,6 @@
 import keyboard
 
-from offsets import dwForceBackward, dwForceForward, dwForceLeft, dwForceRight, m_vecVelocity
+from Offsets.offsets import dwForceBackward, dwForceForward, dwForceLeft, dwForceRight, m_vecVelocity
 Walking = False
 def SlowwalkFunction(speed, pm, client, localplayer):
     global Walking
