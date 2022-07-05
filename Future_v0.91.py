@@ -489,6 +489,7 @@ def main_init():
             if engine:
                 print("Engine detected")
             engine_pointer = pm.read_uint(engine + dwClientState)
+            print(client, engine, engine_pointer)
 
             print("Checking offsets...")
             print(updateOffsets())
@@ -654,21 +655,21 @@ def main(pm, client, engine, engine_pointer, buttons):
 
 
                     # night mode
-                    night_mode_btn = buttons["Visuals"][1]["Night Mode"][0].State
-                    if night_mode_btn:
-                        Misc.night_mode(buttons["Visuals"][1]["Night Mode"][1]["Brightness"][0].VisualState, pm, client)
+                    # night_mode_btn = buttons["Visuals"][1]["Night Mode"][0].State
+                    # if night_mode_btn:
+                    #     Misc.night_mode(buttons["Visuals"][1]["Night Mode"][1]["Brightness"][0].VisualState, pm, client)
 
                     # smoke removal
-                    no_smoke_btn = buttons["Visuals"][1]["No Smoke"][0].State
-                    if no_smoke_btn:
-                        Misc.NoSmoke(pm, client)
+                    # no_smoke_btn = buttons["Visuals"][1]["No Smoke"][0].State
+                    # if no_smoke_btn:
+                    #     Misc.NoSmoke(pm, client)
 
 
                     # grenade preview and showfps
-                    grenade_preview_btn = buttons["Visuals"][1]["Grenade Prediction"][0].State
-                    Misc.GrenadePrediction(grenade_preview_btn, pm)
-                    show_fps = buttons["Visuals"][1]["ShowFPS"][0].State
-                    Misc.ShowFPS(show_fps, pm)
+                    # grenade_preview_btn = buttons["Visuals"][1]["Grenade Prediction"][0].State
+                    # Misc.GrenadePrediction(grenade_preview_btn, pm)
+                    # show_fps = buttons["Visuals"][1]["ShowFPS"][0].State
+                    # Misc.ShowFPS(show_fps, pm)
                     Misc.ChangeSky(buttons["Visuals"][1]["Sky"][1]["skySelector"][0].array[buttons["Visuals"][1]["Sky"][1]["skySelector"][0].selected], pm)
 
 
