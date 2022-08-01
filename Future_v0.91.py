@@ -165,6 +165,10 @@ def Buttons():
             "ClanTag": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
 
         }},
+        "Scripts": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+            "Load": {"type": "scriptmanager", "pos": (0, 0), "size": (300, 315)},
+
+        }},
         "Config": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
             "Load": {"type": "button", "pos": (0, 0), "size": button_size},
             "Save": {"type": "button", "pos": (0, 0), "size": button_size},
@@ -228,6 +232,12 @@ def Buttons():
                 pos_x = object_props["pos"][0] + start_pos_dependencies[0]
                 pos_y = object_props["pos"][1] + start_pos_dependencies[1]
                 _object = gui.Searchbox((pos_x, pos_y), object_props["size"], object_name, object_props["array"])
+                start_pos_dependencies[1] += gap_y
+
+            elif object_props["type"] == "scriptmanager":
+                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                _object = gui.ScriptManager((pos_x, pos_y), object_props["size"])
                 start_pos_dependencies[1] += gap_y
 
             elif object_props["type"] == "end":
@@ -311,7 +321,7 @@ def gui_updater(buttons_grid, buttons):
     clock = pygame.time.Clock()
 
     LoginScreen = gui.LoginScreen()
-    Displayer = LogoDisplayer(100, screen_size)
+    Displayer = LogoDisplayer(screen)
 
     is_login_screen = True
 
@@ -410,9 +420,9 @@ def gui_updater(buttons_grid, buttons):
                 window = gui.Window(screen_size, (10, 10), screen) # normal gui
                 clock = pygame.time.Clock()
 
-                Displayer = LogoDisplayer(100, screen_size)
+                Displayer = LogoDisplayer(screen)
 
-            LogoDisplayer.Update(Displayer, Framedelta, screen)
+            LogoDisplayer.Update(Displayer)
 
         if showGUIFPS:
             print(clock.get_fps())

@@ -9,12 +9,13 @@ from Modules import startcsgo
 from Modules.startcsgo import RestartSteam
 import win32con
 import win32gui
+import datetime
 import subprocess
 from pynput.mouse import Controller
 from hashlib import sha256
 from Modules.LicenseChecker import GetActiveAccount, CheckValid, GetWebHelpersList
 from Modules.Generator import Generator
-from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid
+from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid, FetchUserTimeLicenseExpire
 
 default_font_size = 15
 default_font = "Microsoft Sans Serif"
@@ -43,6 +44,7 @@ def color_surface(surface, color, fps):
 
 class Colors():
     Background = (20, 20, 20, 150)      # background
+    LightBackground = (50, 50, 50)
     AlphaAnim = False
     HighlightBackground = (20, 40, 60)  # background slider / selector etc
     TextColor = (200, 200, 200)         # textcolor
@@ -601,63 +603,135 @@ class Searchbox():
         return self.array[self.selected], self.clicked
 
 class LogoDisplayer():
-    def __init__(self, Speed, ScreenRes):
-        self.Speed = Speed
-        self.AnimSpeed = 5
-        self.res = ScreenRes
-        self.FLogo = pygame.image.load("Data/Images/Original.png")
-        self.RestLogo = pygame.image.load("Data/Images/Rest.png")
-        self.ScaledF = pygame.transform.scale(self.FLogo, (self.FLogo.get_width()*0.35, self.FLogo.get_height()*0.35))
-        self.ScaledRest = pygame.transform.scale(self.RestLogo, (self.RestLogo.get_width()*0.35, self.RestLogo.get_height()*0.35))
+    def __init__(self, screen):
+        self.screen = screen
+        self.i = 0
+        self.speed = 0
+        self.state = 1
+        self.F = pygame.image.load("Data/Images/Future.png")
+        self.scrsize = pygame.display.get_window_size()
 
-        self.FLogo_XOffset = 0
-        self.RestLogo_XOffset = 500
+        self.width = 165
+        self.height = 70
+        self.heightoffset = 35
 
-        self.AnimState = 1
-        self.starttime = time.time()
-        self.Stockalpha = 255
+        self.futuresurface = pygame.Surface((self.F.get_size()))
 
-    def Update(self, framedelta, screen):
-        # before animation
-        if self.starttime + 1 < time.time() and self.AnimState == 1:
-            self.AnimState = 2
-            self.starttime = time.time()
-            # startanimaton
-        # display F UTURE
-        if self.AnimState == 2:
-            self.FLogo_XOffset -= clamp((self.FLogo_XOffset + 160) / framedelta * self.AnimSpeed, -self.Speed, self.Speed)
-            self.RestLogo_XOffset -= clamp((self.RestLogo_XOffset - 95) / framedelta * self.AnimSpeed, -self.Speed*2, self.Speed*2)
+        self.futuresurface.fill(Colors.Background)
 
-        # Go back to original
-        if self.RestLogo_XOffset - 95 < 1 and self.AnimState == 2:
-            self.AnimState = 3
-            self.starttime = time.time()
+        self.futuresurface.blit(self.F, (0, 0))
 
-        # animate going back
-        if self.AnimState == 3 and self.starttime + 0.2 < time.time():
-            self.FLogo_XOffset -= clamp((self.FLogo_XOffset) / framedelta * self.AnimSpeed, -self.Speed, self.Speed)
-            self.RestLogo_XOffset -= clamp((self.RestLogo_XOffset - 500) / framedelta * 2, -self.Speed*2, self.Speed*2)
+        self.dark = (50, 50, 50)
+        self.bright = (120, 120, 120)
 
-        # logo fade
-        if self.AnimState == 3 and self.FLogo_XOffset > -1:
-            self.AnimState = 4
-            self.starttime = time.time()
+    def Update(self):
+        if self.state != 7:
+            pygame.draw.rect(self.screen, Colors.Background, (0, 0, self.scrsize[0], self.scrsize[1]))
 
-        if self.AnimState == 4 and self.starttime + 0.2 < time.time():
-            self.Stockalpha -= clamp((self.Stockalpha) / framedelta * self.AnimSpeed, -self.Speed, self.Speed)
-            self.ScaledF.set_alpha(self.Stockalpha)
+        if self.state == 1:
+            self.speed += 3
 
-        # show buttons and all
-        if self.AnimState == 4 and self.Stockalpha < 2:
-            self.Stockalpha = 0
-            self.AnimState = 5
+        if self.state > 0 and self.state < 3:
+            self.i = self.i + clamp(self.speed, -8, 8)
 
+        if self.state == 3:
+            self.i = self.i + clamp(self.speed, -3, 3)
 
-        if self.AnimState < 5:
-            pygame.draw.rect(screen, (20, 20, 20), (0, 0, self.res[0], self.res[1]))
-            screen.blit(self.ScaledRest, (self.res[0] / 2 - self.ScaledF.get_width() / 2 - self.RestLogo_XOffset, self.res[1] / 2 - self.ScaledF.get_height() / 2))
-            pygame.draw.rect(screen, (20, 20, 20), (self.res[0]/2 + self.ScaledF.get_width()/2 + self.FLogo_XOffset - 1000, 0, 1000, self.res[1]))
-            screen.blit(self.ScaledF, (self.res[0] / 2 - self.ScaledF.get_width() / 2 + self.FLogo_XOffset,self.res[1] / 2 - self.ScaledF.get_height() / 2))
+        if self.state == 6:
+            self.i = self.i + clamp(self.speed, -8, 8)
+
+        if self.speed >= 8 and self.state == 1:
+            self.state = 2
+
+        # draw bottom lines
+        pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i, 0, self.width), 1))
+        pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2 - clamp(self.i, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
+        clamp(self.i, 0, self.width), 1))
+
+        # left right lines
+        if self.i >= self.width:
+            pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2 + self.width,
+                                                 self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                     (self.i - self.width) - 2, 0, self.height), 1,
+                                                 clamp((self.i - self.width), 0, self.height + 1)))
+            pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2 - self.width,
+                                                 self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                     (self.i - self.width) - 2, 0, self.height), 1,
+                                                 clamp((self.i - self.width), 0, self.height + 1)))
+
+        # draw top lines
+        if self.i >= self.width + self.height:
+            pygame.draw.rect(self.screen, self.dark, (
+            self.scrsize[0] / 2 - self.width, self.scrsize[1] / 2 + self.heightoffset - self.height,
+            clamp(self.i - self.width - self.height, 0, self.width), 1))
+            pygame.draw.rect(self.screen, self.dark, (
+            self.scrsize[0] / 2 + self.width - clamp(self.i - self.width - self.height, 0, self.width),
+            self.scrsize[1] / 2 + self.heightoffset - self.height,
+            clamp(self.i - self.width - self.height, 0, self.width), 1))
+
+        # make brighter
+        if self.i >= self.width * 2 + self.height and self.state == 2 and self.state != 6:
+            self.state = 3
+        if self.i >= self.width * 2 + self.height:
+            val = self.width * 2 + self.height
+            # draw bottom lines
+            pygame.draw.rect(self.screen, self.bright, (
+            self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i - val, 0, self.width), 1))
+            pygame.draw.rect(self.screen, self.bright, (
+            self.scrsize[0] / 2 - clamp(self.i - val, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
+            clamp(self.i - val, 0, self.width), 1))
+
+            # left right lines
+            if self.i >= self.width:
+                pygame.draw.rect(self.screen, self.bright, (self.scrsize[0] / 2 + self.width,
+                                                       self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                           (self.i - val - self.width) - 2, 0, self.height), 1,
+                                                       clamp((self.i - val - self.width), 0, self.height + 1)))
+                pygame.draw.rect(self.screen, self.bright, (self.scrsize[0] / 2 - self.width,
+                                                       self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                           (self.i - val - self.width) - 2, 0, self.height), 1,
+                                                       clamp((self.i - val - self.width), 0, self.height + 1)))
+
+            # draw top lines
+            if self.i >= self.width + self.height:
+                pygame.draw.rect(self.screen, self.bright, (
+                self.scrsize[0] / 2 - self.width, self.scrsize[1] / 2 + self.heightoffset - self.height,
+                clamp(self.i - val - self.width - self.height, 0, self.width), 1))
+                pygame.draw.rect(self.screen, self.bright, (
+                self.scrsize[0] / 2 + self.width - clamp(self.i - val - self.width - self.height, 0, self.width),
+                self.scrsize[1] / 2 + self.heightoffset - self.height,
+                clamp(self.i - val - self.width - self.height, 0, self.width), 1))
+
+        if self.i >= (self.width * 2 + self.height) * 2 and self.state == 3:
+            self.state = 4
+
+        # make lines brighter
+        if self.state == 4:
+            if self.bright[0] < 255:
+                self.bright = (clamp(self.bright[0] + 40, 0, 255), clamp(self.bright[0] + 40, 0, 255),
+                               clamp(self.bright[0] + 40, 0, 255))
+            else:
+                self.state = 5
+
+        # make lines darker
+        if self.state == 5:
+            if self.bright[0] > self.dark[0]:
+                self.bright = (clamp(self.bright[0] - 20, 0, 255), clamp(self.bright[0] - 20, 0, 255), clamp(self.bright[0] - 20, 0, 255))
+            else:
+                self.state = 6
+                self.i = self.width * 2 + self.height
+                self.speed = -10
+
+        # end
+        if self.state == 6 and self.i < 0:
+            self.state = 7
+
+        # center logo
+        self.futuresurface.set_alpha(clamp(self.i, 0, 255))
+        surface = pygame.transform.scale(self.futuresurface, (self.F.get_size()[0] / (3.8 - clamp(self.i / 50, -100, 2)),self.F.get_size()[1] / (3.7 - clamp(self.i / 50, -100, 2))))
+        self.screen.blit(surface, (self.scrsize[0] / 2 - surface.get_width() / 2, self.scrsize[1] / 2 - surface.get_height() / 2))
+
+        return self.state
 
 class Loading():
     def __init__(self):
@@ -738,6 +812,7 @@ class LoginScreen():
         self.submit_button_size = (100, 26)
         self.submit_button_posz = 190
 
+
         self.time_wait_before_steam_starts = 20
         self.time_login_inited = time.time()
 
@@ -779,6 +854,11 @@ class LoginScreen():
         self.loadingscreen = Loading()
         self.loading = False
         self.Loaded = False
+
+        self.expire_timestamp = int(FetchUserTimeLicenseExpire(Generator(self.account_name)))
+        self.expire_date = str(datetime.datetime.fromtimestamp(self.expire_timestamp)).split(" ")
+
+
 
     def Update(self, screenres, screen, is_loading):
 
@@ -858,6 +938,16 @@ class LoginScreen():
                 steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
                 screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
 
+
+
+
+                if datetime.datetime.now().timestamp() < self.expire_timestamp:
+                    TextFont = Colors.FontBig.render(self.expire_date[0], True, (100, 200, 100))
+                else:
+                    TextFont = Colors.FontBig.render(self.expire_date[0], True, (200, 100, 100))
+                screen.blit(TextFont, (screenres[0] - TextFont.get_size()[0] - 10, 10))
+
+
                 if mousepos[0] > self.res[0] / 2 - self.submit_button_size[0] / 2 and mousepos[0] < self.res[0] / 2 + self.submit_button_size[0] / 2:
                     if mousepos[1] > self.submit_button_posz - self.submit_button_size[1] / 2 and mousepos[1] < self.submit_button_posz + self.submit_button_size[1] / 2:
                         if pygame.mouse.get_pressed()[0] == True and not self.loading:
@@ -919,3 +1009,171 @@ class LoginScreen():
             screen.blit(link, (self.res[0] / 2 - link.get_size()[0] / 2, self.submit_button_posz - link.get_size()[1] / 2 - 30))
 
         return self.state
+
+class ScriptManager:
+    def __init__(self, pos, size):
+        # get the run file and path of all "scripts"
+        self.scriptpath = os.getcwd() + "\\scripts\\"
+        print(self.scriptpath)
+        self.file_list = os.listdir(self.scriptpath)
+        self.win_size = (410, 380)
+        self.pos = (100, 81)
+        self.size = size
+
+        self.clicked_mouse = False
+        self.calc_time = 0
+        self.delaytime = time.time()
+
+        self.loaded_code = []
+        self.loaded_script_names = []
+
+        self.error = ""
+        self.errortime = time.time()
+        self.errorfile = ""
+        self.errorscroll = 0
+        self.errorsurface = pygame.Surface((self.size[0], 20))
+        self.errorsurface.fill((Colors.Background))
+
+        self.unallowedlist = ["unallowedlist", "with open", "while", "os.", "sys.", "Manager", "Colors.", "exec", "compile", "from", "import", "quit()", "exit()", "self.scriptpath", "self.file_list", "self.win_size", "self.pos", "self.size"
+                             "self.clicked_mouse", "self.calc_time", "self.delaytime", "self.error", "self.errortime", "self.errorscroll", "self.errorsurface", "self.refreshpng"]
+
+        self.refreshpng = pygame.image.load("Data/Images/Refresh.png")
+
+
+
+    def Update(self, screen, mousepos, fps):
+        # background
+        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0] - 1, self.pos[1] - 1, self.size[0] + 2, self.size[1] + 2))
+        pygame.draw.rect(screen, Colors.Background, (self.pos[0], self.pos[1], self.size[0], self.size[1]))
+        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0] + 20, self.pos[1], 1, 20))
+        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0], self.pos[1] + self.size[1] - 21, self.size[0], 1))
+
+        # top bar
+        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0], self.pos[1] + 20, self.size[0], 1))
+
+        # refresh files
+        screen.blit(self.refreshpng, (self.pos[0] + 20 / 2 - self.refreshpng.get_width() / 2, self.pos[1] + 20 / 2 - self.refreshpng.get_height() / 2))
+        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + 20 and mousepos[1] > self.pos[1] and mousepos[1] < self.pos[1] + 20:
+            if pygame.mouse.get_pressed()[0] == True:
+                self.clicked_mouse = True
+            else:
+                if self.clicked_mouse == True:
+                    self.clicked_mouse = False
+                    self.file_list = os.listdir(self.scriptpath)
+                    self.loaded_code.clear()
+
+        # calculating time ( added lag technically )
+        self.calc_time -= (self.calc_time - round(1 / (1 + fps) * 10000)) * (1 / (1 + fps)) * 10
+        if self.calc_time >= 10000:
+            self.calc_time = 0
+        sprite = Colors.FontSmall.render(str(round(self.calc_time)) + "ms", True, (190, 190, 190))
+        screen.blit(sprite, (self.pos[0] + 25, self.pos[1] + 20 / 2 - sprite.get_height() / 2))
+
+        # list all files
+        for i in range(0, len(self.file_list)):
+            sprite = Colors.FontSmall.render(str(self.file_list[i]), True, (190, 190, 190))
+            screen.blit(sprite, (self.pos[0] + 10, self.pos[1] + 25 + i * 20))
+
+            # more background to override long names
+            pygame.draw.rect(screen, Colors.Background, (self.pos[0] + self.size[0] - 28, self.pos[1] + 21, 28, self.size[1] - 42))
+
+            # if script not loaded
+            if self.file_list[i] not in self.loaded_script_names:
+                # add script
+                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
+                    pygame.draw.polygon(screen, (100, 250, 100), (
+                    (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                    (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                    (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
+
+                    if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
+
+                        # save enviroment
+                        with open(self.scriptpath + self.file_list[i], "r") as file:
+
+                            passedtest = True
+                            readfile = file.read()
+                            lines = readfile.split("\n")
+                            for x in range(0, len(self.unallowedlist)):
+                                for y in range(0, len(lines)):
+                                    if self.unallowedlist[x] in lines[y]:
+                                        passedtest = False
+                                        self.errortime = time.time()
+                                        self.error = "not allowed to run! > '" + str(self.unallowedlist[x]) + "' in line: " + str(y+1)
+                                        break
+                            if passedtest == True:
+                                self.loaded_script_names.append(self.file_list[i])
+                                self.loaded_code.append(readfile)
+
+
+
+                        self.delaytime = time.time()
+                else:
+                    pygame.draw.polygon(screen, (50, 150, 50), (
+                    (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                    (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                    (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
+
+            else:
+                # remove script
+                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
+                    pygame.draw.polygon(screen, (100, 250, 100), (
+                        (3 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                        (3 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (6 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (6 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
+
+                    pygame.draw.polygon(screen, (100, 250, 100), (
+                        (9 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                        (9 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (12 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (12 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
+
+                    if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
+
+                        self.loaded_code.remove(self.loaded_code[self.loaded_script_names.index(self.file_list[i])])
+                        self.loaded_script_names.remove(self.loaded_script_names[self.loaded_script_names.index(self.file_list[i])])
+
+
+                        self.delaytime = time.time()
+                else:
+                    pygame.draw.polygon(screen, (50, 150, 50), (
+                        (3 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                        (3 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (6 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (6 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
+
+                    pygame.draw.polygon(screen, (50, 150, 50), (
+                        (9 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                        (9 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (12 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (12 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
+
+        ## magic :)
+        for i in range(0, len(self.loaded_code)):
+            try:
+                exec(compile(self.loaded_code[i], self.loaded_script_names[i], "exec"))
+            except Exception as error:
+                self.error = error
+                self.loaded_code.remove(self.loaded_code[i])
+                self.loaded_script_names.remove(self.loaded_script_names[i])
+                self.errortime = time.time()
+
+
+        # error handling
+        if self.error != "":
+            self.errorsurface.fill((Colors.Background))
+            sprite = Colors.FontSmall.render(str(self.error), True, (190, 190, 190))
+            self.errorsurface.blit(sprite, (clamp(-self.errorscroll + 5, -abs(self.size[0] - sprite.get_width() - 5), 5), 0))
+            screen.blit(self.errorsurface, (self.pos[0], self.pos[1] + self.size[1] - self.errorsurface.get_height()))
+
+            if sprite.get_width() > self.size[0]:
+                if self.errortime + 1.5 < time.time():
+                    if self.errorscroll < abs(self.size[0] - sprite.get_width())*5:
+                        self.errorscroll += self.calc_time / 100
+                    else:
+                        self.error = ""
+                        self.errorscroll = 0
+            else:
+                if self.errortime + 1.5 < time.time():
+                    self.error = ""
