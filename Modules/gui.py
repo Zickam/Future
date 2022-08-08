@@ -107,6 +107,8 @@ class Window():
         # main window
         if self.Foreground == True:
 
+            separate_line = pygame.draw.line(self.screen, (220, 220, 220), (70, 0), (70, 500), 2)
+
             # logo color change
             if self.LogoUpdate == True:
                 self.coloredSurface = self.origSurface.copy()
@@ -285,11 +287,12 @@ class Button():
         return self.State, self.Tab
 
 class FirstLevelButton():
-    def __init__(self, picture, position, size, name, Tab=False):
+    def __init__(self, picture, position, size, name):
         self.pos = position
         self.size = size
         self.name = name
-        self.Tab = Tab
+        self.Tab = False
+        self.DelayTime = time.time()
 
         if picture.get_width() > 30 or picture.get_height() > 30:
             self.pic = pygame.transform.scale(picture, (50, 50))
@@ -297,8 +300,15 @@ class FirstLevelButton():
             self.pic = picture
 
 
-
     def Update(self, screen, mousepos, framedelta):
+        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] and mousepos[1] < self.pos[1] + self.size[1]:
+            if pygame.mouse.get_pressed()[2] and self.DelayTime + 0.15 <= time.time():
+                self.Tab = not self.Tab
+                self.DelayTime = time.time()
+
+        if self.Tab:
+            new_separate_line = pygame.draw.line(screen, (20, 20, 20), (70, 0), (70, 500), 2)
+
         sprite = Colors.FontMed.render(str(self.name), True, (0, 0, 0))
         screen.blit(self.pic, (self.pos))
 
@@ -363,7 +373,6 @@ class Slider():
             self.SliderVisState = 0
 
         return self.VisualState, self.OutputTab
-
 
 class Selector():
     def __init__(self, position, size, name, array):
@@ -643,6 +652,7 @@ class LogoDisplayer():
         self.bright = (120, 120, 120)
 
     def Update(self):
+
         if self.state != 7:
             pygame.draw.rect(self.screen, Colors.Background, (0, 0, self.scrsize[0], self.scrsize[1]))
 

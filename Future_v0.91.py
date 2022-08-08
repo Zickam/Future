@@ -50,10 +50,12 @@ def getweapons():
             armorpen.append(options[idlist[element]]["armorpen"])
     return idlist, namelist, dmglist, rangelist, armorpen
 
+visualspng = pygame.image.load("Data/Images/Visuals.png")
 aimbotpng = pygame.image.load("Data/Images/Aimbot.png")
 miscpng = pygame.image.load("Data/Images/Misc.png")
 scriptspng = pygame.image.load("Data/Images/Scripts.png")
 configpng = pygame.image.load("Data/Images/Config.png")
+
 
 
 # window
@@ -66,7 +68,7 @@ def Buttons():
     checkbox_offset = (0, 3)
 
     buttons_grid = {
-        "Visuals": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+        "Visuals": {"type": "FirstLevelButton", "picture": visualspng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
             "GlowESP": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
                 "EnemyR": {"type": "button", "pos": (0, 0), "size": button_size},
                 "EnemyG": {"type": "button", "pos": (0, 0), "size": button_size},
@@ -77,7 +79,7 @@ def Buttons():
             }},
             "Sky": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
                 "skySelector": {"type": "selector", "pos": (0, 20), "size": button_size,
-                             "array": [    "cs_tibet","embassy","italy","jungle","nukeblank","office","sky_cs15_daylight01_hdr","sky_cs15_daylight02_hdr","sky_cs15_daylight03_hdr","sky_cs15_daylight04_hdr","sky_csgo_cloudy01","sky_csgo_night02","sky_csgo_night02b","sky_day02_05","sky_dust","sky_lunacy","sky_venice","vertigo","vertigoblue_hdr","vietnam",]},
+                             "array": ["cs_tibet","embassy","italy","jungle","nukeblank","office","sky_cs15_daylight01_hdr","sky_cs15_daylight02_hdr","sky_cs15_daylight03_hdr","sky_cs15_daylight04_hdr","sky_csgo_cloudy01","sky_csgo_night02","sky_csgo_night02b","sky_day02_05","sky_dust","sky_lunacy","sky_venice","vertigo","vertigoblue_hdr","vietnam",]},
             }},
             "Radar": {"type": "button", "pos": (0, 0), "size": button_size},
             "Chams": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
@@ -181,7 +183,7 @@ def Buttons():
             "ConfigSelector": {"type": "selector", "pos": (0, 0), "size": button_size,
                                "array": ["Custom", "Rage", "Semi", "Legit", "Dev"]},
         }},
-        "Settings": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+        "Settings": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
             "Transparency": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 50, "end": 255},
             "Change Transparency": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
             "Highlight": {"type": "colorPicker", "pos": (0, 0), "size": (100, 100)},
@@ -262,38 +264,26 @@ def Buttons():
         return objects
 
     buttons = {}
-    pos = [10, 80]
+    pos = [10, 60]
     gap_y = button_size[1] + 5
     gap_x = button_size[0] + 10
 
-    gap_y_first = firstlvlbutton_size[1] + 5
-    gap_x_first = firstlvlbutton_size[0] + 10
+    gap_y_first_level_btn = firstlvlbutton_size[1] + 5
 
     start_pos = [pos[0], pos[1]]
+    start_pos_default = [pos[0], pos[1]]
 
     for object_name, object_props in buttons_grid.items():
-        if object_props["type"] == "button":
-            pos_x = object_props["pos"][0] + start_pos[0]
-            pos_y = object_props["pos"][1] + start_pos[1]
-            _object = gui.Button((pos_x, pos_y), object_props["size"], object_name)
-
-        elif object_props["type"] == "selector":
-            pos_x = object_props["pos"][0] + start_pos[0]
-            pos_y = object_props["pos"][1] + start_pos[1]
-            _object = gui.Selector((pos_x, pos_y), object_props["size"], object_name, object_props["array"])
-
-
-        elif object_props["type"] == "FirstLevelButton":
+        if object_props["type"] == "FirstLevelButton":
             pos_x = object_props["pos"][0] + start_pos[0]
             pos_y = object_props["pos"][1] + start_pos[1]
             _object = gui.FirstLevelButton(object_props["picture"], (pos_x, pos_y), object_props["size"], object_name)
 
-
-        elif object_props["type"] == "end":
+        if object_props["type"] == "end":
             break
 
         if "dependencies" in object_props:
-            start_pos_for_dependencies = [pos_x + gap_x, pos_y]
+            start_pos_for_dependencies = [pos_x + gap_x, start_pos_default[1]]
             dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"],
                                                             start_pos_for_dependencies)
 
@@ -301,7 +291,7 @@ def Buttons():
             dependencies = None
 
         buttons[object_name] = [_object, dependencies]
-        start_pos[1] += gap_y
+        start_pos[1] += gap_y_first_level_btn
 
     # for button, props in buttons_grid.items():
     #     print(button, props)
