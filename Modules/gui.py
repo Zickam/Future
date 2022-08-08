@@ -306,8 +306,6 @@ class FirstLevelButton():
                 self.Tab = not self.Tab
                 self.DelayTime = time.time()
 
-        if self.Tab:
-            new_separate_line = pygame.draw.line(screen, (20, 20, 20), (70, 0), (70, 500), 2)
 
         sprite = Colors.FontMed.render(str(self.name), True, (0, 0, 0))
         screen.blit(self.pic, (self.pos))
@@ -1045,7 +1043,7 @@ class ScriptManager:
         print(self.scriptpath)
         self.file_list = os.listdir(self.scriptpath)
         self.win_size = (410, 380)
-        self.pos = (100, 81)
+        self.pos = pos
         self.size = size
 
         self.clicked_mouse = False

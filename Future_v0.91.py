@@ -174,7 +174,7 @@ def Buttons():
 
         }},
         "Scripts": {"type": "FirstLevelButton", "picture": scriptspng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
-            "Load": {"type": "scriptmanager", "pos": (0, 0), "size": (300, 315)},
+            "Load": {"type": "scriptmanager", "pos": (0, 0), "size": (290, 335)},
 
         }},
         "Config": {"type": "FirstLevelButton", "picture": configpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
