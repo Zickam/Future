@@ -50,10 +50,16 @@ def getweapons():
             armorpen.append(options[idlist[element]]["armorpen"])
     return idlist, namelist, dmglist, rangelist, armorpen
 
+aimbotpng = pygame.image.load("Data/Images/Aimbot.png")
+miscpng = pygame.image.load("Data/Images/Misc.png")
+scriptspng = pygame.image.load("Data/Images/Scripts.png")
+configpng = pygame.image.load("Data/Images/Config.png")
+
 
 # window
 def Buttons():
     button_size = (80, 25)
+    firstlvlbutton_size = (80, 50)
     slider_size = (80, 10)
     slider_offsets = (0, 13)
     checkbox_size = (18, 18)
@@ -95,7 +101,7 @@ def Buttons():
 
 
         }},
-        "Combat": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+        "Combat": {"type": "FirstLevelButton", "picture": aimbotpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
             "AimBot": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
                 "Enemies": {"type": "button", "pos": (0, 0), "size": button_size},
                 "Team": {"type": "button", "pos": (0, 0), "size": button_size},
@@ -123,7 +129,7 @@ def Buttons():
             "RapidFire": {"type": "button", "pos": (0, 0), "size": button_size},
             "FastPeek": {"type": "button", "pos": (0, 0), "size": button_size}
         }},
-        "Misc": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+        "Misc": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
             "SkinChange": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
                 "Skin name": {"type": "searchbox", "pos": (0, 0), "size": button_size, "array": getskins()},
                 "Weapon": {"type": "searchbox", "pos": (110, -30), "size": button_size, "array": getweapons()[1]},
@@ -165,11 +171,11 @@ def Buttons():
             "ClanTag": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
 
         }},
-        "Scripts": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+        "Scripts": {"type": "FirstLevelButton", "picture": scriptspng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
             "Load": {"type": "scriptmanager", "pos": (0, 0), "size": (300, 315)},
 
         }},
-        "Config": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+        "Config": {"type": "FirstLevelButton", "picture": configpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
             "Load": {"type": "button", "pos": (0, 0), "size": button_size},
             "Save": {"type": "button", "pos": (0, 0), "size": button_size},
             "ConfigSelector": {"type": "selector", "pos": (0, 0), "size": button_size,
@@ -259,6 +265,10 @@ def Buttons():
     pos = [10, 80]
     gap_y = button_size[1] + 5
     gap_x = button_size[0] + 10
+
+    gap_y_first = firstlvlbutton_size[1] + 5
+    gap_x_first = firstlvlbutton_size[0] + 10
+
     start_pos = [pos[0], pos[1]]
 
     for object_name, object_props in buttons_grid.items():
@@ -271,6 +281,12 @@ def Buttons():
             pos_x = object_props["pos"][0] + start_pos[0]
             pos_y = object_props["pos"][1] + start_pos[1]
             _object = gui.Selector((pos_x, pos_y), object_props["size"], object_name, object_props["array"])
+
+
+        elif object_props["type"] == "FirstLevelButton":
+            pos_x = object_props["pos"][0] + start_pos[0]
+            pos_y = object_props["pos"][1] + start_pos[1]
+            _object = gui.FirstLevelButton(object_props["picture"], (pos_x, pos_y), object_props["size"], object_name)
 
 
         elif object_props["type"] == "end":

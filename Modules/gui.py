@@ -284,6 +284,24 @@ class Button():
 
         return self.State, self.Tab
 
+class FirstLevelButton():
+    def __init__(self, picture, position, size, name, Tab=False):
+        self.pos = position
+        self.size = size
+        self.name = name
+        self.Tab = Tab
+
+        if picture.get_width() > 30 or picture.get_height() > 30:
+            self.pic = pygame.transform.scale(picture, (50, 50))
+        else:
+            self.pic = picture
+
+
+
+    def Update(self, screen, mousepos, framedelta):
+        sprite = Colors.FontMed.render(str(self.name), True, (0, 0, 0))
+        screen.blit(self.pic, (self.pos))
+
 def Refreshscreen():
     pygame.display.flip()
 
