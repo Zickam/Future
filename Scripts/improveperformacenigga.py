@@ -1,2 +1,1 @@
-for i in range(0, 50000):
-    print("mf")
+pygame.draw.rect(screen, (20, 20, 20), (0, 0, 100, 100))

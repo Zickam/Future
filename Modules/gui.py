@@ -96,12 +96,16 @@ class Window():
         self.active_modules_dimensions = [120, 20]
         self.active_modules_margin = (10, 500)
 
+        self.pygameevent = None
+
 
     def Update(self, ActiveModules, Framedelta, is_login_screen):
         Window = win32gui.FindWindow(None, "Future")
         WindowRect = win32gui.GetWindowRect(Window)
 
         Mousepos = pygame.mouse.get_pos()
+
+        self.pygameevent = pygame.event.get()
 
         self.screen.fill(Colors.Background)
         # main window
@@ -130,7 +134,7 @@ class Window():
             self.screen.blit(close_button_rect, (self.resolution[0] - close_button_rect.get_width() - 2, -4))
 
 
-            for event in pygame.event.get():
+            for event in self.pygameevent:
                 if Mousepos[0] > self.resolution[0] - close_button_rect.get_width() and Mousepos[0] < self.resolution[0] and Mousepos[1] > 0 and Mousepos[1] < close_button_rect.get_height():
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         pygame.quit()
@@ -176,7 +180,7 @@ class Window():
             if WindowRect != (self.active_modules_margin[0], self.active_modules_margin[1], self.active_modules_margin[0] + self.ActiveModuleRes[0], self.active_modules_margin[1] + self.ActiveModuleRes[1]):
                 win32gui.SetWindowPos(Window, win32con.HWND_TOPMOST, self.active_modules_margin[0], self.active_modules_margin[1], 0, 0, win32con.SWP_NOSIZE)
 
-            for event in pygame.event.get():
+            for event in self.pygameevent:
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
@@ -849,8 +853,6 @@ class LoginScreen():
         self.clicked = False
         self.Delaytime = time.time()
         self.Caretshow = True
-        self.pressable_buttons = ("a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,1,2,3,4,5,6,7,8,9,0,!,§,$,%,&,&,/,(,),=")
-        self.pressable_buttons_list = self.pressable_buttons.split(",")
 
         self.textstop = False
         self.text = ""
@@ -884,9 +886,10 @@ class LoginScreen():
         self.expire_timestamp = int(FetchUserTimeLicenseExpire(Generator(self.account_name)))
         self.expire_date = str(datetime.datetime.fromtimestamp(self.expire_timestamp)).split(" ")
 
+        self.enterpressed = False
 
 
-    def Update(self, screenres, screen, is_loading):
+    def Update(self, screenres, screen, is_loading, keyevent):
 
         if is_loading:
             self.loading = True
@@ -933,22 +936,19 @@ class LoginScreen():
                         self.Caretshow = not self.Caretshow
 
                 if self.clicked == True and self.loading == False:
-                    keyboard_hotkey_name = keyboard.get_hotkey_name()
+                    for event in keyevent:
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_BACKSPACE:
+                                self.text = self.text[:-1]
+                            elif event.key != pygame.K_BACKSPACE and event.key != pygame.K_RETURN:
+                                self.text += event.unicode
 
-                    if keyboard_hotkey_name != "" and self.textstop == False and keyboard_hotkey_name != "backspace":
-                        self.textstop = True
+                            if event.key == pygame.K_RETURN:
+                                self.enterpressed = True
 
-                        for letter in self.pressable_buttons_list:
-                            if letter == keyboard.get_hotkey_name():
-                                self.text += keyboard.get_hotkey_name()
 
-                    if keyboard_hotkey_name == "backspace":
-                        if self.textstop == False:
-                            self.text = self.text[:-1]
-                            self.textstop = True
 
-                    if keyboard_hotkey_name == "":
-                        self.textstop = False
+
 
                 TextFont = Colors.FontBig.render(str(self.text.upper()), True, Colors.TextColor)
                 screen.blit(TextFont, (self.res[0] / 2 - self.textfield_size[0] / 2 + 2,self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz))
@@ -974,29 +974,31 @@ class LoginScreen():
                 screen.blit(TextFont, (screenres[0] - TextFont.get_size()[0] - 10, 10))
 
 
-                if mousepos[0] > self.res[0] / 2 - self.submit_button_size[0] / 2 and mousepos[0] < self.res[0] / 2 + self.submit_button_size[0] / 2:
-                    if mousepos[1] > self.submit_button_posz - self.submit_button_size[1] / 2 and mousepos[1] < self.submit_button_posz + self.submit_button_size[1] / 2:
-                        if pygame.mouse.get_pressed()[0] == True and not self.loading:
-                            self.loading = True
+                if mousepos[0] > self.res[0] / 2 - self.submit_button_size[0] / 2 and mousepos[0] < self.res[0] / 2 + self.submit_button_size[0] / 2 or self.enterpressed:
+                    if mousepos[1] > self.submit_button_posz - self.submit_button_size[1] / 2 and mousepos[1] < self.submit_button_posz + self.submit_button_size[1] / 2 or self.enterpressed:
+                        if pygame.mouse.get_pressed()[0] == True or self.enterpressed:
+                            if not self.loading:
+                                self.loading = True
 
-                            if self.request_time + 0.01 < time.time():
+                                if self.request_time + 0.01 < time.time():
 
-                                self.correct_acc_local = CheckValid()
+                                    self.correct_acc_local = CheckValid()
 
-                                self.correct_acc = CheckIfUserExists(Generator(self.account_name))
-                                if self.correct_acc and self.correct_acc_local:
-                                    self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
-                                    self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
+                                    self.correct_acc = CheckIfUserExists(Generator(self.account_name))
+                                    if self.correct_acc and self.correct_acc_local:
+                                        self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
+                                        self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
 
-                            self.request_time = time.time()
+                                self.request_time = time.time()
 
-                            if self.correct_pass and self.correct_acc and self.correct_acc_local and self.license_is_valid:
-                                self.state = True
+                                if self.correct_pass and self.correct_acc and self.correct_acc_local and self.license_is_valid:
+                                    self.state = True
 
-                            else:
-                                self.loading = False
-                                self.INCORRECT = True
-                                self.IncorrectDelay = time.time()
+                                else:
+                                    self.loading = False
+                                    self.INCORRECT = True
+                                    self.IncorrectDelay = time.time()
+                                    self.enterpressed = False
 
                 if self.INCORRECT == True and self.correct_acc:
                     if self.IncorrectDelay + 1 < time.time():

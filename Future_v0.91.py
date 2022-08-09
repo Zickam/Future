@@ -324,6 +324,7 @@ def gui_updater(buttons_grid, buttons):
     screen_size = (410, 410)
     screen = Initscreen(resolution=login_screen_size)
     window = gui.Window(screen_size, [10, 10], screen) # login window
+
     clock = pygame.time.Clock()
 
     LoginScreen = gui.LoginScreen()
@@ -341,7 +342,7 @@ def gui_updater(buttons_grid, buttons):
         objects_shown = []
         objects_not_shown = []
 
-        login_success = gui.LoginScreen.Update(LoginScreen, screen_size, screen, is_loading)
+        login_success = gui.LoginScreen.Update(LoginScreen, screen_size, screen, is_loading, window.pygameevent)
 
         if Shown == True:
             def unTabDependencies(dependencies):
