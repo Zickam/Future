@@ -14,7 +14,6 @@ mixer.Sound.set_volume(bell, 0.3)
 mixer.Sound.set_volume(cod, 0.3)
 mixer.Sound.set_volume(fatality, 0.3)
 
-
 health = 0
 entityPlayerLookAt = 0
 starttime = time.time()

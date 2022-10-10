@@ -1,8 +1,7 @@
 import os
 import time
 import psutil
-import tkinter
-from tkinter import filedialog
+import Modules.startcsgo
 import ctypes  # An included library with Python install.
 
 database_name = "future"
@@ -121,19 +120,9 @@ def showMessageBox(title, text):
 
 def findLoginUsersFile():
 
-    default_root = "C:\Program Files (x86)\Steam\config"
-    loginvdf_root = os.path.join("config", "loginusers.vdf")
+    default_root, nothing, nothing1 = Modules.startcsgo.GetActiveProcesses()
 
-    web_helper_list = []
-    for proc in psutil.process_iter():
-        pInfoDict = proc.as_dict(attrs=['pid', 'name', 'cpu_percent'])
-        if pInfoDict["name"] == "steam.exe":
-            web_helper_list.append(pInfoDict["pid"])
-
-    steam_folder = os.path.split(psutil.Process(web_helper_list[0]).exe())[0]
-    default_root = os.path.join(steam_folder, loginvdf_root)
-
-    return default_root
+    return default_root + "loginusers.vdf"
 
 def findLoginUsers():
 

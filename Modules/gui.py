@@ -21,26 +21,29 @@ default_font_size = 15
 default_font = "Microsoft Sans Serif"
 ChangeAlpha = False
 
-SmoothedR = 255
-SmoothedG = 255
-SmoothedB = 255
-def color_surface(surface, color, fps):
-    global SmoothedR, SmoothedG, SmoothedB
-    arr = pygame.surfarray.pixels3d(surface)
-    if fps == 0:
-        SmoothedR -= (SmoothedR - color[0]) / 20
-        SmoothedG -= (SmoothedG - color[1]) / 20
-        SmoothedB -= (SmoothedB - color[2]) / 20
-    else:
-        SmoothedR -= (SmoothedR - color[0]) / (1 / fps) * 8
-        SmoothedG -= (SmoothedG - color[1]) / (1 / fps) * 8
-        SmoothedB -= (SmoothedB - color[2]) / (1 / fps) * 8
-    for x in range(0, len(arr)):
-        for y in range(0, len(arr[x])):
-            if arr[x][y][0] != 0 and arr[x][y][1] != 0 and arr[x][y][2] != 0:
-                arr[x][y][0] = clamp(arr[x][y][0] - 255 + SmoothedR, 0, 255)
-                arr[x][y][1] = clamp(arr[x][y][1] - 255 + SmoothedG, 0, 255)
-                arr[x][y][2] = clamp(arr[x][y][2] - 255 + SmoothedB, 0, 255)
+class color_changer:
+    def __init__(self):
+        self.SmoothedR = 255
+        self.SmoothedG = 255
+        self.SmoothedB = 255
+
+    def color_surface(self, surface, color, fps):
+        global SmoothedR, SmoothedG, SmoothedB
+        arr = pygame.surfarray.pixels3d(surface)
+        if fps == 0:
+            self.SmoothedR -= (self.SmoothedR - color[0]) / 10
+            self.SmoothedG -= (self.SmoothedG - color[1]) / 10
+            self.SmoothedB -= (self.SmoothedB - color[2]) / 10
+        else:
+            self.SmoothedR -= (self.SmoothedR - color[0]) / (1 / fps) * 10
+            self.SmoothedG -= (self.SmoothedG - color[1]) / (1 / fps) * 10
+            self.SmoothedB -= (self.SmoothedB - color[2]) / (1 / fps) * 10
+        for x in range(0, len(arr)):
+            for y in range(0, len(arr[x])):
+                if arr[x][y][0] != 0 and arr[x][y][1] != 0 and arr[x][y][2] != 0:
+                    arr[x][y][0] = clamp(arr[x][y][0] - 255 + self.SmoothedR, 0, 255)
+                    arr[x][y][1] = clamp(arr[x][y][1] - 255 + self.SmoothedG, 0, 255)
+                    arr[x][y][2] = clamp(arr[x][y][2] - 255 + self.SmoothedB, 0, 255)
 
 class Colors():
     Background = (20, 20, 20, 150)      # background
@@ -98,6 +101,8 @@ class Window():
 
         self.pygameevent = None
 
+        self.colorchanger = color_changer()
+
 
     def Update(self, ActiveModules, Framedelta, is_login_screen):
         Window = win32gui.FindWindow(None, "Future")
@@ -116,7 +121,7 @@ class Window():
             # logo color change
             if self.LogoUpdate == True:
                 self.coloredSurface = self.origSurface.copy()
-                color_surface(self.coloredSurface, Colors.ColorStyle, self.clock.get_fps())
+                self.colorchanger.color_surface(self.coloredSurface, Colors.ColorStyle, self.clock.get_fps())
 
             self.screen.blit(self.coloredSurface, (10, 10))
 
@@ -173,7 +178,6 @@ class Window():
             else:
                 self.active_modules_dimensions[1] = Toprect.get_height()
 
-            # print(Height, self.screen.get_rect()[3])
             if self.active_modules_dimensions[1] != self.screen.get_rect()[3]:
                 self.ActiveModuleRes = (self.ActiveModuleRes[0], self.active_modules_dimensions[1])
 
@@ -215,9 +219,6 @@ class Window():
             else:
                 self.Alpha -= (self.Alpha - Colors.Transparency) * (1 / Framedelta) * 16
 
-            res = (round(clamp(self.Alpha, 0, 255)))
-            if res == 0 or res == 256:
-                print(res)
             win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), round(clamp(self.Alpha, 0, 255)), win32con.LWA_ALPHA)
         else:
             win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 255, win32con.ULW_ALPHA)
@@ -297,22 +298,27 @@ class FirstLevelButton():
         self.name = name
         self.Tab = False
         self.DelayTime = time.time()
+        self.picture_update = False
 
-        if picture.get_width() > 30 or picture.get_height() > 30:
-            self.pic = pygame.transform.scale(picture, (50, 50))
+        if picture.get_width() > 30 and picture.get_height() > 30:
+            self.picture = pygame.transform.scale(picture, (50, 50))
         else:
-            self.pic = picture
+            self.picture = picture
 
+        self.coloredSurface = self.picture
+        self.colorchanger = color_changer()
 
     def Update(self, screen, mousepos, framedelta):
+
+        screen.blit(self.picture, self.pos)
+
         if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] and mousepos[1] < self.pos[1] + self.size[1]:
             if pygame.mouse.get_pressed()[2] and self.DelayTime + 0.15 <= time.time():
                 self.Tab = not self.Tab
                 self.DelayTime = time.time()
 
 
-        sprite = Colors.FontMed.render(str(self.name), True, (0, 0, 0))
-        screen.blit(self.pic, (self.pos))
+
 
 def Refreshscreen():
     pygame.display.flip()
@@ -831,8 +837,6 @@ class Loading():
 class LoginScreen():
     def __init__(self):
 
-        startcsgo.Launcher(False, False, False)
-
         self.state = False
 
         self.FLogo = pygame.image.load("Data/Images/Original.png")
@@ -887,6 +891,8 @@ class LoginScreen():
         self.expire_date = str(datetime.datetime.fromtimestamp(self.expire_timestamp)).split(" ")
 
         self.enterpressed = False
+
+        self.restarted_steam = False
 
 
     def Update(self, screenres, screen, is_loading, keyevent):
@@ -1000,14 +1006,16 @@ class LoginScreen():
                                     self.IncorrectDelay = time.time()
                                     self.enterpressed = False
 
+
                 if self.INCORRECT == True and self.correct_acc:
+                    if self.restarted_steam == False:
+                        startcsgo.RestartSteam()
+                        self.restarted_steam = True
                     if self.IncorrectDelay + 1 < time.time():
                         self.INCORRECT = False
                     if self.correct_acc_local == False:
-                        # startcsgo.Launcher(True, False)
                         errorfont = Colors.FontBig.render("Invalid Account", True, (255, 100, 100))
-                        screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2,self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
-
+                        screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
                     else:
                         errorfont = Colors.FontBig.render("Incorrect Password", True, (255, 100, 100))
                         screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
@@ -1042,7 +1050,6 @@ class ScriptManager:
     def __init__(self, pos, size):
         # get the run file and path of all "scripts"
         self.scriptpath = os.getcwd() + "\\scripts\\"
-        print(self.scriptpath)
         self.file_list = os.listdir(self.scriptpath)
         self.win_size = (410, 380)
         self.pos = pos

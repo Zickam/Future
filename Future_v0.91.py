@@ -8,9 +8,7 @@ from _thread import start_new_thread
 from Modules import gui, startcsgo, ConfigManager
 
 from Offsets.offsets import *
-from Modules import BHOP, ChamsFunction, FovFunction, GlowESP, NoFlashFunction, RadarFunction, Thirdperson, \
-    Triggerbot, Aimbot, Slowwalk, FakeLag, Teleport, ToxicChat, \
-    RecoilSystem, EntitiesIterator, FastPeek, Misc, hitsound
+from Modules import BHOP, ChamsFunction, FovFunction, GlowESP, NoFlashFunction, RadarFunction, Thirdperson, Triggerbot, Aimbot, Slowwalk, FakeLag, Teleport, ToxicChat, RecoilSystem, EntitiesIterator, FastPeek, Misc, hitsound
 
 from Modules.gui import Initscreen
 from Modules.gui import LogoDisplayer
@@ -284,17 +282,12 @@ def Buttons():
 
         if "dependencies" in object_props:
             start_pos_for_dependencies = [pos_x + gap_x, start_pos_default[1]]
-            dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"],
-                                                            start_pos_for_dependencies)
-
+            dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"], start_pos_for_dependencies)
         else:
             dependencies = None
 
         buttons[object_name] = [_object, dependencies]
         start_pos[1] += gap_y_first_level_btn
-
-    # for button, props in buttons_grid.items():
-    #     print(button, props)
 
     return buttons_grid, buttons
 
@@ -466,9 +459,7 @@ def loginAndGUI():
         if time_to_wait - 1 < time.time() and not login_success:
             time.sleep(0.001)
             time_to_wait = time.time()
-
         else:
-            print("login returned tryue")
             return True, buttons
 
 def main_init():
@@ -489,9 +480,9 @@ def main_init():
 
                 except Exception as _ex:
                     if str(_ex) == "Could not find process: csgo.exe":
-                        print("csgo_styarted - ", csgo_started)
-                        if not csgo_started:
-                            csgo_started = startcsgo.Launcher(False, False)
+                        print("csgo_started - ", csgo_started)
+                        startcsgo.Launcher(False, False)
+
 
             if pm:
                 break
@@ -883,4 +874,3 @@ def mainOrder():
 
 if __name__ == "__main__":
     mainOrder()
-

@@ -7,7 +7,7 @@ logins_paid = rf"C:\Users\{getpass.getuser()}\OneDrive\Desktop\Python\Future\lic
 def Double_SHA256(text):
     return sha256(sha256(text.encode()).hexdigest().encode()).hexdigest()
 
-print(Double_SHA256("hello"))
+
 
 def LocalAccountsNamesReader():
 
