@@ -2,6 +2,7 @@ import sys
 import subprocess
 import os
 
+
 missingpackages = []
 string = ""
 def installerfunction():
@@ -73,23 +74,35 @@ def installerfunction():
     except ImportError:
         missingpackages.append("pywin32")
 
+    try:
+        import colorama
+        print(colorama.__name__)
+    except ImportError:
+        missingpackages.append("colorama")
+
 
 
     # if all packages are installed
     if len(missingpackages) == 0:
-        print("All packages have been installed, continuing..")
-        print("----------------------------------------------")
         os.system("cls")
+        print("All packages were installed already, continuing...")
+        print("----------------------------------------------")
 
     # if some packages are missing
-    if len(missingpackages) > 0:
-        for element in range(0, len(missingpackages)):
-            string += missingpackages[element]
-            if element < len(missingpackages)-1:
-                string += ", "
+    elif len(missingpackages) > 0:
 
-        print("You are missing ["+string+"]")
-        if input("Do you want to install? >").upper() == "Y":
+        print(f"You are missing {missingpackages}]")
+        install = input("Do you want to install? > ")
+
+        if install.lower() == "y" or install[::].lower() == "yes":
             for element in range(0, len(missingpackages)):
                 subprocess.check_call([sys.executable, '-m', 'pip', 'install', str(missingpackages[element])])
 
+            os.system("cls")
+            print("All packages have been installed, continuing...")
+            print("----------------------------------------------")
+        else:
+            os.system("cls")
+            print("You have choosen to not to install missing packages")
+            print("Program probably won't work... Launching...")
+            print("----------------------------------------------")

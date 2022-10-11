@@ -5,8 +5,8 @@ import psutil
 import pygame.display
 import time
 import win32api
-from Modules import startcsgo
-from Modules.startcsgo import RestartSteam
+from Modules import Startcsgo
+from Modules.Startcsgo import RestartSteam
 import win32con
 import win32gui
 import datetime
@@ -16,6 +16,308 @@ from hashlib import sha256
 from Modules.LicenseChecker import GetActiveAccount, CheckValid, GetWebHelpersList
 from Modules.Generator import Generator
 from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid, FetchUserTimeLicenseExpire
+import json
+
+
+class Buttons:
+    def __init__(self):
+
+        visualspng = pygame.image.load("Data/Images/Visuals.png")
+        aimbotpng = pygame.image.load("Data/Images/Aimbot.png")
+        miscpng = pygame.image.load("Data/Images/Misc.png")
+        scriptspng = pygame.image.load("Data/Images/Scripts.png")
+        configpng = pygame.image.load("Data/Images/Config.png")
+
+        # window
+        button_size = (80, 25)
+        firstlvlbutton_size = (80, 50)
+        slider_size = (80, 10)
+        slider_offsets = (0, 13)
+        checkbox_size = (18, 18)
+        checkbox_offset = (0, 3)
+
+        self.buttons_grid = {
+            "Visuals": {"type": "FirstLevelButton", "picture": visualspng, "pos": (0, 0),
+                        "size": firstlvlbutton_size, "dependencies": {
+                    "GlowESP": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                        "EnemyR": {"type": "button", "pos": (0, 0), "size": button_size},
+                        "EnemyG": {"type": "button", "pos": (0, 0), "size": button_size},
+                        "EnemyB": {"type": "button", "pos": (0, 0), "size": button_size},
+                        "TeamR": {"type": "button", "pos": (0, 0), "size": button_size},
+                        "TeamG": {"type": "button", "pos": (0, 0), "size": button_size},
+                        "TeamB": {"type": "button", "pos": (0, 0), "size": button_size},
+                    }},
+                    "Sky": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                        "skySelector": {"type": "selector", "pos": (0, 20), "size": button_size,
+                                        "array": ["cs_tibet", "embassy", "italy", "jungle", "nukeblank", "office",
+                                                  "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr",
+                                                  "sky_cs15_daylight03_hdr", "sky_cs15_daylight04_hdr",
+                                                  "sky_csgo_cloudy01", "sky_csgo_night02", "sky_csgo_night02b",
+                                                  "sky_day02_05", "sky_dust", "sky_lunacy", "sky_venice", "vertigo",
+                                                  "vertigoblue_hdr", "vietnam", ]},
+                    }},
+                    "Radar": {"type": "button", "pos": (0, 0), "size": button_size},
+                    "Chams": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                        "Glow": {"type": "button", "pos": (0, 0), "size": button_size},
+                        "Color": {"type": "colorPicker", "pos": (0, 0), "size": (100, 100)},
+                        "Color1": {"type": "colorPicker", "pos": (110, -30), "size": (100, 100)}
+                    }},
+                    "NoFlash": {"type": "button", "pos": (0, 0), "size": button_size},
+                    "FOV": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                        "Hands": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 70,
+                                  "end": 170},
+                        "Fov": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 70,
+                                "end": 170},
+                        "Reset FOV": {"type": "button", "pos": (0, 0), "size": button_size},
+                    }},
+                    "3D Person": {"type": "button", "pos": (0, 0), "size": button_size},
+                    "Grenade Prediction": {"type": "button", "pos": (0, 0), "size": button_size},
+                    "Night Mode": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                        "Brightness": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 1,
+                                       "end": 200},
+                    }},
+                    "No Smoke": {"type": "button", "pos": (0, 0), "size": button_size},
+                    "ShowFPS": {"type": "button", "pos": (0, 0), "size": button_size},
+
+                }},
+            "Combat": {"type": "FirstLevelButton", "picture": aimbotpng, "pos": (0, 0), "size": firstlvlbutton_size,
+                       "dependencies": {
+                           "AimBot": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                               "Enemies": {"type": "button", "pos": (0, 0), "size": button_size},
+                               "Team": {"type": "button", "pos": (0, 0), "size": button_size},
+                               "Markplayer": {"type": "button", "pos": (0, 0), "size": button_size},
+                               "AimFOV": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 1,
+                                          "end": 90},
+                               "Smooth": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 0,
+                                          "end": 100},
+                               "Overaim": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 0,
+                                           "end": 20},
+                               "Selector": {"type": "selector", "pos": (0, 20), "size": button_size,
+                                            "array": ["Head", "Chest", "Stomach"]},
+                               "Selector1": {"type": "selector", "pos": (90, -10), "size": button_size,
+                                             "array": ["Crosshair", "Distance"]},
+                               "Multipoint": {"type": "button", "pos": (90, -240), "size": button_size},
+                           }},
+                           "TriggerBot": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                               "Highacc": {"type": "button", "pos": (0, 0), "size": button_size},
+                               "MaxSpeed": {"type": "slider", "pos": (0, 15), "size": slider_size, "start": 0,
+                                            "end": 300},
+
+                               "OnPress": {"type": "button", "pos": (0, 8), "size": button_size},
+                               "Enemies": {"type": "button", "pos": (0, 8), "size": button_size},
+                               "Team": {"type": "button", "pos": (0, 8), "size": button_size},
+                               "Humanizer": {"type": "slider", "pos": (0, 23), "size": slider_size, "start": 0,
+                                             "end": 100},
+                               # PercentChance
+                               "Delay": {"type": "slider", "pos": (0, 20), "size": slider_size, "start": 0,
+                                         "end": 1000},
+                               # milliseconds
+                           }},
+                           "Recoil": {"type": "button", "pos": (0, 0), "size": button_size},
+                           "RapidFire": {"type": "button", "pos": (0, 0), "size": button_size},
+                           "FastPeek": {"type": "button", "pos": (0, 0), "size": button_size}
+                       }},
+            "Misc": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size,
+                     "dependencies": {
+                         "SkinChange": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                             "Skin name": {"type": "searchbox", "pos": (0, 0), "size": button_size,
+                                           "array": self.getskins()},
+                             "Weapon": {"type": "searchbox", "pos": (110, -30), "size": button_size,
+                                        "array": self.getweapons()[1]},
+                             "Update": {"type": "button", "pos": (0, -110), "size": button_size},
+                         }},
+
+                         "ToxicChat": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                             "KillCounter": {"type": "button", "pos": (0, 0), "size": button_size},
+                             "AfterKill": {"type": "button", "pos": (0, 0), "size": button_size},
+                             "Spam": {"type": "button", "pos": (0, 0), "size": button_size},
+
+                         }},
+
+                         "Sound": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                             "OnHit": {"type": "button", "pos": (0, 0), "size": button_size},
+                             "OnKill": {"type": "button", "pos": (0, 0), "size": button_size},
+                             "SelectSound": {"type": "selector", "pos": (0, 0), "size": button_size,
+                                             "array": ["Neverlose", "Bell", "Cod", "Fatality"]},
+                         }},
+                         "FakeLag": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                             "DelayStart": {"type": "slider", "pos": (0, 10), "size": slider_size, "start": 10,
+                                            "end": 100},
+                             # milliseconds
+                             "DelayBetween": {"type": "slider", "pos": (0, 17), "size": slider_size, "start": 10,
+                                              "end": 300},
+                             # milliseconds
+                         }},
+                         "Teleport": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                             "DelayStart": {"type": "slider", "pos": (0, 10), "size": slider_size, "start": 0,
+                                            "end": 5000},
+                             # milliseconds
+                             "DelayBetween": {"type": "slider", "pos": (0, 17), "size": slider_size, "start": 0,
+                                              "end": 800},
+                             # milliseconds
+                         }},
+                         "BunnyHop": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                             "AutoStrafe": {"type": "button", "pos": (0, 0), "size": button_size},
+                         }},
+                         "Slowwalk": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
+                             "Speed": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 0,
+                                       "end": 200},
+                         }},
+                         "ForceCrosshair": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
+                         "ClanTag": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
+                         "DevCommands": {"type": "button", "pos": (0, 0), "size": button_size}
+                     }},
+            "Scripts": {"type": "FirstLevelButton", "picture": scriptspng, "pos": (0, 0),
+                        "size": firstlvlbutton_size, "dependencies": {
+                    "Load": {"type": "scriptmanager", "pos": (0, 0), "size": (290, 335)},
+
+                }},
+            "Config": {"type": "FirstLevelButton", "picture": configpng, "pos": (0, 0), "size": firstlvlbutton_size,
+                       "dependencies": {
+                           "Load": {"type": "button", "pos": (0, 0), "size": button_size},
+                           "Save": {"type": "button", "pos": (0, 0), "size": button_size},
+                           "ConfigSelector": {"type": "selector", "pos": (0, 0), "size": button_size,
+                                              "array": ["Custom", "Rage", "Semi", "Legit", "Dev"]},
+                       }},
+            "Settings": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size,
+                         "dependencies": {
+                             "Transparency": {"type": "slider", "pos": slider_offsets, "size": slider_size,
+                                              "start": 50, "end": 255},
+                             "Change Transparency": {"type": "checkbox", "pos": checkbox_offset,
+                                                     "size": checkbox_size},
+                             "Highlight": {"type": "colorPicker", "pos": (0, 0), "size": (100, 100)},
+                             "Colorstyle": {"type": "colorPicker", "pos": (110, -30), "size": (100, 100)},
+                         }},
+            # "Reset": {"pos": (0, 0), "size": button_size}
+            "End": {"type": "end"}
+        }
+
+        def iterateThroughButtonDependencies(object_name, object_dependencies, start_pos_dependencies):
+
+            objects = {}
+            for object_name, object_props in object_dependencies.items():
+                if object_props["type"] == "button":
+                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                    _object = Button((pos_x, pos_y), object_props["size"], object_name)
+                    start_pos_dependencies[1] += gap_y
+
+                elif object_props["type"] == "selector":
+                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                    _object = Selector((pos_x, pos_y), object_props["size"], object_name, object_props["array"])
+                    start_pos_dependencies[1] += gap_y
+
+                elif object_props["type"] == "slider":
+                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                    _object = Slider((pos_x, pos_y), object_props["size"], object_name, object_props["start"],
+                                         object_props["end"])
+                    start_pos_dependencies[1] += gap_y
+
+
+                elif object_props["type"] == "checkbox":
+                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                    _object = Checkbox((pos_x, pos_y), object_props["size"], object_name, (255, 255, 255))
+                    start_pos_dependencies[1] += gap_y
+
+
+                elif object_props["type"] == "colorPicker":
+                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                    _object = ColorPicker((pos_x, pos_y), object_props["size"], object_name)
+                    start_pos_dependencies[1] += gap_y
+
+                elif object_props["type"] == "searchbox":
+                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                    _object = Searchbox((pos_x, pos_y), object_props["size"], object_name,
+                                            object_props["array"])
+                    start_pos_dependencies[1] += gap_y
+
+                elif object_props["type"] == "scriptmanager":
+                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
+                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
+                    _object = ScriptManager((pos_x, pos_y), object_props["size"])
+                    start_pos_dependencies[1] += gap_y
+
+                elif object_props["type"] == "end":
+                    continue
+
+                if "dependencies" in object_props:
+                    _start_pos_for_dependencies = [start_pos_dependencies[0] + gap_x,
+                                                   start_pos_dependencies[1] - gap_y]
+                    dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"],
+                                                                    _start_pos_for_dependencies)
+
+                else:
+                    dependencies = None
+                objects[object_name] = [_object, dependencies]
+            start_pos_dependencies[0] += gap_x
+
+            return objects
+
+        self.buttons = {}
+        pos = [10, 60]
+        gap_y = button_size[1] + 5
+        gap_x = button_size[0] + 10
+
+        gap_y_first_level_btn = firstlvlbutton_size[1] + 5
+
+        start_pos = [pos[0], pos[1]]
+        start_pos_default = [pos[0], pos[1]]
+
+        for object_name, object_props in self.buttons_grid.items():
+            if object_props["type"] == "FirstLevelButton":
+                pos_x = object_props["pos"][0] + start_pos[0]
+                pos_y = object_props["pos"][1] + start_pos[1]
+                _object = FirstLevelButton(object_props["picture"], (pos_x, pos_y), object_props["size"],
+                                               object_name)
+
+            if object_props["type"] == "end":
+                break
+
+            if "dependencies" in object_props:
+                start_pos_for_dependencies = [pos_x + gap_x, start_pos_default[1]]
+                dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"],
+                                                                start_pos_for_dependencies)
+            else:
+                dependencies = None
+
+            self.buttons[object_name] = [_object, dependencies]
+            start_pos[1] += gap_y_first_level_btn
+
+
+    def getskins(self):
+        skinlist = []
+        with open("Data/Structs/skins.json") as file:
+            options = json.load(file)
+            for element in options:
+                skinlist.append(str(element))
+        return skinlist
+
+    def getweapons(self):
+        from pathlib import Path
+
+        weapons_specs_file = os.path.join(Path(__file__).parents[2], "Data\\Structs\\WeaponSpecs.json")
+
+        idlist = []
+        namelist = []
+        dmglist = []
+        rangelist = []
+        armorpen = []
+        with open(weapons_specs_file, "r") as file:
+            options = json.load(file)
+            for element in options:
+                idlist.append(element)
+            for element in range(0, len(idlist)):
+                namelist.append(options[idlist[element]]["name"])
+                dmglist.append(options[idlist[element]]["damage"])
+                rangelist.append(options[idlist[element]]["accrange"])
+                armorpen.append(options[idlist[element]]["armorpen"])
+        return idlist, namelist, dmglist, rangelist, armorpen
+
 
 default_font_size = 15
 default_font = "Microsoft Sans Serif"
@@ -290,6 +592,7 @@ class Button():
             self.CustomColorB = Colors.DisableColor[2]
 
         return self.State, self.Tab
+
 
 class FirstLevelButton():
     def __init__(self, picture, position, size, name):
@@ -1009,7 +1312,7 @@ class LoginScreen():
 
                 if self.INCORRECT == True and self.correct_acc:
                     if self.restarted_steam == False:
-                        startcsgo.RestartSteam()
+                        Startcsgo.RestartSteam()
                         self.restarted_steam = True
                     if self.IncorrectDelay + 1 < time.time():
                         self.INCORRECT = False

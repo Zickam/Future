@@ -1,7 +1,7 @@
 import os
 import time
 import psutil
-import Modules.startcsgo
+import Modules.Startcsgo
 import ctypes  # An included library with Python install.
 
 database_name = "future"

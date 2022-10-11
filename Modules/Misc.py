@@ -213,3 +213,28 @@ class ConVar():
 
     def set_string(self, value: str):
         self.pm.write_bytes(self.pm.read_uint(self.address + 0x24), value.encode('utf-8'), 128)
+
+
+def devCommands():
+
+    commands = ["sv_cheats 1",
+                "mp_autokick 0",
+                "mp_autoteambalance 0",
+                "mp_limitteams 99",
+                "mp_startmoney 999999",
+                "mp_roundtime_defuse 999999",
+                "bot_add",
+                "bot_add",
+                "bot_add",
+                "bot_add",
+                "bot_add",
+                "bot_add",
+                "bot_add",
+                "bot_add",
+                "bot_add",
+                "bot_stop 1",
+                "mp_freezetime 0",
+                "mp_restartgame 1"]
+
+    for command in commands:
+        SendConsoleCommand(command)

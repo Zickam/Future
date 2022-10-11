@@ -1,295 +1,13 @@
-from Modules import installer
-
-installer.installerfunction()
-import pygame.time, json, pymem, pymem.process, time
-
-from _thread import start_new_thread
-
-from Modules import gui, startcsgo, ConfigManager
-
-from Offsets.offsets import *
-from Modules import BHOP, ChamsFunction, FovFunction, GlowESP, NoFlashFunction, RadarFunction, Thirdperson, Triggerbot, Aimbot, Slowwalk, FakeLag, Teleport, ToxicChat, RecoilSystem, EntitiesIterator, FastPeek, Misc, hitsound
-
-from Modules.gui import Initscreen
-from Modules.gui import LogoDisplayer
-from Offsets.Updater import updateOffsets
-
-showCheatFPS = False
-showGUIFPS = False
+showCheatFPS = True
+showGUIFPS = True
 DEV = False
+needAdmin = True
 login_success = False
 csgo_started = False
 login = False
 all_detected_correctly = False
 is_loading = False
 
-def getskins():
-    skinlist = []
-    with open("Data/Structs/skins.json") as file:
-        options = json.load(file)
-        for element in options:
-            skinlist.append(str(element))
-    return skinlist
-
-def getweapons():
-    idlist = []
-    namelist = []
-    dmglist = []
-    rangelist = []
-    armorpen = []
-    with open("Data/Structs/WeaponSpecs.json") as file:
-        options = json.load(file)
-        for element in options:
-            idlist.append(element)
-        for element in range(0, len(idlist)):
-            namelist.append(options[idlist[element]]["name"])
-            dmglist.append(options[idlist[element]]["damage"])
-            rangelist.append(options[idlist[element]]["accrange"])
-            armorpen.append(options[idlist[element]]["armorpen"])
-    return idlist, namelist, dmglist, rangelist, armorpen
-
-visualspng = pygame.image.load("Data/Images/Visuals.png")
-aimbotpng = pygame.image.load("Data/Images/Aimbot.png")
-miscpng = pygame.image.load("Data/Images/Misc.png")
-scriptspng = pygame.image.load("Data/Images/Scripts.png")
-configpng = pygame.image.load("Data/Images/Config.png")
-
-
-
-# window
-def Buttons():
-    button_size = (80, 25)
-    firstlvlbutton_size = (80, 50)
-    slider_size = (80, 10)
-    slider_offsets = (0, 13)
-    checkbox_size = (18, 18)
-    checkbox_offset = (0, 3)
-
-    buttons_grid = {
-        "Visuals": {"type": "FirstLevelButton", "picture": visualspng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
-            "GlowESP": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "EnemyR": {"type": "button", "pos": (0, 0), "size": button_size},
-                "EnemyG": {"type": "button", "pos": (0, 0), "size": button_size},
-                "EnemyB": {"type": "button", "pos": (0, 0), "size": button_size},
-                "TeamR": {"type": "button", "pos": (0, 0), "size": button_size},
-                "TeamG": {"type": "button", "pos": (0, 0), "size": button_size},
-                "TeamB": {"type": "button", "pos": (0, 0), "size": button_size},
-            }},
-            "Sky": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "skySelector": {"type": "selector", "pos": (0, 20), "size": button_size,
-                             "array": ["cs_tibet","embassy","italy","jungle","nukeblank","office","sky_cs15_daylight01_hdr","sky_cs15_daylight02_hdr","sky_cs15_daylight03_hdr","sky_cs15_daylight04_hdr","sky_csgo_cloudy01","sky_csgo_night02","sky_csgo_night02b","sky_day02_05","sky_dust","sky_lunacy","sky_venice","vertigo","vertigoblue_hdr","vietnam",]},
-            }},
-            "Radar": {"type": "button", "pos": (0, 0), "size": button_size},
-            "Chams": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "Glow": {"type": "button", "pos": (0, 0), "size": button_size},
-                "Color": {"type": "colorPicker", "pos": (0, 0), "size": (100, 100)},
-                "Color1": {"type": "colorPicker", "pos": (110, -30), "size": (100, 100)}
-            }},
-            "NoFlash": {"type": "button", "pos": (0, 0), "size": button_size},
-            "FOV": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "Hands": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 70, "end": 170},
-                "Fov": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 70, "end": 170},
-                "Reset FOV": {"type": "button", "pos": (0, 0), "size": button_size},
-            }},
-            "3D Person": {"type": "button", "pos": (0, 0), "size": button_size},
-            "Grenade Prediction": {"type": "button", "pos": (0, 0), "size": button_size},
-            "Night Mode": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "Brightness": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 1, "end": 200},
-            }},
-            "No Smoke": {"type": "button", "pos": (0, 0), "size": button_size},
-            "ShowFPS": {"type": "button", "pos": (0, 0), "size": button_size},
-
-
-        }},
-        "Combat": {"type": "FirstLevelButton", "picture": aimbotpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
-            "AimBot": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "Enemies": {"type": "button", "pos": (0, 0), "size": button_size},
-                "Team": {"type": "button", "pos": (0, 0), "size": button_size},
-                "Markplayer": {"type": "button", "pos": (0, 0), "size": button_size},
-                "AimFOV": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 1, "end": 90},
-                "Smooth": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 0, "end": 100},
-                "Overaim": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 0, "end": 20},
-                "Selector": {"type": "selector", "pos": (0, 20), "size": button_size, "array": ["Head", "Chest", "Stomach"]},
-                "Selector1": {"type": "selector", "pos": (90, -10), "size": button_size, "array": ["Crosshair", "Distance"]},
-                "Multipoint": {"type": "button", "pos": (90, -240), "size": button_size},
-            }},
-            "TriggerBot": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "Highacc": {"type": "button", "pos": (0, 0), "size": button_size},
-                "MaxSpeed": {"type": "slider", "pos": (0, 15), "size": slider_size, "start": 0, "end": 300},
-
-                "OnPress": {"type": "button", "pos": (0, 8), "size": button_size},
-                "Enemies": {"type": "button", "pos": (0, 8), "size": button_size},
-                "Team": {"type": "button", "pos": (0, 8), "size": button_size},
-                "Humanizer": {"type": "slider", "pos": (0, 23), "size": slider_size, "start": 0, "end": 100},
-                # PercentChance
-                "Delay": {"type": "slider", "pos": (0, 20), "size": slider_size, "start": 0, "end": 1000},
-                # milliseconds
-            }},
-            "Recoil": {"type": "button", "pos": (0, 0), "size": button_size},
-            "RapidFire": {"type": "button", "pos": (0, 0), "size": button_size},
-            "FastPeek": {"type": "button", "pos": (0, 0), "size": button_size}
-        }},
-        "Misc": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
-            "SkinChange": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "Skin name": {"type": "searchbox", "pos": (0, 0), "size": button_size, "array": getskins()},
-                "Weapon": {"type": "searchbox", "pos": (110, -30), "size": button_size, "array": getweapons()[1]},
-                "Update": {"type": "button", "pos": (0, -110), "size": button_size},
-            }},
-
-            "ToxicChat": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "KillCounter": {"type": "button", "pos": (0, 0), "size": button_size},
-                "AfterKill": {"type": "button", "pos": (0, 0), "size": button_size},
-                "Spam": {"type": "button", "pos": (0, 0), "size": button_size},
-
-            }},
-
-            "Sound": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "OnHit": {"type": "button", "pos": (0, 0), "size": button_size},
-                "OnKill": {"type": "button", "pos": (0, 0), "size": button_size},
-                "SelectSound": {"type": "selector", "pos": (0, 0), "size": button_size,
-                             "array": ["Neverlose", "Bell", "Cod", "Fatality"]},
-            }},
-            "FakeLag": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "DelayStart": {"type": "slider", "pos": (0, 10), "size": slider_size, "start": 10, "end": 100},
-                # milliseconds
-                "DelayBetween": {"type": "slider", "pos": (0, 17), "size": slider_size, "start": 10, "end": 300},
-                # milliseconds
-            }},
-            "Teleport": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "DelayStart": {"type": "slider", "pos": (0, 10), "size": slider_size, "start": 0, "end": 5000},
-                # milliseconds
-                "DelayBetween": {"type": "slider", "pos": (0, 17), "size": slider_size, "start": 0, "end": 800},
-                # milliseconds
-            }},
-            "BunnyHop": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "AutoStrafe": {"type": "button", "pos": (0, 0), "size": button_size},
-            }},
-            "Slowwalk": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                "Speed": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 0, "end": 200},
-            }},
-            "ForceCrosshair": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
-            "ClanTag": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
-
-        }},
-        "Scripts": {"type": "FirstLevelButton", "picture": scriptspng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
-            "Load": {"type": "scriptmanager", "pos": (0, 0), "size": (290, 335)},
-
-        }},
-        "Config": {"type": "FirstLevelButton", "picture": configpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
-            "Load": {"type": "button", "pos": (0, 0), "size": button_size},
-            "Save": {"type": "button", "pos": (0, 0), "size": button_size},
-            "ConfigSelector": {"type": "selector", "pos": (0, 0), "size": button_size,
-                               "array": ["Custom", "Rage", "Semi", "Legit", "Dev"]},
-        }},
-        "Settings": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size, "dependencies": {
-            "Transparency": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 50, "end": 255},
-            "Change Transparency": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
-            "Highlight": {"type": "colorPicker", "pos": (0, 0), "size": (100, 100)},
-            "Colorstyle": {"type": "colorPicker", "pos": (110, -30), "size": (100, 100)},
-        }},
-        # "Reset": {"pos": (0, 0), "size": button_size}
-        "End": {"type": "end"}
-    }
-
-    def iterateThroughButtonDependencies(object_name, object_dependencies, start_pos_dependencies):
-
-        objects = {}
-        for object_name, object_props in object_dependencies.items():
-            if object_props["type"] == "button":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.Button((pos_x, pos_y), object_props["size"], object_name)
-                start_pos_dependencies[1] += gap_y
-
-            elif object_props["type"] == "selector":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.Selector((pos_x, pos_y), object_props["size"], object_name, object_props["array"])
-                start_pos_dependencies[1] += gap_y
-
-            elif object_props["type"] == "slider":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.Slider((pos_x, pos_y), object_props["size"], object_name, object_props["start"],
-                                     object_props["end"])
-                start_pos_dependencies[1] += gap_y
-
-            elif object_props["type"] == "colorPickerButton":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.ColorPickerButton((pos_x, pos_y), object_props["size"], object_name, (255, 255, 255),
-                                                (20, 20, 20))
-                start_pos_dependencies[1] += gap_y
-
-            elif object_props["type"] == "checkbox":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.Checkbox((pos_x, pos_y), object_props["size"], object_name, (255, 255, 255))
-                start_pos_dependencies[1] += gap_y
-
-
-            elif object_props["type"] == "colorPicker":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.ColorPicker((pos_x, pos_y), object_props["size"], object_name)
-                start_pos_dependencies[1] += gap_y
-
-            elif object_props["type"] == "searchbox":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.Searchbox((pos_x, pos_y), object_props["size"], object_name, object_props["array"])
-                start_pos_dependencies[1] += gap_y
-
-            elif object_props["type"] == "scriptmanager":
-                pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                _object = gui.ScriptManager((pos_x, pos_y), object_props["size"])
-                start_pos_dependencies[1] += gap_y
-
-            elif object_props["type"] == "end":
-                continue
-
-            if "dependencies" in object_props:
-                _start_pos_for_dependencies = [start_pos_dependencies[0] + gap_x, start_pos_dependencies[1] - gap_y]
-                dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"],
-                                                                _start_pos_for_dependencies)
-
-            else:
-                dependencies = None
-            objects[object_name] = [_object, dependencies]
-        start_pos_dependencies[0] += gap_x
-
-        return objects
-
-    buttons = {}
-    pos = [10, 60]
-    gap_y = button_size[1] + 5
-    gap_x = button_size[0] + 10
-
-    gap_y_first_level_btn = firstlvlbutton_size[1] + 5
-
-    start_pos = [pos[0], pos[1]]
-    start_pos_default = [pos[0], pos[1]]
-
-    for object_name, object_props in buttons_grid.items():
-        if object_props["type"] == "FirstLevelButton":
-            pos_x = object_props["pos"][0] + start_pos[0]
-            pos_y = object_props["pos"][1] + start_pos[1]
-            _object = gui.FirstLevelButton(object_props["picture"], (pos_x, pos_y), object_props["size"], object_name)
-
-        if object_props["type"] == "end":
-            break
-
-        if "dependencies" in object_props:
-            start_pos_for_dependencies = [pos_x + gap_x, start_pos_default[1]]
-            dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"], start_pos_for_dependencies)
-        else:
-            dependencies = None
-
-        buttons[object_name] = [_object, dependencies]
-        start_pos[1] += gap_y_first_level_btn
-
-    return buttons_grid, buttons
 
 def getActiveModules(buttons):
     row = []
@@ -309,14 +27,36 @@ def getActiveModules(buttons):
 
     return row
 
-def gui_updater(buttons_grid, buttons):
 
+gui_program_frames = 0
+gui_program_frames_sum = 0
+gui_program_count_seconds = 0
+gui_program_start_time = -1
+
+def showGUIFPSFunc(fps):
+    global gui_program_frames, gui_program_start_time, gui_program_count_seconds, gui_program_frames_sum
+
+    gui_program_frames += 1
+    if gui_program_start_time + 1 < time.time():
+        gui_program_frames_old = gui_program_frames
+        gui_program_start_time = time.time()
+        gui_program_frames_sum += gui_program_frames
+        gui_program_frames = 0
+        gui_program_count_seconds += 1
+        gui_program_avg_fps = int(gui_program_frames_sum / gui_program_count_seconds)
+
+        logIt(
+            f"GUI_FPS: {Fore.LIGHTBLUE_EX}{gui_program_frames_old}{Style.RESET_ALL} AVG_GUI_FPS: {Fore.LIGHTBLUE_EX}{gui_program_avg_fps}{Style.RESET_ALL} CLOCK_FPS: {Fore.LIGHTBLUE_EX}{fps}{Style.RESET_ALL}",
+            type="GUI_FPS")
+
+
+def gui_updater(buttons_grid, buttons):
     global login_success, csgo_started, is_loading
 
     login_screen_size = (410, 220)
     screen_size = (410, 410)
     screen = Initscreen(resolution=login_screen_size)
-    window = gui.Window(screen_size, [10, 10], screen) # login window
+    window = gui.Window(screen_size, [10, 10], screen)  # login window
 
     clock = pygame.time.Clock()
 
@@ -417,7 +157,7 @@ def gui_updater(buttons_grid, buttons):
             if pygame.display.get_window_size() == login_screen_size:
                 is_login_screen = False
                 screen = Initscreen(resolution=screen_size)
-                window = gui.Window(screen_size, (10, 10), screen) # normal gui
+                window = gui.Window(screen_size, (10, 10), screen)  # normal gui
                 clock = pygame.time.Clock()
 
                 Displayer = LogoDisplayer(screen)
@@ -425,33 +165,37 @@ def gui_updater(buttons_grid, buttons):
             LogoDisplayer.Update(Displayer)
 
         if showGUIFPS:
-            print(clock.get_fps())
+            showGUIFPSFunc(int(clock.get_fps()))
 
         gui.Refreshscreen()
         clock.tick(60)
 
 
-Frames = 0
-Frames_sum = 0
-count_seconds = 0
-starttime = time.time()
-
+main_program_frames = 0
+main_program_frames_sum = 0
+main_program_count_seconds = 0
+main_program_start_time = -1
 
 def ExecutionsCounter():
-    global Frames, starttime, count_seconds, Frames_sum
+    global main_program_frames, main_program_start_time, main_program_count_seconds, main_program_frames_sum
 
-    Frames += 1
-    if starttime + 1 < time.time():
-        starttime = time.time()
-        print("IC:", Frames, end=" ")
-        Frames_sum += Frames
-        Frames = 0
-        count_seconds += 1
-        print("Avg IC:", int(Frames_sum / count_seconds))
+    main_program_frames += 1
+    if main_program_start_time + 1 < time.time():
+        main_program_frames_old = main_program_frames
+        main_program_start_time = time.time()
+        main_program_frames_sum += main_program_frames
+        main_program_frames = 0
+        main_program_count_seconds += 1
+        main_program_avg_fps = int(main_program_frames_sum / main_program_count_seconds)
+
+        logIt(
+            f"IC: {Fore.LIGHTBLUE_EX}{main_program_frames_old}{Style.RESET_ALL} AVG_IC: {Fore.LIGHTBLUE_EX}{main_program_avg_fps}{Style.RESET_ALL}",
+            type="IC")
+
 
 def loginAndGUI():
-
-    buttons_grid, buttons = Buttons()
+    buttons_class = gui.Buttons()
+    buttons_grid, buttons = buttons_class.buttons_grid, buttons_class.buttons
     start_new_thread(gui_updater, (buttons_grid, buttons,))
 
     time_to_wait = time.time()
@@ -462,69 +206,73 @@ def loginAndGUI():
         else:
             return True, buttons
 
-def main_init():
 
+def main_init():
     global csgo_started, login
 
     if login:
 
         pm = 0
         time_to_wait = time.time()
+        logIt(f"{Fore.GREEN}Logged in, starting CS:GO...{Style.RESET_ALL}", type="START")
+
         while 1:
 
             if time_to_wait + 5 < time.time():
-                print("Trying to detect")
+                logIt("Trying to detect", type="START")
                 time_to_wait = time.time()
                 try:
                     pm = pymem.Pymem("csgo.exe")
 
                 except Exception as _ex:
                     if str(_ex) == "Could not find process: csgo.exe":
-                        print("csgo_started - ", csgo_started)
-                        startcsgo.Launcher(False, False)
-
+                        logIt(f"csgo_started - {csgo_started}", type="WARNING")
+                        Startcsgo.Launcher(False, False)
 
             if pm:
                 break
         try:
             if pm:
-                print("CS:GO Detected")
+                logIt("CS:GO Detected", type="START")
 
             client = pymem.process.module_from_name(pm.process_handle, "client.dll").lpBaseOfDll
             if client:
-                print("Window detected correctly")
+                logIt("Window detected correctly", type="START")
             engine = pymem.process.module_from_name(pm.process_handle, "engine.dll").lpBaseOfDll
             if engine:
-                print("Engine detected")
+                logIt("Engine detected", type="START")
             engine_pointer = pm.read_uint(engine + dwClientState)
-            print(client, engine, engine_pointer)
 
-            print("Checking offsets...")
-            print(updateOffsets())
+            logIt(f"{client, engine, engine_pointer}", type="START")
+
+            logIt("Checking offsets...")
+            logIt(updateOffsets(), type="START")
             print()
 
             if pm and client and engine and engine_pointer:
-                print("All detected correctly")
+                logIt(f"{Fore.GREEN}All detected correctly{Style.RESET_ALL}", type="START")
+
+                os.system("cls")
                 csgo_started = True
                 return (pm, client, engine, engine_pointer)
 
         except Exception as _ex:
             if str(_ex) == "Could not find process: csgo.exe":
-                print("Start CSGO!")
+                logIt("Start CSGO!", type="START")
                 return main_init()
             elif str(_ex) == "'NoneType' object has no attribute 'lpBaseOfDll'":
-                print("Waiting for CSGO to start")
+                logIt("Waiting for CSGO to start", type="START")
                 time.sleep(5)
                 return main_init()
             else:
-                print("Some problem: ", _ex)
+                logIt(f"Some problem: {_ex}", type="START")
 
     else:
-        print("Login failed")
+        logIt(f"{Fore.RED}Login failed{Style.RESET_ALL}", type="START")
         return (False, False, False, False)
 
-def main(pm, client, engine, engine_pointer, buttons):
 
+def main(pm, client, engine, engine_pointer, buttons):
     global csgo_started
 
     try:
@@ -544,10 +292,10 @@ def main(pm, client, engine, engine_pointer, buttons):
 
                 if ConfigSave:
                     time.sleep(0.1)
-                    from Modules.ConfigManager import SaveConfig
+
                     Configname = buttons["Config"][1]["ConfigSelector"][0].array[
                         buttons["Config"][1]["ConfigSelector"][0].selected]
-                    SaveConfig(buttons, str(Configname))
+                    ConfigManager.SaveConfig(buttons, str(Configname))
                     buttons["Config"][1]["Save"][0].State = 0
 
                 if ConfigLoad == True:
@@ -634,13 +382,13 @@ def main(pm, client, engine, engine_pointer, buttons):
 
             except Exception as _ex:
                 if str(_ex) == "Could not find process: csgo.exe":
-                    print("Start CSGO!")
+                    logIt("Start CSGO!", type="START")
                 elif str(_ex) == "'NoneType' object has no attribute 'lpBaseOfDll'":
-                    print("Waiting for CSGO starting")
+                    logIt("Waiting for CSGO starting", type="START")
                     time.sleep(5)
                     main_init()
                 else:
-                    print("Some problem: ", _ex)
+                    logIt(f"Some problem: {_ex}", type="START")
 
             try:
 
@@ -660,8 +408,6 @@ def main(pm, client, engine, engine_pointer, buttons):
 
                     # Misc.RoundStart(pm, client)
 
-
-
                     # night mode
                     # night_mode_btn = buttons["Visuals"][1]["Night Mode"][0].State
                     # if night_mode_btn:
@@ -672,14 +418,13 @@ def main(pm, client, engine, engine_pointer, buttons):
                     # if no_smoke_btn:
                     #     Misc.NoSmoke(pm, client)
 
-
                     # grenade preview and showfps
                     # grenade_preview_btn = buttons["Visuals"][1]["Grenade Prediction"][0].State
                     # Misc.GrenadePrediction(grenade_preview_btn, pm)
                     # show_fps = buttons["Visuals"][1]["ShowFPS"][0].State
                     # Misc.ShowFPS(show_fps, pm)
-                    Misc.ChangeSky(buttons["Visuals"][1]["Sky"][1]["skySelector"][0].array[buttons["Visuals"][1]["Sky"][1]["skySelector"][0].selected], pm)
-
+                    Misc.ChangeSky(buttons["Visuals"][1]["Sky"][1]["skySelector"][0].array[
+                                       buttons["Visuals"][1]["Sky"][1]["skySelector"][0].selected], pm)
 
                     # GlowESP
                     if ESP_btn:
@@ -726,8 +471,9 @@ def main(pm, client, engine, engine_pointer, buttons):
 
                     # Thirdperson
 
-                    Trdperson_btn = buttons["Visuals"][1]["3D Person"][0].State
-                    Thirdperson.ThirdpersonFunction(Trdperson_btn, pm, client)
+                    Thirdperson_btn = buttons["Visuals"][1]["3D Person"][0].State
+                    if Thirdperson_btn:
+                        Thirdperson.ThirdpersonFunction(localplayer, pm, client)
 
                     # bhop
 
@@ -768,7 +514,8 @@ def main(pm, client, engine, engine_pointer, buttons):
                         aimbot_enemies = buttons["Combat"][1]["AimBot"][1]["Enemies"][0].State
                         aimbot_team = buttons["Combat"][1]["AimBot"][1]["Team"][0].State
                         aimbot_markplayer = buttons["Combat"][1]["AimBot"][1]["Markplayer"][0].State
-                        aimbot_distance = buttons["Combat"][1]["AimBot"][1]["Selector1"][0].array[buttons["Combat"][1]["AimBot"][1]["Selector1"][0].selected]
+                        aimbot_distance = buttons["Combat"][1]["AimBot"][1]["Selector1"][0].array[
+                            buttons["Combat"][1]["AimBot"][1]["Selector1"][0].selected]
                         aimbot_fov = buttons["Combat"][1]["AimBot"][1]["AimFOV"][0].VisualState
                         aimbot_smooth = buttons["Combat"][1]["AimBot"][1]["Smooth"][0].VisualState
                         aimbot_overaim = buttons["Combat"][1]["AimBot"][1]["Overaim"][0].VisualState
@@ -796,6 +543,10 @@ def main(pm, client, engine, engine_pointer, buttons):
                     if buttons["Misc"][1]["ClanTag"][0].clicked:
                         Misc.ChangeClanTag(localplayer, pm, engine, engine_pointer, client)
 
+                    if buttons["Misc"][1]["DevCommands"][0].State:
+                        Misc.devCommands()
+                        print("set dev commands")
+
                     fakelag_btn = buttons["Misc"][1]["FakeLag"][0].State
                     if fakelag_btn:
                         fakelag_delaystart = buttons["Misc"][1]["FakeLag"][1]["DelayStart"][0].VisualState
@@ -815,34 +566,36 @@ def main(pm, client, engine, engine_pointer, buttons):
                             round_started = False
                         toxicchat_kill = buttons["Misc"][1]["ToxicChat"][1]["AfterKill"][0].State
                         toxicchat_spam = buttons["Misc"][1]["ToxicChat"][1]["Spam"][0].State
-                        ToxicChat.ToxicChat(entities, toxicchat_killscounter, round_started, toxicchat_kill, toxicchat_spam, pm, client, localplayer, localteam)
-
+                        ToxicChat.ToxicChat(entities, toxicchat_killscounter, round_started, toxicchat_kill,
+                                            toxicchat_spam, pm, client, localplayer, localteam)
 
                     if buttons["Misc"][1]["Sound"][0].State:
                         on_kill = buttons["Misc"][1]["Sound"][1]["OnKill"][0].State
                         on_hit = buttons["Misc"][1]["Sound"][1]["OnHit"][0].State
-                        sound_name = buttons["Misc"][1]["Sound"][1]["SelectSound"][0].array[buttons["Misc"][1]["Sound"][1]["SelectSound"][0].selected]
-                        hitsound.playsound(entities, pm, client, localplayer, localteam, sound_name, on_kill, on_hit)
+                        sound_name = buttons["Misc"][1]["Sound"][1]["SelectSound"][0].array[
+                            buttons["Misc"][1]["Sound"][1]["SelectSound"][0].selected]
+                        Hitsound.playsound(entities, pm, client, localplayer, localteam, sound_name, on_kill, on_hit)
 
 
 
 
             except Exception as _ex:
                 if str(_ex) == "Could not find process: csgo.exe":
-                    print("Start CSGO!")
+                    logIt("Start CSGO!")
                     main_init()
                 elif str(_ex) == "'NoneType' object has no attribute 'lpBaseOfDll'":
-                    print("Waiting for CSGO starting")
+                    logIt("Waiting for CSGO starting")
                     time.sleep(15)
                     main_init()
                 else:
-                    print("Some error: ", _ex)
+                    logIt(f"Some error: {_ex}", type="START")
+
 
     except Exception as _ex:
         if str(_ex) == "Could not find process: csgo.exe":
             main_init()
         elif str(_ex) == "'NoneType' object has no attribute 'lpBaseOfDll'":
-            print("Waiting for CS:GO starting")
+            logIt("Waiting for CS:GO starting")
             time.sleep(15)
             main_init()
         else:
@@ -850,27 +603,60 @@ def main(pm, client, engine, engine_pointer, buttons):
             if "Could not open process" in str(_ex):
                 error_word_list = str(_ex).split(" ")
                 if int(error_word_list[len(error_word_list) - 1]) > 1:
-                    print("Make function to restart steam")
+                    logIt("Make function to restart steam", type="DEBUG")
 
-            print("other error")
-            print("Some error: ", _ex)
+            logIt("other error")
+            logIt("Some error: ", _ex)
+
             main_init()
 
-def mainOrder():
 
+def mainOrder():
     global login
 
-    print("there")
     login, buttons = loginAndGUI()
-    print("here")
+    logIt(f"{Fore.GREEN}Logged in, starting cheat...{Style.RESET_ALL}", type="START")
+    os.system("cls")
+
     pm, client, engine, engine_pointer = main_init()
     if pm and client and engine and engine_pointer:
         main(pm, client, engine, engine_pointer, buttons)
 
     else:
-        print("state 1 occured!!!!!!! (search for it in main file)")
+        logIt("state 1 occured!!!!!!! (search for it in main file)")  # i dont think it has ever occured
         pm, client, engine, engine_pointer = main_init()
         main(pm, client, engine, engine_pointer, buttons)
 
+
 if __name__ == "__main__":
+    if needAdmin:
+        from Modules import utils
+
+        utils.requestAdminRights()
+
+    from Modules import Installer
+
+    Installer.installerfunction()
+
+    import os
+    import pygame.time
+    import pymem
+    import pymem.process
+    import time
+    from _thread import start_new_thread
+    from colorama import Fore
+    from colorama import Style
+
+    from Modules import Aimbot, BHOP, ChamsFunction, ConfigManager, EntitiesIterator, FakeLag, FastPeek, FovFunction, \
+        GlowESP, Hitsound, Installer, Misc, NoFlashFunction, RadarFunction, RecoilSystem, Slowwalk, Startcsgo, Teleport, \
+        Thirdperson, ToxicChat, Triggerbot, utils
+
+    from Offsets.offsets import *
+
+    from Modules.logIt import logIt
+    from Modules.gui import gui
+    from Modules.gui.gui import Initscreen
+    from Modules.gui.gui import LogoDisplayer
+    from Offsets.Updater import updateOffsets
+
     mainOrder()

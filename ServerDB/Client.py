@@ -36,7 +36,6 @@ def FetchUserTimeLicenseExpire(login_hashed):
     sock.recv(1)
 
     UserTimeLicenseExpire = sock.recv(1024)
-    print(UserTimeLicenseExpire)
     sock.close()
 
     return str(UserTimeLicenseExpire)[2:-1]
