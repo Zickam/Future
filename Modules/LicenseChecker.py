@@ -87,7 +87,6 @@ def CheckValid():
     for element in web_helpers_list:
         unixtime = os.stat(findLoginUsers()).st_mtime
         steamuptime = str(psutil.Process(element)).split("started='")[1].replace("')", "")
-
         if str(steamuptime) == str(time.strftime('%H:%M:%S', time.localtime(unixtime))):
             Passed = True
 

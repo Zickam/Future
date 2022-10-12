@@ -1137,217 +1137,224 @@ class Loading():
             self.X1 = 0
             self.X2 = 0
 
-class LoginScreen():
-    def __init__(self):
+class LoginScreen:
+    def __init__(self, serverisonline):
 
-        self.state = False
-
-        self.FLogo = pygame.image.load("Data/Images/Original.png")
         self.res = (410, 220)
-        self.textfield_size = (300, 30)
-        self.textfield_posz = 20
-        self.submit_button_size = (100, 26)
-        self.submit_button_posz = 190
-
-
-        self.time_wait_before_steam_starts = 20
-        self.time_login_inited = time.time()
-
-        self.CORRECT = "dev"  # password
-        self.INCORRECT = False
-
-        self.link = "https://google.de"
-        self.clicked = False
-        self.Delaytime = time.time()
-        self.Caretshow = True
-
-        self.textstop = False
-        self.text = ""
-
-        self.drawloginscreen = True
-        self.loadingstate = 0
-        self.request_time = time.time()
-        self.correct_pass = False
-
+        self.serverisonline = serverisonline
+        self.FLogo = pygame.image.load("Data/Images/Original.png")
         self.account_name = GetActiveAccount()
-        self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
 
-        self.correct_acc = CheckIfUserExists(Generator(self.account_name))
-        if self.correct_acc:
-            self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
+        if serverisonline == True:
 
-        license_path = ""
-        license_path = license_path + os.path.dirname(os.path.abspath(__file__))
-        # reformat
-        license_path_list = license_path.split("""\\""")
-        license_path_list.remove("Modules")
-        license_path = ""
-        for element in license_path_list:
-            license_path = license_path + str(element) + "\\"
+            self.state = False
 
-        self.count_web_helpers = len(GetWebHelpersList())
-        self.loadingscreen = Loading()
-        self.loading = False
-        self.Loaded = False
+            self.textfield_size = (300, 30)
+            self.textfield_posz = 20
+            self.submit_button_size = (100, 26)
+            self.submit_button_posz = 190
 
-        self.expire_timestamp = int(FetchUserTimeLicenseExpire(Generator(self.account_name)))
-        self.expire_date = str(datetime.datetime.fromtimestamp(self.expire_timestamp)).split(" ")
 
-        self.enterpressed = False
+            self.time_wait_before_steam_starts = 20
+            self.time_login_inited = time.time()
 
-        self.restarted_steam = False
+            self.CORRECT = "dev"  # password
+            self.INCORRECT = False
+
+            self.link = "https://google.de"
+            self.clicked = False
+            self.Delaytime = time.time()
+            self.Caretshow = True
+
+            self.textstop = False
+            self.text = ""
+
+            self.drawloginscreen = True
+            self.loadingstate = 0
+            self.request_time = time.time()
+            self.correct_pass = False
+
+            self.account_name = GetActiveAccount()
+            self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
+
+            self.correct_acc = CheckIfUserExists(Generator(self.account_name))
+            if self.correct_acc:
+                self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
+
+            license_path = ""
+            license_path = license_path + os.path.dirname(os.path.abspath(__file__))
+            # reformat
+            license_path_list = license_path.split("""\\""")
+            license_path_list.remove("Modules")
+            license_path = ""
+            for element in license_path_list:
+                license_path = license_path + str(element) + "\\"
+
+            self.count_web_helpers = len(GetWebHelpersList())
+            self.loadingscreen = Loading()
+            self.loading = False
+            self.Loaded = False
+
+            self.expire_timestamp = int(FetchUserTimeLicenseExpire(Generator(self.account_name)))
+            self.expire_date = str(datetime.datetime.fromtimestamp(self.expire_timestamp)).split(" ")
+
+            self.enterpressed = False
+
+            self.restarted_steam = False
 
 
     def Update(self, screenres, screen, is_loading, keyevent):
+        if self.serverisonline == True:
+            if is_loading:
+                self.loading = True
+                self.Loaded = True
+            else:
+                self.loading = False
+                if self.Loaded == True:
+                    self.drawloginscreen = False
 
-        if is_loading:
-            self.loading = True
-            self.Loaded = True
-        else:
-            self.loading = False
-            if self.Loaded == True:
-                self.drawloginscreen = False
+            if is_loading and self.time_login_inited + self.time_wait_before_steam_starts < time.time() and self.count_web_helpers < 8:
+                self.loading = True
+                self.count_web_helpers = len(GetWebHelpersList())
+                self.time_login_inited = time.time()
 
-        if is_loading and self.time_login_inited + self.time_wait_before_steam_starts < time.time() and self.count_web_helpers < 8:
-            self.loading = True
-            self.count_web_helpers = len(GetWebHelpersList())
-            self.time_login_inited = time.time()
+            if not self.license_is_valid:
+                self.correct_acc = False
 
-        if not self.license_is_valid:
-            self.correct_acc = False
+            if self.correct_acc == True:
+                if self.drawloginscreen == True:
+                    if self.loading == False:
+                        self.account_name = GetActiveAccount()
 
-        if self.correct_acc == True:
-            if self.drawloginscreen == True:
-                if self.loading == False:
-                    self.account_name = GetActiveAccount()
+                    pygame.draw.rect(screen, Colors.Background, (0, 0, self.res[0], self.res[1]))
+                    scaledLogo = pygame.transform.scale(self.FLogo, (40, 60))
+                    screen.blit(scaledLogo, (self.res[0] / 2 - scaledLogo.get_width() / 2, 10))
 
+                    pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.textfield_size[0] / 2,self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz, self.textfield_size[0],self.textfield_size[1]))
+                    pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.textfield_size[0] / 2,2 + self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz,-4 + self.textfield_size[0], -4 + self.textfield_size[1]))
+
+                    mousepos = pygame.mouse.get_pos()
+
+                    if pygame.mouse.get_pressed()[0] == True and self.Delaytime < time.time():
+                        if mousepos[0] > self.res[0] / 2 - self.textfield_size[0] / 2 and mousepos[0] < self.res[0] / 2 - self.textfield_size[0] / 2 + self.textfield_size[0]:
+                            if mousepos[1] > self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz and mousepos[1] < self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_size[1] + self.textfield_posz:
+                                self.clicked = True
+                                self.Delaytime = time.time() + 0.5
+                            else:
+                                self.clicked = False
+                                self.Delaytime = time.time() + 0.5
+
+                    if self.clicked == True and not self.loading:
+                        if self.Delaytime + 0.5 < time.time():
+                            self.Delaytime = time.time()
+                            self.Caretshow = not self.Caretshow
+
+                    if self.clicked == True and self.loading == False:
+                        for event in keyevent:
+                            if event.type == pygame.KEYDOWN:
+                                if event.key == pygame.K_BACKSPACE:
+                                    self.text = self.text[:-1]
+                                elif event.key != pygame.K_BACKSPACE and event.key != pygame.K_RETURN:
+                                    self.text += event.unicode
+
+                                if event.key == pygame.K_RETURN:
+                                    self.enterpressed = True
+
+                    TextFont = Colors.FontBig.render(str(self.text.upper()), True, Colors.TextColor)
+                    screen.blit(TextFont, (self.res[0] / 2 - self.textfield_size[0] / 2 + 2,self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz))
+
+                    if self.Caretshow and self.clicked == True:
+                        pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.textfield_size[0] / 2 + 5 + TextFont.get_rect()[2],self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz, 2, 24))
+
+                    SubmitFont = Colors.FontBig.render("Submit", True, Colors.TextColor)
+                    pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.submit_button_size[0] / 2,self.submit_button_posz - self.submit_button_size[1] / 2, self.submit_button_size[0],self.submit_button_size[1]))
+                    pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.submit_button_size[0] / 2,2 + self.submit_button_posz - self.submit_button_size[1] / 2, -4 + self.submit_button_size[0],-4 + self.submit_button_size[1]))
+                    screen.blit(SubmitFont, (self.res[0] / 2 - SubmitFont.get_size()[0] / 2, self.submit_button_posz - SubmitFont.get_size()[1] / 2))
+
+                    steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
+                    screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
+
+                    if datetime.datetime.now().timestamp() < self.expire_timestamp:
+                        TextFont = Colors.FontBig.render(self.expire_date[0], True, (100, 200, 100))
+                    else:
+                        TextFont = Colors.FontBig.render(self.expire_date[0], True, (200, 100, 100))
+                    screen.blit(TextFont, (screenres[0] - TextFont.get_size()[0] - 10, 10))
+
+                    if mousepos[0] > self.res[0] / 2 - self.submit_button_size[0] / 2 and mousepos[0] < self.res[0] / 2 + self.submit_button_size[0] / 2 or self.enterpressed:
+                        if mousepos[1] > self.submit_button_posz - self.submit_button_size[1] / 2 and mousepos[1] < self.submit_button_posz + self.submit_button_size[1] / 2 or self.enterpressed:
+                            if pygame.mouse.get_pressed()[0] == True or self.enterpressed:
+                                if not self.loading:
+                                    self.loading = True
+
+                                    if self.request_time + 0.01 < time.time():
+
+                                        self.correct_acc_local = CheckValid()
+
+                                        self.correct_acc = CheckIfUserExists(Generator(self.account_name))
+                                        if self.correct_acc and self.correct_acc_local:
+                                            self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
+                                            self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
+
+                                    self.request_time = time.time()
+
+                                    if self.correct_pass and self.correct_acc and self.correct_acc_local and self.license_is_valid:
+                                        self.state = True
+
+                                    else:
+                                        self.loading = False
+                                        self.INCORRECT = True
+                                        self.IncorrectDelay = time.time()
+                                        self.enterpressed = False
+
+                    if self.INCORRECT == True and self.correct_acc:
+                        if self.restarted_steam == False:
+                            Startcsgo.RestartSteam()
+                            self.restarted_steam = True
+                        if self.IncorrectDelay + 1 < time.time():
+                            self.INCORRECT = False
+                        if self.correct_acc_local == False:
+                            errorfont = Colors.FontBig.render("Invalid Account", True, (255, 100, 100))
+                            screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
+                        else:
+                            errorfont = Colors.FontBig.render("Incorrect Password", True, (255, 100, 100))
+                            screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
+
+                self.loadingscreen.Update(screen, self.loading)
+            else:
+                self.loading = False
                 pygame.draw.rect(screen, Colors.Background, (0, 0, self.res[0], self.res[1]))
                 scaledLogo = pygame.transform.scale(self.FLogo, (40, 60))
                 screen.blit(scaledLogo, (self.res[0] / 2 - scaledLogo.get_width() / 2, 10))
-
-                pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.textfield_size[0] / 2,self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz, self.textfield_size[0],self.textfield_size[1]))
-                pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.textfield_size[0] / 2,2 + self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz,-4 + self.textfield_size[0], -4 + self.textfield_size[1]))
+                steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
+                screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
+                font = Colors.FontBig.render("Buy a Subscription!", True, (100, 255, 100))
+                screen.blit(font, (self.res[0] / 2 - font.get_size()[0] / 2, self.submit_button_posz - font.get_size()[1] / 2 - 60))
 
                 mousepos = pygame.mouse.get_pos()
 
-                if pygame.mouse.get_pressed()[0] == True and self.Delaytime < time.time():
-                    if mousepos[0] > self.res[0] / 2 - self.textfield_size[0] / 2 and mousepos[0] < self.res[0] / 2 - self.textfield_size[0] / 2 + self.textfield_size[0]:
-                        if mousepos[1] > self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz and mousepos[1] < self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_size[1] + self.textfield_posz:
-                            self.clicked = True
-                            self.Delaytime = time.time() + 0.5
-                        else:
-                            self.clicked = False
-                            self.Delaytime = time.time() + 0.5
+                link = Colors.FontBig.render(str(self.link), True, (42, 129, 233))
 
-                if self.clicked == True and not self.loading:
-                    if self.Delaytime + 0.5 < time.time():
-                        self.Delaytime = time.time()
-                        self.Caretshow = not self.Caretshow
+                if mousepos[0] > self.res[0] / 2 - link.get_size()[0] / 2 and mousepos[0] < self.res[0] / 2 + link.get_size()[0] / 2:
+                    if mousepos[1] > self.submit_button_posz - link.get_size()[1] / 2 - 30 and mousepos[1] < self.submit_button_posz + link.get_size()[1] / 2 - 30:
+                        if pygame.mouse.get_pressed()[0] and self.Delaytime + 0.3 < time.time():
+                            self.Delaytime = time.time()
+                            callcommand = "explorer " + str(self.link)
+                            subprocess.call(callcommand)
 
-                if self.clicked == True and self.loading == False:
-                    for event in keyevent:
-                        if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_BACKSPACE:
-                                self.text = self.text[:-1]
-                            elif event.key != pygame.K_BACKSPACE and event.key != pygame.K_RETURN:
-                                self.text += event.unicode
-
-                            if event.key == pygame.K_RETURN:
-                                self.enterpressed = True
-
-
-
-
-
-                TextFont = Colors.FontBig.render(str(self.text.upper()), True, Colors.TextColor)
-                screen.blit(TextFont, (self.res[0] / 2 - self.textfield_size[0] / 2 + 2,self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz))
-
-                if self.Caretshow and self.clicked == True:
-                    pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.textfield_size[0] / 2 + 5 + TextFont.get_rect()[2],self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz, 2, 24))
-
-                SubmitFont = Colors.FontBig.render("Submit", True, Colors.TextColor)
-                pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.submit_button_size[0] / 2,self.submit_button_posz - self.submit_button_size[1] / 2, self.submit_button_size[0],self.submit_button_size[1]))
-                pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.submit_button_size[0] / 2,2 + self.submit_button_posz - self.submit_button_size[1] / 2, -4 + self.submit_button_size[0],-4 + self.submit_button_size[1]))
-                screen.blit(SubmitFont, (self.res[0] / 2 - SubmitFont.get_size()[0] / 2, self.submit_button_posz - SubmitFont.get_size()[1] / 2))
-
-                steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
-                screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
-
-
-
-
-                if datetime.datetime.now().timestamp() < self.expire_timestamp:
-                    TextFont = Colors.FontBig.render(self.expire_date[0], True, (100, 200, 100))
-                else:
-                    TextFont = Colors.FontBig.render(self.expire_date[0], True, (200, 100, 100))
-                screen.blit(TextFont, (screenres[0] - TextFont.get_size()[0] - 10, 10))
-
-
-                if mousepos[0] > self.res[0] / 2 - self.submit_button_size[0] / 2 and mousepos[0] < self.res[0] / 2 + self.submit_button_size[0] / 2 or self.enterpressed:
-                    if mousepos[1] > self.submit_button_posz - self.submit_button_size[1] / 2 and mousepos[1] < self.submit_button_posz + self.submit_button_size[1] / 2 or self.enterpressed:
-                        if pygame.mouse.get_pressed()[0] == True or self.enterpressed:
-                            if not self.loading:
-                                self.loading = True
-
-                                if self.request_time + 0.01 < time.time():
-
-                                    self.correct_acc_local = CheckValid()
-
-                                    self.correct_acc = CheckIfUserExists(Generator(self.account_name))
-                                    if self.correct_acc and self.correct_acc_local:
-                                        self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
-                                        self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
-
-                                self.request_time = time.time()
-
-                                if self.correct_pass and self.correct_acc and self.correct_acc_local and self.license_is_valid:
-                                    self.state = True
-
-                                else:
-                                    self.loading = False
-                                    self.INCORRECT = True
-                                    self.IncorrectDelay = time.time()
-                                    self.enterpressed = False
-
-
-                if self.INCORRECT == True and self.correct_acc:
-                    if self.restarted_steam == False:
-                        Startcsgo.RestartSteam()
-                        self.restarted_steam = True
-                    if self.IncorrectDelay + 1 < time.time():
-                        self.INCORRECT = False
-                    if self.correct_acc_local == False:
-                        errorfont = Colors.FontBig.render("Invalid Account", True, (255, 100, 100))
-                        screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
-                    else:
-                        errorfont = Colors.FontBig.render("Incorrect Password", True, (255, 100, 100))
-                        screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
-
-            self.loadingscreen.Update(screen, self.loading)
+                screen.blit(link, (self.res[0] / 2 - link.get_size()[0] / 2, self.submit_button_posz - link.get_size()[1] / 2 - 30))
+            return self.state
         else:
-            self.loading = False
             pygame.draw.rect(screen, Colors.Background, (0, 0, self.res[0], self.res[1]))
+
+            sprite = Colors.FontBig.render("Database not available", True, (255, 100, 100))
+            screen.blit(sprite, (self.res[0] / 2 - sprite.get_size()[0] / 2, self.res[1] - sprite.get_size()[1] / 2 - 90))
+
             scaledLogo = pygame.transform.scale(self.FLogo, (40, 60))
             screen.blit(scaledLogo, (self.res[0] / 2 - scaledLogo.get_width() / 2, 10))
+
             steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
-            screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
-            font = Colors.FontBig.render("Buy a Subscription!", True, (100, 255, 100))
-            screen.blit(font, (self.res[0] / 2 - font.get_size()[0] / 2, self.submit_button_posz - font.get_size()[1] / 2 - 60))
+            screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.res[1] - steamname.get_size()[1] / 2 - 130))
 
-            mousepos = pygame.mouse.get_pos()
-
-            link = Colors.FontBig.render(str(self.link), True, (42, 129, 233))
-
-            if mousepos[0] > self.res[0] / 2 - link.get_size()[0] / 2 and mousepos[0] < self.res[0] / 2 + link.get_size()[0] / 2:
-                if mousepos[1] > self.submit_button_posz - link.get_size()[1] / 2 - 30 and mousepos[1] < self.submit_button_posz + link.get_size()[1] / 2 - 30:
-                    if pygame.mouse.get_pressed()[0] and self.Delaytime + 0.3 < time.time():
-                        self.Delaytime = time.time()
-                        callcommand = "explorer " + str(self.link)
-                        subprocess.call(callcommand)
-
-            screen.blit(link, (self.res[0] / 2 - link.get_size()[0] / 2, self.submit_button_posz - link.get_size()[1] / 2 - 30))
-
-        return self.state
 
 class ScriptManager:
     def __init__(self, pos, size):
