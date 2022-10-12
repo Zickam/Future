@@ -1,7 +1,9 @@
+import ServerDB.Client
+
 showCheatFPS = True
 showGUIFPS = True
 DEV = False
-needAdmin = True
+needAdmin = False
 login_success = False
 csgo_started = False
 login = False
@@ -60,8 +62,10 @@ def gui_updater(buttons_grid, buttons):
 
     clock = pygame.time.Clock()
 
-    LoginScreen = gui.LoginScreen()
+    LoginScreen = gui.LoginScreen(ServerDB.Client.CheckIfServerOnline())
     Displayer = LogoDisplayer(screen)
+
+
 
     is_login_screen = True
 
@@ -611,9 +615,11 @@ def main(pm, client, engine, engine_pointer, buttons):
             main_init()
 
 
+
 def mainOrder():
     global login
 
+    Startcsgo.Launcher(True, False)
     login, buttons = loginAndGUI()
     logIt(f"{Fore.GREEN}Logged in, starting cheat...{Style.RESET_ALL}", type="START")
     os.system("cls")
