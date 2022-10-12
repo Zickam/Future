@@ -6,6 +6,15 @@ import requests
 host = "185.87.51.106"
 port = 8001
 
+def CheckIfServerOnline():
+    try:
+        sock = socket.socket()
+        sock.connect((host, port))
+        return True
+    except TimeoutError:
+        return "error"
+    except ConnectionRefusedError:
+        return "error"
 
 def CurrentTime():
     return int(time.time())
@@ -25,7 +34,6 @@ def CheckIfUserExists(login_hashed):
         return True
 
     return False
-
 
 def FetchUserTimeLicenseExpire(login_hashed):
     sock = socket.socket()
@@ -55,7 +63,6 @@ def TimeZoneOffsetHours():
     hours_offset = int(hours_offset)
     return hours_offset
 
-
 def CurrentLocalTime():
     server_for_time = "https://just-the-time.appspot.com/"
     request = requests.get(server_for_time)
@@ -70,7 +77,6 @@ def CurrentLocalTime():
 
     return current_local_time
 
-
 def CheckIfUserLicenseIsValid(login_hashed):
     current_local_time = int(CurrentLocalTime())
     time_license_expire = int(FetchUserTimeLicenseExpire(login_hashed))
@@ -80,7 +86,6 @@ def CheckIfUserLicenseIsValid(login_hashed):
 
     else:
         return False
-
 
 def CheckIfPasswordIsCorrect(login_hashed, password_hashed):
     sock = socket.socket()
