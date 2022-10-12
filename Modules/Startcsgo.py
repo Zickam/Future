@@ -23,6 +23,40 @@ def GetActiveProcesses():
             break
     return steam, csgo, WindowList
 
+
+def steamWorks():
+    for process in psutil.process_iter():
+        if "steam.exe" in str(process.name):
+            return True
+
+    return False
+
+
+def csgoWorks():
+    for process in psutil.process_iter():
+        if "csgo.exe" in str(process.name):
+            return True
+
+    return False
+
+
+def csgoAndSteamWorks():
+    steam = False
+    csgo = False
+
+    for process in psutil.process_iter():
+        if "csgo.exe" in str(process.name):
+            csgo = True
+
+        elif "steam.exe" in str(process.name):
+            steam = True
+
+    if csgo and steam:
+        return True
+
+    return False
+
+
 def RestartSteam():
     for process in psutil.process_iter():
         if "steam.exe" in str(process.name):
@@ -31,15 +65,21 @@ def RestartSteam():
     letters = ("abcdefghijklmnopqrstuvwxyz")
     for letter in letters:
         if os.path.exists(letter + ":\\"):
-            os.startfile(os.path.abspath(os.path.join(str(letter.upper()) + ":\\Program Files (x86)\\Steam\\steam.exe")))
+            # restarted = os.startfile(os.path.abspath(os.path.join(str(letter.upper()) + ":\\Program Files (x86)\\Steam\\steam.exe")))
+            os.system('start "" "C:\Program Files (x86)\Steam\steam.exe"')
             print("Steam > restarted")
             break
+
 
 def StartSteam():
     letters = ("abcdefghijklmnopqrstuvwxyz")
     for letter in letters:
         if os.path.exists(letter + ":\\"):
-            os.startfile(os.path.abspath(os.path.join(str(letter.upper()) + ":\\Program Files (x86)\\Steam\\steam.exe")))
+            os.system('start "" "C:\Program Files (x86)\Steam\steam.exe"')
+            # started = os.startfile(
+            #     os.path.abspath(os.path.join(str(letter.upper()) + ":\\Program Files (x86)\\Steam\\steam.exe")))
+
+            print("Steam > started")
             break
 
 def Quit():
@@ -52,27 +92,48 @@ def Quit():
 CSGO = False
 Steam = False
 Steam_web_helper_count = 0
-def Launcher(restartsteam, quit, launchcsgo=True):
+def Launcher(restartsteam, clean_start, quit, loggedin, launchcsgo=True):
     global Steam, Steam_web_helper_count, CSGO
 
     if restartsteam == True:
         RestartSteam()
-        print("Restart")
+        print("Restart steam")
 
 
     if quit == True:
+        print("quitted by startcsgo.launcher")
         Quit()
+
+    elif clean_start:
+        Steam, CSGO, processlist = GetActiveProcesses()
+
+        if loggedin and not CSGO and Steam:
+            os.system('start steam://rungameid/730')
+            print("started csgo")
+
+        elif Steam and not CSGO:
+            print("gonna restart", Steam, CSGO)
+            RestartSteam()
+
+        elif not Steam and not CSGO and loggedin:
+            StartSteam()
+            os.system('start steam://rungameid/730')
+            print("started steam and csgo")
+
+
 
     elif restartsteam == False and quit == False:
 
         Steam, CSGO, processlist = GetActiveProcesses()
         if Steam == "":
             StartSteam()
+            print("started steam")
         else:
             print("Steam open")
 
         if CSGO == "":
-            subprocess.call('cmd /c start steam://rungameid/730')
+            os.system('start steam://rungameid/730')
+            print("started csgo")
         else:
             print("CSGO open")
 

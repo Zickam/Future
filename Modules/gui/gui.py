@@ -1147,6 +1147,19 @@ class LoginScreen:
 
         if serverisonline == True:
 
+            csgo_works = Startcsgo.csgoWorks()
+            steam_works = Startcsgo.steamWorks()
+
+            if not steam_works and not csgo_works:
+                Startcsgo.StartSteam()
+                while not Startcsgo.steamWorks():
+                    time.sleep(0.1)
+
+            elif steam_works and not csgo_works:
+                Startcsgo.RestartSteam()
+                while not Startcsgo.steamWorks():
+                    time.sleep(0.1)
+
             self.state = False
 
             self.textfield_size = (300, 30)
@@ -1288,7 +1301,11 @@ class LoginScreen:
 
                                     if self.request_time + 0.01 < time.time():
 
-                                        self.correct_acc_local = CheckValid()
+                                        if Startcsgo.csgoAndSteamWorks():
+                                            self.correct_acc_local = True
+
+                                        else:
+                                            self.correct_acc_local = CheckValid()
 
                                         self.correct_acc = CheckIfUserExists(Generator(self.account_name))
                                         if self.correct_acc and self.correct_acc_local:
@@ -1299,6 +1316,7 @@ class LoginScreen:
 
                                     if self.correct_pass and self.correct_acc and self.correct_acc_local and self.license_is_valid:
                                         self.state = True
+                                        Startcsgo.Launcher(False, True, False, True)
 
                                     else:
                                         self.loading = False
@@ -1308,7 +1326,8 @@ class LoginScreen:
 
                     if self.INCORRECT == True and self.correct_acc:
                         if self.restarted_steam == False:
-                            Startcsgo.RestartSteam()
+                            Startcsgo.Launcher(False, True, False, False)
+
                             self.restarted_steam = True
                         if self.IncorrectDelay + 1 < time.time():
                             self.INCORRECT = False

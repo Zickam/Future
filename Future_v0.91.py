@@ -1,7 +1,5 @@
-import ServerDB.Client
-
-showCheatFPS = True
-showGUIFPS = True
+showCheatFPS = False
+showGUIFPS = False
 DEV = False
 needAdmin = False
 login_success = False
@@ -231,7 +229,7 @@ def main_init():
                 except Exception as _ex:
                     if str(_ex) == "Could not find process: csgo.exe":
                         logIt(f"csgo_started - {csgo_started}", type="WARNING")
-                        Startcsgo.Launcher(False, False)
+                        logIt("Ive removed function to start csgo from this line", type="START")
 
             if pm:
                 break
@@ -593,6 +591,7 @@ def main(pm, client, engine, engine_pointer, buttons):
                     main_init()
                 else:
                     logIt(f"Some error: {_ex}", type="START")
+                    raise _ex
 
 
     except Exception as _ex:
@@ -610,7 +609,8 @@ def main(pm, client, engine, engine_pointer, buttons):
                     logIt("Make function to restart steam", type="DEBUG")
 
             logIt("other error")
-            logIt("Some error: ", _ex)
+            logIt(f"Some error: {_ex}", type="START")
+            raise _ex
 
             main_init()
 
@@ -619,10 +619,9 @@ def main(pm, client, engine, engine_pointer, buttons):
 def mainOrder():
     global login
 
-    Startcsgo.Launcher(True, False)
     login, buttons = loginAndGUI()
     logIt(f"{Fore.GREEN}Logged in, starting cheat...{Style.RESET_ALL}", type="START")
-    os.system("cls")
+    # os.system("cls")
 
     pm, client, engine, engine_pointer = main_init()
     if pm and client and engine and engine_pointer:
@@ -659,6 +658,7 @@ if __name__ == "__main__":
 
     from Offsets.offsets import *
 
+    import ServerDB.Client
     from Modules.logIt import logIt
     from Modules.gui import gui
     from Modules.gui.gui import Initscreen

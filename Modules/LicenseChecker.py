@@ -90,6 +90,7 @@ def CheckValid():
         if str(steamuptime) == str(time.strftime('%H:%M:%S', time.localtime(unixtime))):
             Passed = True
 
+    print("passed:", Passed)
     return Passed
 
 def rememberLoginUsers(default_root):
@@ -119,7 +120,7 @@ def showMessageBox(title, text):
 
 def findLoginUsersFile():
 
-    default_root, nothing, nothing1 = Modules.startcsgo.GetActiveProcesses()
+    default_root, nothing, nothing1 = Modules.Startcsgo.GetActiveProcesses()
 
     return default_root + "loginusers.vdf"
 
