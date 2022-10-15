@@ -1526,14 +1526,14 @@ class ScriptManager:
 
         # error handling
         if self.error != "":
-            self.errorsurface.fill((Colors.Background))
+            self.errorsurface.fill(Colors.Background)
             sprite = Colors.FontSmall.render(str(self.error), True, (190, 190, 190))
             self.errorsurface.blit(sprite, (clamp(-self.errorscroll + 5, -abs(self.size[0] - sprite.get_width() - 5), 5), 0))
             screen.blit(self.errorsurface, (self.pos[0], self.pos[1] + self.size[1] - self.errorsurface.get_height()))
 
             if sprite.get_width() > self.size[0]:
                 if self.errortime + 1.5 < time.time():
-                    if self.errorscroll < abs(self.size[0] - sprite.get_width())*5:
+                    if self.errorscroll < abs(self.size[0] - sprite.get_width()) * 5:
                         self.errorscroll += self.calc_time / 100
                     else:
                         self.error = ""

@@ -10675,3 +10675,46 @@
 2022-10-12 23:22:22.287942 [INFO] Checking offsets...
 2022-10-12 23:22:23.047976 [START] Offsets updated
 2022-10-12 23:22:23.047976 [START] [32mAll detected correctly[0m
+2022-10-12 20:24:51.177842 [START] [32mLogged in, starting cheat...[0m
+2022-10-12 20:24:51.177842 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-12 20:24:56.177978 [START] Trying to detect
+2022-10-12 20:24:56.184197 [START] CS:GO Detected
+2022-10-12 20:24:56.188200 [START] Waiting for CSGO to start
+2022-10-12 20:25:01.219044 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-12 20:25:06.194889 [START] Trying to detect
+2022-10-12 20:25:06.200895 [START] CS:GO Detected
+2022-10-12 20:25:06.232924 [START] Window detected correctly
+2022-10-12 20:25:06.237929 [START] Engine detected
+2022-10-12 20:25:06.237929 [START] (780075008, 2013593600, 4225957904)
+2022-10-12 20:25:06.237929 [INFO] Checking offsets...
+2022-10-12 20:25:06.809448 [START] Offsets updated
+2022-10-12 20:25:06.809448 [START] [32mAll detected correctly[0m
+2022-10-12 20:25:11.675273 [START] Some error: Could not read memory at: 794498252, length: 4 - GetLastError: 299
+2022-10-12 20:25:11.676273 [INFO] other error
+2022-10-12 20:25:11.676273 [START] Some error: Could not read memory at: 794498252, length: 4 - GetLastError: 299
+2022-10-12 20:25:57.141044 [START] [32mLogged in, starting cheat...[0m
+2022-10-12 20:25:57.189098 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-12 20:26:02.162762 [START] Trying to detect
+2022-10-12 20:26:02.169769 [START] CS:GO Detected
+2022-10-12 20:26:02.192790 [START] Waiting for CSGO to start
+2022-10-12 20:26:07.192813 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-12 20:26:12.193456 [START] Trying to detect
+2022-10-12 20:26:12.200463 [START] CS:GO Detected
+2022-10-12 20:26:12.233493 [START] Window detected correctly
+2022-10-12 20:26:12.238497 [START] Engine detected
+2022-10-12 20:26:12.239498 [START] (770048000, 2013593600, 4234674192)
+2022-10-12 20:26:12.239498 [INFO] Checking offsets...
+2022-10-12 20:26:12.481718 [START] Offsets updated
+2022-10-12 20:26:12.481718 [START] [32mAll detected correctly[0m
+2022-10-12 20:26:48.645207 [START] [32mLogged in, starting cheat...[0m
+2022-10-12 20:26:48.645207 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-12 20:26:53.645312 [START] Trying to detect
+2022-10-12 20:26:53.653320 [START] CS:GO Detected
+2022-10-12 20:26:53.685349 [START] Window detected correctly
+2022-10-12 20:26:53.691354 [START] Engine detected
+2022-10-12 20:26:53.692355 [START] (770048000, 2013593600, 4234674192)
+2022-10-12 20:26:53.692355 [INFO] Checking offsets...
+2022-10-12 20:26:53.931681 [START] Offsets updated
+2022-10-12 20:26:53.932683 [START] [32mAll detected correctly[0m
+2022-10-12 20:38:57.461841 [START] [32mLogged in, starting cheat...[0m
+2022-10-12 20:38:57.461841 [START] [32mLogged in, starting CS:GO...[0m

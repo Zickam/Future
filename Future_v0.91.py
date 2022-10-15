@@ -8,7 +8,6 @@ login = False
 all_detected_correctly = False
 is_loading = False
 
-
 def getActiveModules(buttons):
     row = []
     for first_level, first_level_depends in buttons.items():
@@ -26,7 +25,6 @@ def getActiveModules(buttons):
             row.remove(i)
 
     return row
-
 
 gui_program_frames = 0
 gui_program_frames_sum = 0
@@ -48,7 +46,6 @@ def showGUIFPSFunc(fps):
         logIt(
             f"GUI_FPS: {Fore.LIGHTBLUE_EX}{gui_program_frames_old}{Style.RESET_ALL} AVG_GUI_FPS: {Fore.LIGHTBLUE_EX}{gui_program_avg_fps}{Style.RESET_ALL} CLOCK_FPS: {Fore.LIGHTBLUE_EX}{fps}{Style.RESET_ALL}",
             type="GUI_FPS")
-
 
 def gui_updater(buttons_grid, buttons):
     global login_success, csgo_started, is_loading
@@ -172,7 +169,6 @@ def gui_updater(buttons_grid, buttons):
         gui.Refreshscreen()
         clock.tick(60)
 
-
 main_program_frames = 0
 main_program_frames_sum = 0
 main_program_count_seconds = 0
@@ -194,7 +190,6 @@ def ExecutionsCounter():
             f"IC: {Fore.LIGHTBLUE_EX}{main_program_frames_old}{Style.RESET_ALL} AVG_IC: {Fore.LIGHTBLUE_EX}{main_program_avg_fps}{Style.RESET_ALL}",
             type="IC")
 
-
 def loginAndGUI():
     buttons_class = gui.Buttons()
     buttons_grid, buttons = buttons_class.buttons_grid, buttons_class.buttons
@@ -207,7 +202,6 @@ def loginAndGUI():
             time_to_wait = time.time()
         else:
             return True, buttons
-
 
 def main_init():
     global csgo_started, login
@@ -272,7 +266,6 @@ def main_init():
     else:
         logIt(f"{Fore.RED}Login failed{Style.RESET_ALL}", type="START")
         return (False, False, False, False)
-
 
 def main(pm, client, engine, engine_pointer, buttons):
     global csgo_started
@@ -614,8 +607,6 @@ def main(pm, client, engine, engine_pointer, buttons):
 
             main_init()
 
-
-
 def mainOrder():
     global login
 
@@ -631,7 +622,6 @@ def mainOrder():
         logIt("state 1 occured!!!!!!! (search for it in main file)")  # i dont think it has ever occured
         pm, client, engine, engine_pointer = main_init()
         main(pm, client, engine, engine_pointer, buttons)
-
 
 if __name__ == "__main__":
     if needAdmin:
