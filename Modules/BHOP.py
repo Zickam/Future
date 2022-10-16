@@ -27,6 +27,4 @@ def BHOPFunction(pm, client, localplayer, Autostrafesens, AutoStrafe):
 
         if localplayer and on_ground:
             if on_ground == 257 or on_ground == 263 or on_ground == 1281 or on_ground == 1287:
-                pm.write_int(force_jump, 5)
-                time.sleep(0.05)
-                pm.write_int(force_jump, 4)
+                pm.write_int(force_jump, 6)

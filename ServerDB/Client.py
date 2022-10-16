@@ -2,6 +2,7 @@ import socket
 import datetime
 import time
 import requests
+from Modules.logIt import logIt
 
 host = "185.87.51.106"
 port = 8001
@@ -12,9 +13,16 @@ def CheckIfServerOnline():
         sock.connect((host, port))
         return True
     except TimeoutError:
+        logIt(str(TimeoutError), type="ERROR")
         return "error"
     except ConnectionRefusedError:
+        logIt(str(ConnectionRefusedError), type="ERROR")
         return "error"
+    except ConnectionResetError:
+        logIt(str(ConnectionResetError), type="ERROR")
+    except Exception as err:
+        logIt(str(err), type="ERROR")
+
 
 def CurrentTime():
     return int(time.time())
@@ -36,17 +44,27 @@ def CheckIfUserExists(login_hashed):
     return False
 
 def FetchUserTimeLicenseExpire(login_hashed):
-    sock = socket.socket()
-    sock.connect((host, port))
-    sock.send(b"FetchUserTimeLicenseExpire")
+    try:
+        sock = socket.socket()
+        sock.connect((host, port))
+        sock.send(b"FetchUserTimeLicenseExpire")
 
-    sock.send(bytes(login_hashed, "utf-8"))
-    sock.recv(1)
+        sock.send(bytes(login_hashed, "utf-8"))
+        sock.recv(1)
 
-    UserTimeLicenseExpire = sock.recv(1024)
-    sock.close()
+        UserTimeLicenseExpire = sock.recv(1024)
+        sock.close()
 
-    return str(UserTimeLicenseExpire)[2:-1]
+        return str(UserTimeLicenseExpire)[2:-1]
+
+    except TimeoutError:
+        logIt(str(TimeoutError), type="ERROR")
+    except ConnectionRefusedError:
+        logIt(str(ConnectionRefusedError), type="ERROR")
+    except ConnectionResetError:
+        logIt(str(ConnectionResetError), type="ERROR")
+    except Exception as err:
+        logIt(str(err), type="ERROR")
 
 def TimeZoneOffsetHours():
     now = datetime.datetime.now()
