@@ -18,7 +18,6 @@ from Modules.Generator import Generator
 from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid, FetchUserTimeLicenseExpire
 import json
 
-
 class Buttons:
     def __init__(self):
 
@@ -318,10 +317,75 @@ class Buttons:
                 armorpen.append(options[idlist[element]]["armorpen"])
         return idlist, namelist, dmglist, rangelist, armorpen
 
-
 default_font_size = 15
 default_font = "Microsoft Sans Serif"
 ChangeAlpha = False
+
+class Overlay:
+    def __init__(self, rect: pygame.Rect):
+        print("[overlay V0.5] > Initializing")
+        pygame.init()
+        os.environ["SDL_VIDEO_WINDOW_POS"] = str(pygame.display.Info().current_w) + "," + str(pygame.display.Info().current_h)
+
+        # initialize window and make it transparent
+        self.screen = pygame.display.set_mode((0, 0), pygame.NOFRAME)
+        self.overlay_hwnd = pygame.display.get_wm_info()["window"]
+
+        # get resolution / position
+        self.hwnd_rect = rect
+
+        # move window and make it visible
+        win32gui.MoveWindow(self.overlay_hwnd, self.hwnd_rect[0], self.hwnd_rect[1], self.hwnd_rect[2], self.hwnd_rect[3], True)
+        win32gui.ShowWindow(self.overlay_hwnd, win32con.SW_SHOW)
+
+        # for fps
+        self.framecap = 1000
+        self.fps = 1
+        self.clock = pygame.time.Clock()
+
+        self.show_value = 254
+        self.increaser = 1
+
+
+    def overlaymode(self):
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_POPUP | win32con.WS_EX_LAYERED)
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_TRANSPARENT | win32con.WS_EX_LAYERED)
+        win32gui.SetLayeredWindowAttributes(self.overlay_hwnd, win32api.RGB(0, 0, 0), 255, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
+        win32gui.BringWindowToTop(self.overlay_hwnd)
+
+    def windowmode(self):
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_POPUP | win32con.WS_EX_LAYERED)
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_TRANSPARENT | win32con.WS_EX_LAYERED)
+        win32gui.SetLayeredWindowAttributes(self.overlay_hwnd, win32api.RGB(0, 0, 0), 255, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
+        win32gui.BringWindowToTop(self.overlay_hwnd)
+
+    def clamp(self, num, min_value, max_value):
+        num = max(min(num, max_value), min_value)
+        return num
+
+    def show(self):
+        if self.show_value >= 254:
+            self.increaser = -250 * (1 / self.fps)
+        if self.show_value <= 1:
+            self.increaser = 250 * (1 / self.fps)
+        self.show_value += self.increaser
+        pygame.draw.rect(self.screen, (0, self.clamp(self.show_value, 0, 255), 0), (0, 0, self.hwnd_rect[2], self.hwnd_rect[3]), 4)
+
+    def set_cap(self, framecap: int):
+        self.framecap = framecap
+
+    def update(self):
+        self.clock.tick(self.framecap)
+        self.fps = 1 + self.clock.get_fps()
+
+        pygame.display.flip()
+        return pygame.event.get()
+
+    def display_fps(self):
+        self.font = pygame.font.SysFont("Courier", 20, True, False)
+        self.sprite = self.font.render(str(round(self.fps)), True, (255, 255, 0))
+        pygame.draw.rect(self.screen, (40, 40, 40), (self.hwnd_rect[2] - self.sprite.get_width() - 5, 5, self.sprite.get_width(), 20))
+        self.screen.blit(self.sprite, (self.hwnd_rect[2] - self.sprite.get_width() - 5, 5))
 
 class color_changer:
     def __init__(self):
@@ -367,11 +431,13 @@ def clamp(num, min_value, max_value):
     return num
 
 def Initscreen(resolution):
-    screen = pygame.display.set_mode(resolution, pygame.NOFRAME)
+    rect = win32gui.GetWindowRect(win32gui.GetDesktopWindow())
+    print(f"[OVERLAY INITFUNCTION], {rect, resolution}")
+    screen = Overlay(pygame.Rect(rect[2] / 2 - resolution[0] / 2, rect[3] / 2 - resolution[1] / 2, resolution[0], resolution[1]))
     return screen
 
 class Window():
-    def __init__(self, resolution, position, screen):
+    def __init__(self, resolution, position, overlay):
         # window
         pygame.display.set_caption("Future")
         self.resolution = resolution
@@ -382,7 +448,8 @@ class Window():
         self.logo = pygame.image.load("Data\Images\Icon.png")
         self.starttime = time.time()
 
-        self.screen = screen
+        self.overlay = overlay
+        self.screen = overlay.screen
         self.clicked = (0, 0)
         pygame.display.set_icon(self.logo)
 
@@ -461,34 +528,12 @@ class Window():
                 win32gui.SetWindowPos(Window, None, self.CustomMouse.position[0] - self.clicked[0], self.CustomMouse.position[1] - self.clicked[1], 0, 0, 1)
 
         else:
+
             Window = win32gui.FindWindow(None, "Future")
             WindowRect = win32gui.GetWindowRect(Window)
-            # active module window
-            if self.screen.get_rect()[2] != self.ActiveModuleRes[0] or self.screen.get_rect()[3] != self.ActiveModuleRes[1]:
-                self.screen = pygame.display.set_mode(self.ActiveModuleRes, pygame.NOFRAME)
-                self.screen.fill(Colors.Background)
 
-            Toprect = Colors.FontSmall.render(str("Active Modules"), True, (200, 200, 200))
-            self.screen.blit(Toprect, ((WindowRect[2] - WindowRect[0])/2 - Toprect.get_width()/2, 1))
-            pygame.draw.rect(self.screen, (255, 255, 255), (10, Toprect.get_height(), Toprect.get_width(), 1))
-            if len(ActiveModules) > 0:
-                for I in range(0, len(ActiveModules)):
-                    rect = Colors.FontSmall.render(str(ActiveModules[I]), True, (200, 200, 200))
-                    self.screen.blit(rect, (self.ActiveModuleRes[0]/2 - rect.get_width()/2, Toprect.get_height() + rect.get_height() * I))
-
-                self.active_modules_dimensions[1] = rect.get_height() * (len(ActiveModules) + 1)
-            else:
-                self.active_modules_dimensions[1] = Toprect.get_height()
-
-            if self.active_modules_dimensions[1] != self.screen.get_rect()[3]:
-                self.ActiveModuleRes = (self.ActiveModuleRes[0], self.active_modules_dimensions[1])
-
-            if WindowRect != (self.active_modules_margin[0], self.active_modules_margin[1], self.active_modules_margin[0] + self.ActiveModuleRes[0], self.active_modules_margin[1] + self.ActiveModuleRes[1]):
-                win32gui.SetWindowPos(Window, win32con.HWND_TOPMOST, self.active_modules_margin[0], self.active_modules_margin[1], 0, 0, win32con.SWP_NOSIZE)
-
-            for event in self.pygameevent:
-                if event.type == pygame.QUIT:
-                    pygame.quit()
+            self.overlay = Overlay(pygame.Rect(0, 0, 1920, 1080))
+            pygame.draw.rect(self.screen, (255, 255, 255), (0, 0, 10000, 10000))
 
         if not is_login_screen:
             if keyboard.is_pressed("right_shift") and self.Foreground == True and self.starttime + 0.15 < time.time():
@@ -593,7 +638,6 @@ class Button():
 
         return self.State, self.Tab
 
-
 class FirstLevelButton():
     def __init__(self, picture, position, size, name):
         self.pos = position
@@ -619,9 +663,6 @@ class FirstLevelButton():
             if pygame.mouse.get_pressed()[2] and self.DelayTime + 0.15 <= time.time():
                 self.Tab = not self.Tab
                 self.DelayTime = time.time()
-
-
-
 
 def Refreshscreen():
     pygame.display.flip()
@@ -941,13 +982,13 @@ class Searchbox():
         return self.array[self.selected], self.clicked
 
 class LogoDisplayer():
-    def __init__(self, screen):
-        self.screen = screen
+    def __init__(self, overlay):
+        self.screen = overlay.screen
         self.i = 0
         self.speed = 0
         self.state = 1
         self.F = pygame.image.load("Data/Images/Future.png")
-        self.scrsize = pygame.display.get_window_size()
+        self.scrsize = overlay.hwnd_rect[2], overlay.hwnd_rect[3]
 
         self.width = 165
         self.height = 70
@@ -1073,7 +1114,7 @@ class LogoDisplayer():
         return self.state
 
 class Loading():
-    def __init__(self):
+    def __init__(self, overlay):
         self.X = 0
         self.X1 = 0
         self.X2 = 0
@@ -1089,13 +1130,15 @@ class Loading():
 
         self.speed = 0.1
 
-        self.backgroundoverlay = pygame.Surface(pygame.display.get_window_size())
-        self.pos = (pygame.display.get_window_size()[0] / 2, pygame.display.get_window_size()[1] / 2)
+        self.backgroundoverlay = pygame.Surface((1000, 1000))
+        self.pos = (overlay.hwnd_rect[2] / 2, overlay.hwnd_rect[3] / 2)
         self.backgroundoverlay.set_alpha(self.alpha)
         self.backgroundoverlay.fill(self.backcolor)
 
 
-    def Update(self, screen, State):
+    def Update(self, overlay, State):
+        screen = overlay.screen
+
         if State == True:
             if self.alpha < 150:
                 self.alpha = self.alpha + 2
@@ -1138,7 +1181,7 @@ class Loading():
             self.X2 = 0
 
 class LoginScreen:
-    def __init__(self, serverisonline):
+    def __init__(self, serverisonline, overlay):
 
         self.res = (410, 220)
         self.serverisonline = serverisonline
@@ -1204,7 +1247,7 @@ class LoginScreen:
                 license_path = license_path + str(element) + "\\"
 
             self.count_web_helpers = len(GetWebHelpersList())
-            self.loadingscreen = Loading()
+            self.loadingscreen = Loading(overlay)
             self.loading = False
             self.Loaded = False
 
@@ -1216,7 +1259,8 @@ class LoginScreen:
             self.restarted_steam = False
 
 
-    def Update(self, screenres, screen, is_loading, keyevent):
+    def Update(self, screenres, overlay, is_loading, keyevent):
+        screen = overlay.screen
         if self.serverisonline == True:
             if is_loading:
                 self.loading = True
@@ -1338,7 +1382,7 @@ class LoginScreen:
                             errorfont = Colors.FontBig.render("Incorrect Password", True, (255, 100, 100))
                             screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
 
-                self.loadingscreen.Update(screen, self.loading)
+                self.loadingscreen.Update(overlay, self.loading)
             else:
                 self.loading = False
                 pygame.draw.rect(screen, Colors.Background, (0, 0, self.res[0], self.res[1]))
@@ -1373,7 +1417,6 @@ class LoginScreen:
 
             steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
             screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.res[1] - steamname.get_size()[1] / 2 - 130))
-
 
 class ScriptManager:
     def __init__(self, pos, size):

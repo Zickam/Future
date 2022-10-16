@@ -10718,3 +10718,307 @@
 2022-10-12 20:26:53.932683 [START] [32mAll detected correctly[0m
 2022-10-12 20:38:57.461841 [START] [32mLogged in, starting cheat...[0m
 2022-10-12 20:38:57.461841 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:25:43.927551 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:25:43.927551 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:25:48.931162 [START] Trying to detect
+2022-10-16 18:25:48.938157 [START] CS:GO Detected
+2022-10-16 18:25:48.974191 [START] Window detected correctly
+2022-10-16 18:25:48.982197 [START] Engine detected
+2022-10-16 18:25:48.982197 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:25:48.983198 [INFO] Checking offsets...
+2022-10-16 18:25:49.443617 [START] Offsets updated
+2022-10-16 18:25:49.443617 [START] [32mAll detected correctly[0m
+2022-10-16 18:26:31.745224 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:26:31.746225 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:26:36.748827 [START] Trying to detect
+2022-10-16 18:26:36.754832 [START] CS:GO Detected
+2022-10-16 18:26:36.793868 [START] Window detected correctly
+2022-10-16 18:26:36.798872 [START] Engine detected
+2022-10-16 18:26:36.798872 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:26:36.799874 [INFO] Checking offsets...
+2022-10-16 18:26:37.042093 [START] Offsets updated
+2022-10-16 18:26:37.043094 [START] [32mAll detected correctly[0m
+2022-10-16 18:30:01.657885 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:30:01.658887 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:30:06.660707 [START] Trying to detect
+2022-10-16 18:30:06.670704 [START] CS:GO Detected
+2022-10-16 18:30:06.706737 [START] Window detected correctly
+2022-10-16 18:30:06.711742 [START] Engine detected
+2022-10-16 18:30:06.711742 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:30:06.711742 [INFO] Checking offsets...
+2022-10-16 18:30:06.981987 [START] Offsets updated
+2022-10-16 18:30:06.981987 [START] [32mAll detected correctly[0m
+2022-10-16 18:31:32.785218 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:31:32.786219 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:31:37.786766 [START] Trying to detect
+2022-10-16 18:31:37.796775 [START] CS:GO Detected
+2022-10-16 18:31:37.832807 [START] Window detected correctly
+2022-10-16 18:31:37.837813 [START] Engine detected
+2022-10-16 18:31:37.838814 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:31:37.838814 [INFO] Checking offsets...
+2022-10-16 18:31:38.270205 [START] Offsets updated
+2022-10-16 18:31:38.270205 [START] [32mAll detected correctly[0m
+2022-10-16 18:36:20.868866 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:36:20.869867 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:36:25.871467 [START] Trying to detect
+2022-10-16 18:36:25.881474 [START] CS:GO Detected
+2022-10-16 18:36:25.917507 [START] Window detected correctly
+2022-10-16 18:36:25.922512 [START] Engine detected
+2022-10-16 18:36:25.922512 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:36:25.922512 [INFO] Checking offsets...
+2022-10-16 18:36:26.173741 [START] Offsets updated
+2022-10-16 18:36:26.173741 [START] [32mAll detected correctly[0m
+2022-10-16 18:36:45.358122 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:36:45.358122 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:36:50.361672 [START] Trying to detect
+2022-10-16 18:36:50.368678 [START] CS:GO Detected
+2022-10-16 18:36:50.407713 [START] Window detected correctly
+2022-10-16 18:36:50.412718 [START] Engine detected
+2022-10-16 18:36:50.412718 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:36:50.413719 [INFO] Checking offsets...
+2022-10-16 18:36:50.912172 [START] Offsets updated
+2022-10-16 18:36:50.912172 [START] [32mAll detected correctly[0m
+2022-10-16 18:37:26.208879 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:37:26.209880 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:37:31.211999 [START] Trying to detect
+2022-10-16 18:37:31.222006 [START] CS:GO Detected
+2022-10-16 18:37:31.259039 [START] Window detected correctly
+2022-10-16 18:37:31.264043 [START] Engine detected
+2022-10-16 18:37:31.264043 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:37:31.264043 [INFO] Checking offsets...
+2022-10-16 18:37:31.509267 [START] Offsets updated
+2022-10-16 18:37:31.510268 [START] [32mAll detected correctly[0m
+2022-10-16 18:42:21.301319 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:42:21.304330 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:42:26.307790 [START] Trying to detect
+2022-10-16 18:42:26.345823 [START] CS:GO Detected
+2022-10-16 18:42:26.598053 [START] Window detected correctly
+2022-10-16 18:42:26.655105 [START] Engine detected
+2022-10-16 18:42:26.658111 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:42:26.662112 [INFO] Checking offsets...
+2022-10-16 18:42:27.197600 [START] Offsets updated
+2022-10-16 18:42:27.206618 [START] [32mAll detected correctly[0m
+2022-10-16 18:44:23.451933 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:44:23.451933 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:44:28.454998 [START] Trying to detect
+2022-10-16 18:44:28.465013 [START] CS:GO Detected
+2022-10-16 18:44:28.501039 [START] Window detected correctly
+2022-10-16 18:44:28.506044 [START] Engine detected
+2022-10-16 18:44:28.506044 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:44:28.507045 [INFO] Checking offsets...
+2022-10-16 18:44:28.756272 [START] Offsets updated
+2022-10-16 18:44:28.757273 [START] [32mAll detected correctly[0m
+2022-10-16 18:45:10.401311 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:45:10.402313 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:45:15.404721 [START] Trying to detect
+2022-10-16 18:45:15.414730 [START] CS:GO Detected
+2022-10-16 18:45:15.450763 [START] Window detected correctly
+2022-10-16 18:45:15.455768 [START] Engine detected
+2022-10-16 18:45:15.456769 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:45:15.456769 [INFO] Checking offsets...
+2022-10-16 18:45:15.713001 [START] Offsets updated
+2022-10-16 18:45:15.714002 [START] [32mAll detected correctly[0m
+2022-10-16 18:50:47.197849 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:50:47.198850 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:50:52.199043 [START] Trying to detect
+2022-10-16 18:50:52.205049 [START] CS:GO Detected
+2022-10-16 18:50:52.235075 [START] Window detected correctly
+2022-10-16 18:50:52.240080 [START] Engine detected
+2022-10-16 18:50:52.241081 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:50:52.241081 [INFO] Checking offsets...
+2022-10-16 18:50:52.654457 [START] Offsets updated
+2022-10-16 18:50:52.654457 [START] [32mAll detected correctly[0m
+2022-10-16 18:52:21.204457 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:52:21.204457 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:52:26.207155 [START] Trying to detect
+2022-10-16 18:52:26.217161 [START] CS:GO Detected
+2022-10-16 18:52:26.253193 [START] Window detected correctly
+2022-10-16 18:52:26.258198 [START] Engine detected
+2022-10-16 18:52:26.258198 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:52:26.258198 [INFO] Checking offsets...
+2022-10-16 18:52:26.507424 [START] Offsets updated
+2022-10-16 18:52:26.508425 [START] [32mAll detected correctly[0m
+2022-10-16 18:52:46.351286 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:52:46.351286 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:52:51.354891 [START] Trying to detect
+2022-10-16 18:52:51.360896 [START] CS:GO Detected
+2022-10-16 18:52:51.398930 [START] Window detected correctly
+2022-10-16 18:52:51.406938 [START] Engine detected
+2022-10-16 18:52:51.407939 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:52:51.407939 [INFO] Checking offsets...
+2022-10-16 18:52:51.658167 [START] Offsets updated
+2022-10-16 18:52:51.658167 [START] [32mAll detected correctly[0m
+2022-10-16 18:53:22.262294 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:53:22.263295 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:53:27.264539 [START] Trying to detect
+2022-10-16 18:53:27.271543 [START] CS:GO Detected
+2022-10-16 18:53:27.305574 [START] Window detected correctly
+2022-10-16 18:53:27.310579 [START] Engine detected
+2022-10-16 18:53:27.311580 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:53:27.311580 [INFO] Checking offsets...
+2022-10-16 18:53:27.544791 [START] Offsets updated
+2022-10-16 18:53:27.544791 [START] [32mAll detected correctly[0m
+2022-10-16 18:54:33.512919 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:54:33.512919 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:54:38.515249 [START] Trying to detect
+2022-10-16 18:54:38.522244 [START] CS:GO Detected
+2022-10-16 18:54:38.558277 [START] Window detected correctly
+2022-10-16 18:54:38.565284 [START] Engine detected
+2022-10-16 18:54:38.566284 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:54:38.566284 [INFO] Checking offsets...
+2022-10-16 18:54:38.810506 [START] Offsets updated
+2022-10-16 18:54:38.811507 [START] [32mAll detected correctly[0m
+2022-10-16 18:54:57.074974 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:54:57.074974 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:55:02.077649 [START] Trying to detect
+2022-10-16 18:55:02.084648 [START] CS:GO Detected
+2022-10-16 18:55:02.122683 [START] Window detected correctly
+2022-10-16 18:55:02.127687 [START] Engine detected
+2022-10-16 18:55:02.127687 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:55:02.127687 [INFO] Checking offsets...
+2022-10-16 18:55:02.381042 [START] Offsets updated
+2022-10-16 18:55:02.381042 [START] [32mAll detected correctly[0m
+2022-10-16 18:55:50.420087 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:55:50.420087 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:55:55.423047 [START] Trying to detect
+2022-10-16 18:55:55.430044 [START] CS:GO Detected
+2022-10-16 18:55:55.464075 [START] Window detected correctly
+2022-10-16 18:55:55.469079 [START] Engine detected
+2022-10-16 18:55:55.469079 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:55:55.470080 [INFO] Checking offsets...
+2022-10-16 18:55:55.999561 [START] Offsets updated
+2022-10-16 18:55:55.999561 [START] [32mAll detected correctly[0m
+2022-10-16 18:56:49.948640 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:56:49.948640 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:56:54.957240 [START] Trying to detect
+2022-10-16 18:56:54.964247 [START] CS:GO Detected
+2022-10-16 18:56:55.027306 [START] Window detected correctly
+2022-10-16 18:56:55.032311 [START] Engine detected
+2022-10-16 18:56:55.040318 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:56:55.041325 [INFO] Checking offsets...
+2022-10-16 18:56:55.307561 [START] Offsets updated
+2022-10-16 18:56:55.307561 [START] [32mAll detected correctly[0m
+2022-10-16 18:57:27.155644 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:57:27.155644 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:57:32.157761 [START] Trying to detect
+2022-10-16 18:57:32.164755 [START] CS:GO Detected
+2022-10-16 18:57:32.199786 [START] Window detected correctly
+2022-10-16 18:57:32.207793 [START] Engine detected
+2022-10-16 18:57:32.207793 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:57:32.208794 [INFO] Checking offsets...
+2022-10-16 18:57:32.458846 [START] Offsets updated
+2022-10-16 18:57:32.459847 [START] [32mAll detected correctly[0m
+2022-10-16 18:57:41.587168 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:57:41.588166 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:58:07.727982 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:58:07.727982 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:58:26.961932 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 18:58:26.961932 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 18:58:31.962593 [START] Trying to detect
+2022-10-16 18:58:31.970601 [START] CS:GO Detected
+2022-10-16 18:58:32.005633 [START] Window detected correctly
+2022-10-16 18:58:32.010637 [START] Engine detected
+2022-10-16 18:58:32.010637 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 18:58:32.011639 [INFO] Checking offsets...
+2022-10-16 18:58:32.258863 [START] Offsets updated
+2022-10-16 18:58:32.259864 [START] [32mAll detected correctly[0m
+2022-10-16 19:00:02.754296 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:00:02.755297 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:00:07.754762 [START] Trying to detect
+2022-10-16 19:00:07.762770 [START] CS:GO Detected
+2022-10-16 19:00:07.794799 [START] Window detected correctly
+2022-10-16 19:00:07.799803 [START] Engine detected
+2022-10-16 19:00:07.799803 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:00:07.799803 [INFO] Checking offsets...
+2022-10-16 19:00:08.039021 [START] Offsets updated
+2022-10-16 19:00:08.039021 [START] [32mAll detected correctly[0m
+2022-10-16 19:00:27.405549 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:00:27.406550 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:00:32.408242 [START] Trying to detect
+2022-10-16 19:00:32.415249 [START] CS:GO Detected
+2022-10-16 19:00:32.448278 [START] Window detected correctly
+2022-10-16 19:00:32.452281 [START] Engine detected
+2022-10-16 19:00:32.453283 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:00:32.453283 [INFO] Checking offsets...
+2022-10-16 19:00:32.686495 [START] Offsets updated
+2022-10-16 19:00:32.686495 [START] [32mAll detected correctly[0m
+2022-10-16 19:02:00.835893 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:02:00.836893 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:02:05.838437 [START] Trying to detect
+2022-10-16 19:02:05.844442 [START] CS:GO Detected
+2022-10-16 19:02:05.882477 [START] Window detected correctly
+2022-10-16 19:02:05.886481 [START] Engine detected
+2022-10-16 19:02:05.887481 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:02:05.887481 [INFO] Checking offsets...
+2022-10-16 19:02:06.297854 [START] Offsets updated
+2022-10-16 19:02:06.297854 [START] [32mAll detected correctly[0m
+2022-10-16 19:03:01.688651 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:03:01.689653 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:03:06.690932 [START] Trying to detect
+2022-10-16 19:03:06.701942 [START] CS:GO Detected
+2022-10-16 19:03:06.736974 [START] Window detected correctly
+2022-10-16 19:03:06.742979 [START] Engine detected
+2022-10-16 19:03:06.760996 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:03:06.761997 [INFO] Checking offsets...
+2022-10-16 19:03:07.051260 [START] Offsets updated
+2022-10-16 19:03:07.051260 [START] [32mAll detected correctly[0m
+2022-10-16 19:03:17.419523 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:03:17.419523 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:03:22.419589 [START] Trying to detect
+2022-10-16 19:03:22.426596 [START] CS:GO Detected
+2022-10-16 19:03:22.461627 [START] Window detected correctly
+2022-10-16 19:03:22.466632 [START] Engine detected
+2022-10-16 19:03:22.466632 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:03:22.467633 [INFO] Checking offsets...
+2022-10-16 19:03:22.709853 [START] Offsets updated
+2022-10-16 19:03:22.709853 [START] [32mAll detected correctly[0m
+2022-10-16 19:05:00.495707 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:05:00.497708 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:05:05.499903 [START] Trying to detect
+2022-10-16 19:05:05.507911 [START] CS:GO Detected
+2022-10-16 19:05:05.544944 [START] Window detected correctly
+2022-10-16 19:05:05.551950 [START] Engine detected
+2022-10-16 19:05:05.552951 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:05:05.552951 [INFO] Checking offsets...
+2022-10-16 19:05:05.795172 [START] Offsets updated
+2022-10-16 19:05:05.796172 [START] [32mAll detected correctly[0m
+2022-10-16 19:06:17.670551 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:06:17.671551 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:06:22.673098 [START] Trying to detect
+2022-10-16 19:06:22.680104 [START] CS:GO Detected
+2022-10-16 19:06:22.714135 [START] Window detected correctly
+2022-10-16 19:06:22.722143 [START] Engine detected
+2022-10-16 19:06:22.722143 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:06:22.722143 [INFO] Checking offsets...
+2022-10-16 19:06:22.974373 [START] Offsets updated
+2022-10-16 19:06:22.974373 [START] [32mAll detected correctly[0m
+2022-10-16 19:06:44.422003 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:06:44.422003 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:06:49.422468 [START] Trying to detect
+2022-10-16 19:06:49.429474 [START] CS:GO Detected
+2022-10-16 19:06:49.464506 [START] Window detected correctly
+2022-10-16 19:06:49.469510 [START] Engine detected
+2022-10-16 19:06:49.470511 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:06:49.470511 [INFO] Checking offsets...
+2022-10-16 19:06:49.708729 [START] Offsets updated
+2022-10-16 19:06:49.709729 [START] [32mAll detected correctly[0m
+2022-10-16 19:07:09.931369 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:07:09.932371 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:07:14.934428 [START] Trying to detect
+2022-10-16 19:07:14.942436 [START] CS:GO Detected
+2022-10-16 19:07:14.978468 [START] Window detected correctly
+2022-10-16 19:07:14.983473 [START] Engine detected
+2022-10-16 19:07:14.983473 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:07:14.983473 [INFO] Checking offsets...
+2022-10-16 19:07:15.523965 [START] Offsets updated
+2022-10-16 19:07:15.524965 [START] [32mAll detected correctly[0m
+2022-10-16 19:07:47.104437 [START] [32mLogged in, starting cheat...[0m
+2022-10-16 19:07:47.105438 [START] [32mLogged in, starting CS:GO...[0m
+2022-10-16 19:07:52.107039 [START] Trying to detect
+2022-10-16 19:07:52.114045 [START] CS:GO Detected
+2022-10-16 19:07:52.149076 [START] Window detected correctly
+2022-10-16 19:07:52.156083 [START] Engine detected
+2022-10-16 19:07:52.157084 [START] (798097408, 2021851136, 4227072016)
+2022-10-16 19:07:52.157084 [INFO] Checking offsets...
+2022-10-16 19:07:52.398303 [START] Offsets updated
+2022-10-16 19:07:52.399304 [START] [32mAll detected correctly[0m

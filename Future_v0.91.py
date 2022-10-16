@@ -52,15 +52,14 @@ def gui_updater(buttons_grid, buttons):
 
     login_screen_size = (410, 220)
     screen_size = (410, 410)
-    screen = Initscreen(resolution=login_screen_size)
-    window = gui.Window(screen_size, [10, 10], screen)  # login window
+    overlay = Initscreen(resolution=login_screen_size)
+    screen = overlay.screen
+    window = gui.Window(screen_size, [10, 10], overlay)  # login window
 
     clock = pygame.time.Clock()
 
-    LoginScreen = gui.LoginScreen(ServerDB.Client.CheckIfServerOnline())
-    Displayer = LogoDisplayer(screen)
-
-
+    LoginScreen = gui.LoginScreen(ServerDB.Client.CheckIfServerOnline(), overlay)
+    Displayer = LogoDisplayer(overlay)
 
     is_login_screen = True
 
@@ -74,7 +73,7 @@ def gui_updater(buttons_grid, buttons):
         objects_shown = []
         objects_not_shown = []
 
-        login_success = gui.LoginScreen.Update(LoginScreen, screen_size, screen, is_loading, window.pygameevent)
+        login_success = gui.LoginScreen.Update(LoginScreen, screen_size, overlay, is_loading, window.pygameevent)
 
         if Shown == True:
             def unTabDependencies(dependencies):
@@ -153,13 +152,15 @@ def gui_updater(buttons_grid, buttons):
         if login_success and csgo_started:
             is_loading = False
 
-            if pygame.display.get_window_size() == login_screen_size:
+
+            if (overlay.hwnd_rect[2],overlay.hwnd_rect[3]) == login_screen_size:
                 is_login_screen = False
-                screen = Initscreen(resolution=screen_size)
-                window = gui.Window(screen_size, (10, 10), screen)  # normal gui
+                overlay = Initscreen(resolution=screen_size)
+                screen = overlay.screen
+                window = gui.Window(screen_size, (10, 10), overlay)  # normal gui
                 clock = pygame.time.Clock()
 
-                Displayer = LogoDisplayer(screen)
+                Displayer = LogoDisplayer(overlay)
 
             LogoDisplayer.Update(Displayer)
 
