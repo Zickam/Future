@@ -1,3 +1,7 @@
+import Modules.gui.esp
+guiespesp = Modules.gui.esp.ESP()
+
+
 showCheatFPS = False
 showGUIFPS = False
 DEV = False
@@ -70,7 +74,7 @@ def gui_updater(buttons_grid, buttons):
         Framedelta = 1 + clock.get_fps()
 
         modules_to_display = getActiveModules(buttons)
-        Shown = window.Update(modules_to_display, Framedelta, is_login_screen)
+        Shown = window.Update(modules_to_display, Framedelta, is_login_screen, guiespesp)
 
         objects_shown = []
         objects_not_shown = []
@@ -421,8 +425,15 @@ def main(pm, client, engine, engine_pointer, buttons):
                     # Misc.GrenadePrediction(grenade_preview_btn, pm)
                     # show_fps = buttons["Visuals"][1]["ShowFPS"][0].State
                     # Misc.ShowFPS(show_fps, pm)
-                    Misc.ChangeSky(buttons["Visuals"][1]["Sky"][1]["skySelector"][0].array[
-                                       buttons["Visuals"][1]["Sky"][1]["skySelector"][0].selected], pm)
+                    Misc.ChangeSky(buttons["Visuals"][1]["Sky"][1]["skySelector"][0].array[buttons["Visuals"][1]["Sky"][1]["skySelector"][0].selected], pm)
+
+                    # overlay esp
+                    if buttons["Visuals"][1]["TESTESP"][0].State == True:
+                        guiespesp.box = True
+                        guiespesp.calculate(entities, pm, client)
+                    else:
+                        guiespesp.box = False
+
 
                     # GlowESP
                     if ESP_btn:

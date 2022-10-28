@@ -6,6 +6,8 @@ import pygame.display
 import time
 import random
 import win32api
+
+import Modules.gui.esp
 from Modules import Startcsgo
 from Modules.Startcsgo import RestartSteam
 import win32con
@@ -16,11 +18,16 @@ from pynput.mouse import Controller
 from hashlib import sha256
 from Modules.LicenseChecker import GetActiveAccount, CheckValid, GetWebHelpersList
 from Modules.Generator import Generator
-from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid, FetchUserTimeLicenseExpire
+from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid, \
+    FetchUserTimeLicenseExpire
 import json
 import ctypes
 
 from Modules.gui.OverlayV3 import Overlay
+
+
+def screen_size():
+    return ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
 
 class Buttons:
     def __init__(self):
@@ -81,6 +88,7 @@ class Buttons:
                     }},
                     "No Smoke": {"type": "button", "pos": (0, 0), "size": button_size},
                     "ShowFPS": {"type": "button", "pos": (0, 0), "size": button_size},
+                    "TESTESP": {"type": "button", "pos": (0, 0), "size": button_size},
 
                 }},
             "Combat": {"type": "FirstLevelButton", "picture": aimbotpng, "pos": (0, 0), "size": firstlvlbutton_size,
@@ -215,7 +223,7 @@ class Buttons:
                     pos_x = object_props["pos"][0] + start_pos_dependencies[0]
                     pos_y = object_props["pos"][1] + start_pos_dependencies[1]
                     _object = Slider((pos_x, pos_y), object_props["size"], object_name, object_props["start"],
-                                         object_props["end"])
+                                     object_props["end"])
                     start_pos_dependencies[1] += gap_y
 
 
@@ -236,7 +244,7 @@ class Buttons:
                     pos_x = object_props["pos"][0] + start_pos_dependencies[0]
                     pos_y = object_props["pos"][1] + start_pos_dependencies[1]
                     _object = Searchbox((pos_x, pos_y), object_props["size"], object_name,
-                                            object_props["array"])
+                                        object_props["array"])
                     start_pos_dependencies[1] += gap_y
 
                 elif object_props["type"] == "scriptmanager":
@@ -276,7 +284,7 @@ class Buttons:
                 pos_x = object_props["pos"][0] + start_pos[0]
                 pos_y = object_props["pos"][1] + start_pos[1]
                 _object = FirstLevelButton(object_props["picture"], (pos_x, pos_y), object_props["size"],
-                                               object_name)
+                                           object_name)
 
             if object_props["type"] == "end":
                 break
@@ -290,7 +298,6 @@ class Buttons:
 
             self.buttons[object_name] = [_object, dependencies]
             start_pos[1] += gap_y_first_level_btn
-
 
     def getskins(self):
         skinlist = []
@@ -321,9 +328,11 @@ class Buttons:
                 armorpen.append(options[idlist[element]]["armorpen"])
         return idlist, namelist, dmglist, rangelist, armorpen
 
+
 default_font_size = 15
 default_font = "Microsoft Sans Serif"
 ChangeAlpha = False
+
 
 class color_changer:
     def __init__(self):
@@ -349,14 +358,15 @@ class color_changer:
                     arr[x][y][1] = clamp(arr[x][y][1] - 255 + self.SmoothedG, 0, 255)
                     arr[x][y][2] = clamp(arr[x][y][2] - 255 + self.SmoothedB, 0, 255)
 
+
 class Colors():
-    Background = (20, 20, 20, 150)      # background
+    Background = (20, 20, 20, 150)  # background
     LightBackground = (50, 50, 50)
     AlphaAnim = False
     HighlightBackground = (20, 40, 60)  # background slider / selector etc
-    TextColor = (200, 200, 200)         # textcolor
+    TextColor = (200, 200, 200)  # textcolor
     DisableColor = (20, 20, 20)
-    ColorStyle = (40, 60, 80)           # slider red on start
+    ColorStyle = (40, 60, 80)  # slider red on start
     Transparency = 100
 
     pygame.font.init()
@@ -364,15 +374,30 @@ class Colors():
     FontMed = pygame.font.SysFont("Microsoft Sans Serif", 15, False, False)
     FontSmall = pygame.font.SysFont("Microsoft Sans Serif", 14, False, False)
 
+
 def clamp(num, min_value, max_value):
     num = max(min(num, max_value), min_value)
     return num
 
+
 def Initscreen(resolution):
     rect = win32gui.GetWindowRect(win32gui.GetDesktopWindow())
     print(f"[OVERLAY INITFUNCTION], {rect, resolution}")
-    screen = Overlay(pygame.Rect(rect[2] / 2 - resolution[0] / 2, rect[3] / 2 - resolution[1] / 2, resolution[0], resolution[1]))
+    screen = Overlay(
+        pygame.Rect(rect[2] / 2 - resolution[0] / 2, rect[3] / 2 - resolution[1] / 2, resolution[0], resolution[1]))
     return screen
+
+
+def drawOverlay(overlay, esp_class):
+    overlay.screen.fill((0, 0, 0))
+    for i in range(0, len(esp_class.draw_list)):
+        if esp_class.draw_list[i]["type"] == "rect":
+            p1 = esp_class.draw_list[i]["points"][0][0], esp_class.draw_list[i]["points"][0][1]
+            p2 = esp_class.draw_list[i]["points"][1][0], esp_class.draw_list[i]["points"][1][1]
+            pygame.draw.rect(overlay.screen, (255, 255, 255), (p1[0], p1[1], p2[0], p2[1]), 1)
+
+    overlay.update()
+
 
 class Window():
     def __init__(self, resolution, position, overlay):
@@ -393,7 +418,8 @@ class Window():
         self.overlay_mode = False
 
         Window = win32gui.FindWindow(None, "Future")
-        win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
+        win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE,
+                               win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
         win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 210, win32con.LWA_ALPHA)
 
         self.Alpha = 210
@@ -411,7 +437,7 @@ class Window():
 
         self.colorchanger = color_changer()
 
-    def Update(self, ActiveModules, Framedelta, is_login_screen):
+    def Update(self, ActiveModules, Framedelta, is_login_screen, esp_class):
         Window = win32gui.FindWindow(None, "Future")
         WindowRect = win32gui.GetWindowRect(Window)
 
@@ -432,19 +458,15 @@ class Window():
 
             self.screen.blit(self.coloredSurface, (10, 10))
 
-            if abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][0] - Colors.ColorStyle[0]) > 2 or \
-                    abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][1] - Colors.ColorStyle[1]) > 2 or \
-                    abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][2] - Colors.ColorStyle[2]) > 2:
+            if abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][0] - Colors.ColorStyle[0]) > 2 or abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][1] - Colors.ColorStyle[1]) > 2 or abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][2] - Colors.ColorStyle[2]) > 2:
 
                 self.LogoUpdate = True
             else:
                 self.LogoUpdate = False
 
-
             # exit button
             close_button_rect = Colors.FontBig.render("x", True, (150, 50, 50))
             self.screen.blit(close_button_rect, (self.resolution[0] - close_button_rect.get_width() - 2, -4))
-
 
             for event in self.pygameevent:
                 if Mousepos[0] > self.resolution[0] - close_button_rect.get_width() and Mousepos[0] < self.resolution[0] and Mousepos[1] > 0 and Mousepos[1] < close_button_rect.get_height():
@@ -461,22 +483,17 @@ class Window():
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.clicked = (0, 0)
 
-
             if self.clicked != (0, 0):
                 win32gui.SetWindowPos(Window, None, self.CustomMouse.position[0] - self.clicked[0], self.CustomMouse.position[1] - self.clicked[1], 0, 0, 1)
 
         else:
-
-            self.overlay.update()
+            drawOverlay(self.overlay, esp_class)
 
         if not is_login_screen:
             if keyboard.is_pressed("right_shift") and self.Foreground == True and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
 
-                ctypes.windll.user32
-                screensize = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
-
-                self.overlay = Overlay(pygame.Rect(0, 0, screensize[0], screensize[1]))
+                self.overlay = Overlay(pygame.Rect(0, 0, screen_size()[0], screen_size()[1]))
                 self.overlay.overlaymode()
                 self.overlay.show = True
                 self.Foreground = False
@@ -484,31 +501,30 @@ class Window():
             elif keyboard.is_pressed("right_shift") and self.Foreground == False and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
 
-                ctypes.windll.user32
-                screensize = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
-
-                self.overlay = Overlay(pygame.Rect(round(screensize[0] / 2 - 410 / 2), round(screensize[1] / 2 - 410 / 2), 410, 410))
+                self.overlay = Overlay(pygame.Rect(round(screen_size()[0] / 2 - 410 / 2), round(screen_size()[1] / 2 - 410 / 2), 410, 410))
                 self.overlay.windowmode()
                 self.Foreground = True
 
         global ChangeAlpha
         if ChangeAlpha == True:
             # changing alpha
-            if self.CustomMouse.position[0] > WindowRect[0] and self.CustomMouse.position[0] < WindowRect[2] and self.CustomMouse.position[1] > WindowRect[1] and self.CustomMouse.position[1] < WindowRect[3]:
+            if self.CustomMouse.position[0] > WindowRect[0] and self.CustomMouse.position[0] < WindowRect[2] and \
+                    self.CustomMouse.position[1] > WindowRect[1] and self.CustomMouse.position[1] < WindowRect[3]:
                 self.Alpha -= (self.Alpha - 255) * (1 / Framedelta) * 16
             else:
                 self.Alpha -= (self.Alpha - Colors.Transparency) * (1 / Framedelta) * 16
 
-            win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), round(clamp(self.Alpha, 0, 255)), win32con.LWA_ALPHA)
+            win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), round(clamp(self.Alpha, 0, 255)),
+                                                win32con.LWA_ALPHA)
         else:
             if not self.overlay.overlay_mode:
                 self.overlay.windowmode()
-
 
         if is_login_screen:
             return False
 
         return self.Foreground
+
 
 class Button():
     def __init__(self, position, size, name, State=False, Tab=False):
@@ -528,10 +544,10 @@ class Button():
         self.CustomColorB = Colors.DisableColor[2]
         self.CustomColor = (self.CustomColorR, self.CustomColorG, self.CustomColorB)
 
-
     def Update(self, screen, mousepos, framedelta):
 
-        if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
+        if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > \
+                self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
 
             if pygame.mouse.get_pressed()[0] and self.DelayTime + 0.15 <= time.time():
                 self.State = not self.State
@@ -546,24 +562,36 @@ class Button():
             self.CustomColorR -= (self.CustomColorR - Colors.ColorStyle[0]) * (1 / framedelta) * 3
             self.CustomColorG -= (self.CustomColorG - Colors.ColorStyle[1]) * (1 / framedelta) * 3
             self.CustomColorB -= (self.CustomColorB - Colors.ColorStyle[2]) * (1 / framedelta) * 3
-            self.CustomColor = (clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+            self.CustomColor = (
+            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
             # button design
-            pygame.draw.rect(screen, Colors.ColorStyle, (self.position[0], self.position[1], self.size[0], self.size[1]), border_radius=self.rounding)
-            pygame.draw.rect(screen, self.CustomColor, (self.position[0] + 2, self.position[1] + 2, self.size[0] - 4, self.size[1] - 4), border_radius=self.rounding)
+            pygame.draw.rect(screen, Colors.ColorStyle,
+                             (self.position[0], self.position[1], self.size[0], self.size[1]),
+                             border_radius=self.rounding)
+            pygame.draw.rect(screen, self.CustomColor,
+                             (self.position[0] + 2, self.position[1] + 2, self.size[0] - 4, self.size[1] - 4),
+                             border_radius=self.rounding)
             rect = Colors.FontMed.render(str(self.name), True, (0, 0, 0))
-            screen.blit(rect, (self.position[0] - round(rect.get_width() / 2) + round(self.size[0] / 2), self.position[1] + 3))
+            screen.blit(rect, (
+            self.position[0] - round(rect.get_width() / 2) + round(self.size[0] / 2), self.position[1] + 3))
         else:
             # color animation
             self.CustomColorR -= (self.CustomColorR - Colors.DisableColor[0]) * (1 / framedelta) * 10
             self.CustomColorG -= (self.CustomColorG - Colors.DisableColor[1]) * (1 / framedelta) * 10
             self.CustomColorB -= (self.CustomColorB - Colors.DisableColor[2]) * (1 / framedelta) * 10
-            self.CustomColor = (clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+            self.CustomColor = (
+            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
 
             # button design
-            pygame.draw.rect(screen, Colors.ColorStyle, (self.position[0], self.position[1], self.size[0], self.size[1]), border_radius=self.rounding)
-            pygame.draw.rect(screen, self.CustomColor, (self.position[0] + 2, self.position[1] + 2, self.size[0] - 4, self.size[1] - 4), border_radius=self.rounding)
+            pygame.draw.rect(screen, Colors.ColorStyle,
+                             (self.position[0], self.position[1], self.size[0], self.size[1]),
+                             border_radius=self.rounding)
+            pygame.draw.rect(screen, self.CustomColor,
+                             (self.position[0] + 2, self.position[1] + 2, self.size[0] - 4, self.size[1] - 4),
+                             border_radius=self.rounding)
             rect = Colors.FontMed.render(str(self.name), True, Colors.TextColor)
-            screen.blit(rect, (self.position[0] - round(rect.get_width() / 2) + round(self.size[0] / 2), self.position[1] + 3))
+            screen.blit(rect, (
+            self.position[0] - round(rect.get_width() / 2) + round(self.size[0] / 2), self.position[1] + 3))
 
         if self.show == False:
             self.CustomColor = Colors.DisableColor
@@ -572,6 +600,7 @@ class Button():
             self.CustomColorB = Colors.DisableColor[2]
 
         return self.State, self.Tab
+
 
 class FirstLevelButton():
     def __init__(self, picture, position, size, name):
@@ -594,13 +623,16 @@ class FirstLevelButton():
 
         screen.blit(self.picture, self.pos)
 
-        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] and mousepos[1] < self.pos[1] + self.size[1]:
+        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] and \
+                mousepos[1] < self.pos[1] + self.size[1]:
             if pygame.mouse.get_pressed()[2] and self.DelayTime + 0.15 <= time.time():
                 self.Tab = not self.Tab
                 self.DelayTime = time.time()
 
+
 def Refreshscreen():
     pygame.display.flip()
+
 
 class Slider():
     def __init__(self, position, size, name, start, end):
@@ -627,8 +659,10 @@ class Slider():
         self.VisualState = round(self.start + self.State * self.Multiplier)
 
     def Update(self, screen, mousepos, framedelta):
-        pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0], 5), border_radius=self.rounding)
-        pygame.draw.rect(screen, Colors.ColorStyle, (self.position[0], self.position[1], self.SliderVisState, 5), border_radius=self.rounding)
+        pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0], 5),
+                         border_radius=self.rounding)
+        pygame.draw.rect(screen, Colors.ColorStyle, (self.position[0], self.position[1], self.SliderVisState, 5),
+                         border_radius=self.rounding)
 
         self.VisualState = round(self.start + self.State * self.Multiplier)
         self.SliderVisState -= (self.SliderVisState - self.State) * (1 / framedelta) * 12
@@ -636,7 +670,8 @@ class Slider():
         rect = self.font.render(str(self.VisualState), True, Colors.TextColor)
         screen.blit(self.font.render(str(self.name), True, Colors.TextColor), (self.position[0], self.position[1] - 20))
 
-        if mousepos[0] > self.position[0] - 1 and mousepos[0] < self.position[0] + self.size[0] + 1 and mousepos[1] > self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
+        if mousepos[0] > self.position[0] - 1 and mousepos[0] < self.position[0] + self.size[0] + 1 and mousepos[1] > \
+                self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
             if pygame.mouse.get_pressed()[0]:
                 self.Mbdown = True
 
@@ -655,11 +690,11 @@ class Slider():
 
         screen.blit(rect, (self.position[0] + self.size[0] - rect.get_width(), self.position[1] + 5))
 
-
         if self.show == False:
             self.SliderVisState = 0
 
         return self.VisualState, self.OutputTab
+
 
 class Selector():
     def __init__(self, position, size, name, array):
@@ -675,32 +710,39 @@ class Selector():
         self.Delaytime = time.time()
         self.iwannadie = 0
 
-
     def Update(self, screen, mousepos, framedelta):
-        baserect = pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0], self.size[1]), border_radius=self.rounding)
+        baserect = pygame.draw.rect(screen, Colors.HighlightBackground,
+                                    (self.position[0], self.position[1], self.size[0], self.size[1]),
+                                    border_radius=self.rounding)
 
         rect = Colors.FontMed.render(str(self.array[self.selected]), True, Colors.TextColor)
-        screen.blit(rect, (baserect.centerx - rect.get_width()/2, baserect.centery - rect.get_height()/2))
+        screen.blit(rect, (baserect.centerx - rect.get_width() / 2, baserect.centery - rect.get_height() / 2))
 
         if baserect.collidepoint(mousepos[0], mousepos[1]):
             if pygame.mouse.get_pressed()[0] and self.Delaytime + 0.15 < time.time():
                 self.clicked = not self.clicked
                 self.Delaytime = time.time()
 
-
-
         if self.clicked == True:
-            pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0], rect.get_height() * len(self.array) + ((baserect.centery - rect.get_height()/2)-self.position[1])*2))
-
+            pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0],
+                                                                  rect.get_height() * len(self.array) + ((
+                                                                                                                     baserect.centery - rect.get_height() / 2) -
+                                                                                                         self.position[
+                                                                                                             1]) * 2))
 
             for i in range(0, len(self.array)):
 
                 rect = Colors.FontMed.render(str(self.array[i]), True, Colors.TextColor)
-                screen.blit(rect, (baserect.centerx - rect.get_width()/2, baserect.centery - rect.get_height()/2 + rect.get_height()*i))
+                screen.blit(rect, (baserect.centerx - rect.get_width() / 2,
+                                   baserect.centery - rect.get_height() / 2 + rect.get_height() * i))
 
                 if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0]:
-                    if mousepos[1] > self.position[1] + rect.get_height() * i and mousepos[1] < self.position[1] + rect.get_height() * (i+1):
-                        pygame.draw.rect(screen, (255, 255, 255), (self.position[0], self.position[1] + rect.get_height() * i, self.size[0], rect.get_height() + ((baserect.centery - rect.get_height()/2)-self.position[1])*2), width=1)
+                    if mousepos[1] > self.position[1] + rect.get_height() * i and mousepos[1] < self.position[
+                        1] + rect.get_height() * (i + 1):
+                        pygame.draw.rect(screen, (255, 255, 255), (
+                        self.position[0], self.position[1] + rect.get_height() * i, self.size[0],
+                        rect.get_height() + ((baserect.centery - rect.get_height() / 2) - self.position[1]) * 2),
+                                         width=1)
                         if pygame.mouse.get_pressed()[0] and self.Delaytime + 0.15 < time.time():
                             self.Delaytime = time.time()
                             self.selected = i
@@ -711,6 +753,7 @@ class Selector():
                             self.selected = 0
 
         return self.array[self.selected], self.clicked
+
 
 class ColorPicker():
     def __init__(self, position, size, name):
@@ -724,7 +767,8 @@ class ColorPicker():
         # self.image = pygame.draw.circle(self.image, (255, 0, 0), (100, 100), 5)
         self.picker = pygame.image.load("Data\Images\circle.png")
         self.picker = pygame.transform.scale(self.picker, (self.image.get_width() / 12, self.image.get_height() / 12))
-        self.picker_x, self.picker_y = self.position[0] + self.image.get_width() / 2 - self.picker.get_width() / 2, self.position[1] + self.image.get_height() / 2 - self.picker.get_height() / 2
+        self.picker_x, self.picker_y = self.position[0] + self.image.get_width() / 2 - self.picker.get_width() / 2, \
+                                       self.position[1] + self.image.get_height() / 2 - self.picker.get_height() / 2
         self.color = (255, 255, 255)
         self.color_display_size = (self.image.get_width(), 20)
         self.color_display_rounding = 0
@@ -736,48 +780,55 @@ class ColorPicker():
         self.starttime = time.time()
         self.opened = False
 
-
     def Update(self, screen, mousepos, framedelta):
         if self.opened == True:
             screen.blit(self.image, (self.position[0], self.position[1]))
             screen.blit(self.picker, (self.picker_x, self.picker_y))
 
-            if mousepos[0] > self.position[0] and mousepos[0] < self.image.get_width() + self.position[0] and mousepos[1] > self.position[1] and mousepos[1] < self.image.get_height() + self.position[1]:
+            if mousepos[0] > self.position[0] and mousepos[0] < self.image.get_width() + self.position[0] and mousepos[
+                1] > self.position[1] and mousepos[1] < self.image.get_height() + self.position[1]:
                 if pygame.mouse.get_pressed()[0]:
-                    self.picker_x, self.picker_y = mousepos[0] - self.picker.get_width() / 2, mousepos[1] - self.picker.get_height() / 2
+                    self.picker_x, self.picker_y = mousepos[0] - self.picker.get_width() / 2, mousepos[
+                        1] - self.picker.get_height() / 2
                     self.color = (screen.get_at((int(mousepos[0]), int(mousepos[1]))))[:3]
                     self.processedcolor = (clamp(round(self.color[0] - self.brightness * (255 / self.size[1])), 0, 255),
                                            clamp(round(self.color[1] - self.brightness * (255 / self.size[1])), 0, 255),
                                            clamp(round(self.color[2] - self.brightness * (255 / self.size[1])), 0, 255))
 
             # darkness slider
-            pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0] + self.size[0] + 5, self.position[1], 5, self.size[1]))
-            pygame.draw.rect(screen, self.processedcolor, (self.position[0] + self.size[0] + 5, self.position[1] + self.brightness, 5, self.size[1] - self.brightness))
+            pygame.draw.rect(screen, Colors.HighlightBackground,
+                             (self.position[0] + self.size[0] + 5, self.position[1], 5, self.size[1]))
+            pygame.draw.rect(screen, self.processedcolor, (
+            self.position[0] + self.size[0] + 5, self.position[1] + self.brightness, 5, self.size[1] - self.brightness))
 
-            if mousepos[0] > self.position[0] + self.size[0] + 5 and mousepos[0] < self.position[0] + self.size[1] + 10 and mousepos[1] > self.position[1] - 1 and mousepos[1] < self.position[1] + self.size[1] + 1:
+            if mousepos[0] > self.position[0] + self.size[0] + 5 and mousepos[0] < self.position[0] + self.size[
+                1] + 10 and mousepos[1] > self.position[1] - 1 and mousepos[1] < self.position[1] + self.size[1] + 1:
                 if pygame.mouse.get_pressed()[0] == True:
                     self.brightness = mousepos[1] - self.position[1]
                     self.processedcolor = (clamp(round(self.color[0] - self.brightness * (255 / self.size[1])), 0, 255),
                                            clamp(round(self.color[1] - self.brightness * (255 / self.size[1])), 0, 255),
                                            clamp(round(self.color[2] - self.brightness * (255 / self.size[1])), 0, 255))
 
-            if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > self.position[1] and mousepos[1] < self.size[1] + self.position[1]:
+            if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > \
+                    self.position[1] and mousepos[1] < self.size[1] + self.position[1]:
                 if pygame.mouse.get_pressed()[2] == True:
                     if self.starttime + 0.25 < time.time():
                         self.starttime = time.time()
                         self.opened = not self.opened
         else:
             pygame.draw.rect(screen, self.processedcolor, (self.position[0], self.position[1], 30, 30))
-            screen.blit(Colors.FontMed.render(str(self.name), True, self.processedcolor), (self.position[0], self.position[1] + 30))
+            screen.blit(Colors.FontMed.render(str(self.name), True, self.processedcolor),
+                        (self.position[0], self.position[1] + 30))
 
-
-            if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + 30 and mousepos[1] > self.position[1] and mousepos[1] < 30 + self.position[1]:
+            if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + 30 and mousepos[1] > self.position[
+                1] and mousepos[1] < 30 + self.position[1]:
                 if pygame.mouse.get_pressed()[2] == True:
                     if self.starttime + 0.25 < time.time():
                         self.starttime = time.time()
                         self.opened = not self.opened
 
         return self.processedcolor
+
 
 class Checkbox():
     def __init__(self, pos, size, name, color):
@@ -795,24 +846,24 @@ class Checkbox():
 
     def Update(self, screen, Mousepos, framedelta):
 
-
-
-        if Mousepos[0] > self.pos[0] and Mousepos[0] < self.pos[0] + self.size[0] and Mousepos[1] > self.pos[1] and Mousepos[1] < self.pos[1] + self.size[1]:
+        if Mousepos[0] > self.pos[0] and Mousepos[0] < self.pos[0] + self.size[0] and Mousepos[1] > self.pos[1] and \
+                Mousepos[1] < self.pos[1] + self.size[1]:
             if pygame.mouse.get_pressed()[0] and self.delaytime + 0.1 < time.time():
                 self.clicked = not self.clicked
                 self.delaytime = time.time()
-
 
         if self.show == True and self.clicked == True:
             self.CustomColorR -= (self.CustomColorR - Colors.ColorStyle[0]) * (1 / framedelta) * 7
             self.CustomColorG -= (self.CustomColorG - Colors.ColorStyle[1]) * (1 / framedelta) * 7
             self.CustomColorB -= (self.CustomColorB - Colors.ColorStyle[2]) * (1 / framedelta) * 7
-            self.CustomColor = (clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+            self.CustomColor = (
+            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
         else:
             self.CustomColorR -= (self.CustomColorR - Colors.DisableColor[0]) * (1 / framedelta) * 13
             self.CustomColorG -= (self.CustomColorG - Colors.DisableColor[1]) * (1 / framedelta) * 13
             self.CustomColorB -= (self.CustomColorB - Colors.DisableColor[2]) * (1 / framedelta) * 13
-            self.CustomColor = (clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+            self.CustomColor = (
+            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
 
         if self.show == False:
             self.CustomColorR = Colors.DisableColor[0]
@@ -821,13 +872,14 @@ class Checkbox():
             self.CustomColor = Colors.DisableColor
 
         rect = pygame.draw.rect(screen, self.CustomColor, (self.pos[0], self.pos[1], self.size[0], self.size[1]))
-        rect = pygame.draw.rect(screen, Colors.ColorStyle, (self.pos[0], self.pos[1], self.size[0], self.size[1]), width=2)
-
+        rect = pygame.draw.rect(screen, Colors.ColorStyle, (self.pos[0], self.pos[1], self.size[0], self.size[1]),
+                                width=2)
 
         textrect = Colors.FontMed.render(str(self.name), True, Colors.TextColor)
-        screen.blit(textrect, (self.pos[0] + self.size[0] + 5, rect.centery - textrect.get_height()/2))
+        screen.blit(textrect, (self.pos[0] + self.size[0] + 5, rect.centery - textrect.get_height() / 2))
 
         return self.clicked
+
 
 class Searchbox():
     def __init__(self, position, size, name, array):
@@ -848,12 +900,15 @@ class Searchbox():
         self.textstop = False
 
     def Update(self, screen, mousepos, framedelta):
-        rectangle = pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0], self.size[1]), border_radius=self.rounding)
+        rectangle = pygame.draw.rect(screen, Colors.HighlightBackground,
+                                     (self.position[0], self.position[1], self.size[0], self.size[1]),
+                                     border_radius=self.rounding)
 
         namerect = Colors.FontMed.render(str(self.name), True, Colors.TextColor)
         screen.blit(namerect, (rectangle.centerx - namerect.get_width() / 2, self.position[1] - namerect.get_height()))
 
-        if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
+        if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > \
+                self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
             if pygame.mouse.get_pressed()[0] == True and self.Delaytime < time.time():
                 self.clicked = not self.clicked
                 self.Delaytime = time.time() + 0.5
@@ -883,38 +938,46 @@ class Searchbox():
                     if keyboard.get_hotkey_name() == "":
                         self.textstop = False
 
-
             if self.show < time.time():
                 self.show = time.time() + 0.5
                 self.showing = not self.showing
 
             if self.showing == True:
-                pygame.draw.rect(screen, Colors.TextColor, (self.position[0] + text.get_width(), self.position[1] + 1, 1, self.size[1] - 2), border_radius=self.rounding)
-
+                pygame.draw.rect(screen, Colors.TextColor,
+                                 (self.position[0] + text.get_width(), self.position[1] + 1, 1, self.size[1] - 2),
+                                 border_radius=self.rounding)
 
         for element in range(0, len(self.array)):
             if self.text in str(self.array[element]).lower():
                 self.foundarray.append(self.array[element])
 
-
         for newelelemnt in range(0, len(self.foundarray)):
             elementrect = Colors.FontMed.render(str(self.foundarray[newelelemnt]), True, (255, 255, 255))
             if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0]:
-                if mousepos[1] > rectangle.centery - elementrect.get_height()/2 + newelelemnt * elementrect.get_height() + self.size[1]:
-                    if mousepos[1] < rectangle.centery - elementrect.get_height()/2 + newelelemnt * elementrect.get_height() + self.size[1] + 17:
-                        rectheight = rectangle.centery - elementrect.get_height()/2 + newelelemnt * elementrect.get_height() + self.size[1]
+                if mousepos[
+                    1] > rectangle.centery - elementrect.get_height() / 2 + newelelemnt * elementrect.get_height() + \
+                        self.size[1]:
+                    if mousepos[
+                        1] < rectangle.centery - elementrect.get_height() / 2 + newelelemnt * elementrect.get_height() + \
+                            self.size[1] + 17:
+                        rectheight = rectangle.centery - elementrect.get_height() / 2 + newelelemnt * elementrect.get_height() + \
+                                     self.size[1]
                         rectright = rectangle.centerx - elementrect.get_width() / 2
-                        pygame.draw.rect(screen, Colors.TextColor, (rectright - 1, rectheight - 1, elementrect.get_rect()[2] + 2, elementrect.get_rect()[3] + 2))
-                        pygame.draw.rect(screen, Colors.HighlightBackground, (rectright, rectheight, elementrect.get_rect()[2], elementrect.get_rect()[3]))
+                        pygame.draw.rect(screen, Colors.TextColor, (
+                        rectright - 1, rectheight - 1, elementrect.get_rect()[2] + 2, elementrect.get_rect()[3] + 2))
+                        pygame.draw.rect(screen, Colors.HighlightBackground,
+                                         (rectright, rectheight, elementrect.get_rect()[2], elementrect.get_rect()[3]))
                         if pygame.mouse.get_pressed()[0] == True:
                             self.text = str(self.foundarray[newelelemnt])
-            screen.blit(elementrect, (rectangle.centerx - elementrect.get_width() / 2, rectangle.centery - elementrect.get_height() / 2 + newelelemnt * elementrect.get_height() + self.size[1]))
-
+            screen.blit(elementrect, (rectangle.centerx - elementrect.get_width() / 2,
+                                      rectangle.centery - elementrect.get_height() / 2 + newelelemnt * elementrect.get_height() +
+                                      self.size[1]))
 
         if len(self.foundarray) > 0:
             self.foundarray.clear()
 
         return self.array[self.selected], self.clicked
+
 
 class LogoDisplayer():
     def __init__(self, overlay):
@@ -959,30 +1022,32 @@ class LogoDisplayer():
             self.state = 2
 
         # draw bottom lines
-        pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i, 0, self.width), 1))
-        pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2 - clamp(self.i, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
+        pygame.draw.rect(self.screen, self.dark, (
+        self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i, 0, self.width), 1))
+        pygame.draw.rect(self.screen, self.dark, (
+        self.scrsize[0] / 2 - clamp(self.i, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
         clamp(self.i, 0, self.width), 1))
 
         # left right lines
         if self.i >= self.width:
             pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2 + self.width,
-                                                 self.heightoffset + self.scrsize[1] / 2 - clamp(
-                                                     (self.i - self.width) - 2, 0, self.height), 1,
-                                                 clamp((self.i - self.width), 0, self.height + 1)))
+                                                      self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                          (self.i - self.width) - 2, 0, self.height), 1,
+                                                      clamp((self.i - self.width), 0, self.height + 1)))
             pygame.draw.rect(self.screen, self.dark, (self.scrsize[0] / 2 - self.width,
-                                                 self.heightoffset + self.scrsize[1] / 2 - clamp(
-                                                     (self.i - self.width) - 2, 0, self.height), 1,
-                                                 clamp((self.i - self.width), 0, self.height + 1)))
+                                                      self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                          (self.i - self.width) - 2, 0, self.height), 1,
+                                                      clamp((self.i - self.width), 0, self.height + 1)))
 
         # draw top lines
         if self.i >= self.width + self.height:
             pygame.draw.rect(self.screen, self.dark, (
-            self.scrsize[0] / 2 - self.width, self.scrsize[1] / 2 + self.heightoffset - self.height,
-            clamp(self.i - self.width - self.height, 0, self.width), 1))
+                self.scrsize[0] / 2 - self.width, self.scrsize[1] / 2 + self.heightoffset - self.height,
+                clamp(self.i - self.width - self.height, 0, self.width), 1))
             pygame.draw.rect(self.screen, self.dark, (
-            self.scrsize[0] / 2 + self.width - clamp(self.i - self.width - self.height, 0, self.width),
-            self.scrsize[1] / 2 + self.heightoffset - self.height,
-            clamp(self.i - self.width - self.height, 0, self.width), 1))
+                self.scrsize[0] / 2 + self.width - clamp(self.i - self.width - self.height, 0, self.width),
+                self.scrsize[1] / 2 + self.heightoffset - self.height,
+                clamp(self.i - self.width - self.height, 0, self.width), 1))
 
         # make brighter
         if self.i >= self.width * 2 + self.height and self.state == 2 and self.state != 6:
@@ -991,31 +1056,31 @@ class LogoDisplayer():
             val = self.width * 2 + self.height
             # draw bottom lines
             pygame.draw.rect(self.screen, self.bright, (
-            self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i - val, 0, self.width), 1))
+                self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i - val, 0, self.width), 1))
             pygame.draw.rect(self.screen, self.bright, (
-            self.scrsize[0] / 2 - clamp(self.i - val, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
-            clamp(self.i - val, 0, self.width), 1))
+                self.scrsize[0] / 2 - clamp(self.i - val, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
+                clamp(self.i - val, 0, self.width), 1))
 
             # left right lines
             if self.i >= self.width:
                 pygame.draw.rect(self.screen, self.bright, (self.scrsize[0] / 2 + self.width,
-                                                       self.heightoffset + self.scrsize[1] / 2 - clamp(
-                                                           (self.i - val - self.width) - 2, 0, self.height), 1,
-                                                       clamp((self.i - val - self.width), 0, self.height + 1)))
+                                                            self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                                (self.i - val - self.width) - 2, 0, self.height), 1,
+                                                            clamp((self.i - val - self.width), 0, self.height + 1)))
                 pygame.draw.rect(self.screen, self.bright, (self.scrsize[0] / 2 - self.width,
-                                                       self.heightoffset + self.scrsize[1] / 2 - clamp(
-                                                           (self.i - val - self.width) - 2, 0, self.height), 1,
-                                                       clamp((self.i - val - self.width), 0, self.height + 1)))
+                                                            self.heightoffset + self.scrsize[1] / 2 - clamp(
+                                                                (self.i - val - self.width) - 2, 0, self.height), 1,
+                                                            clamp((self.i - val - self.width), 0, self.height + 1)))
 
             # draw top lines
             if self.i >= self.width + self.height:
                 pygame.draw.rect(self.screen, self.bright, (
-                self.scrsize[0] / 2 - self.width, self.scrsize[1] / 2 + self.heightoffset - self.height,
-                clamp(self.i - val - self.width - self.height, 0, self.width), 1))
+                    self.scrsize[0] / 2 - self.width, self.scrsize[1] / 2 + self.heightoffset - self.height,
+                    clamp(self.i - val - self.width - self.height, 0, self.width), 1))
                 pygame.draw.rect(self.screen, self.bright, (
-                self.scrsize[0] / 2 + self.width - clamp(self.i - val - self.width - self.height, 0, self.width),
-                self.scrsize[1] / 2 + self.heightoffset - self.height,
-                clamp(self.i - val - self.width - self.height, 0, self.width), 1))
+                    self.scrsize[0] / 2 + self.width - clamp(self.i - val - self.width - self.height, 0, self.width),
+                    self.scrsize[1] / 2 + self.heightoffset - self.height,
+                    clamp(self.i - val - self.width - self.height, 0, self.width), 1))
 
         if self.i >= (self.width * 2 + self.height) * 2 and self.state == 3:
             self.state = 4
@@ -1031,7 +1096,8 @@ class LogoDisplayer():
         # make lines darker
         if self.state == 5:
             if self.bright[0] > self.dark[0]:
-                self.bright = (clamp(self.bright[0] - 20, 0, 255), clamp(self.bright[0] - 20, 0, 255), clamp(self.bright[0] - 20, 0, 255))
+                self.bright = (clamp(self.bright[0] - 20, 0, 255), clamp(self.bright[0] - 20, 0, 255),
+                               clamp(self.bright[0] - 20, 0, 255))
             else:
                 self.state = 6
                 self.i = self.width * 2 + self.height
@@ -1043,10 +1109,14 @@ class LogoDisplayer():
 
         # center logo
         self.futuresurface.set_alpha(clamp(self.i, 0, 255))
-        surface = pygame.transform.scale(self.futuresurface, (self.F.get_size()[0] / (3.8 - clamp(self.i / 50, -100, 2)),self.F.get_size()[1] / (3.7 - clamp(self.i / 50, -100, 2))))
-        self.screen.blit(surface, (self.scrsize[0] / 2 - surface.get_width() / 2, self.scrsize[1] / 2 - surface.get_height() / 2))
+        surface = pygame.transform.scale(self.futuresurface, (
+        self.F.get_size()[0] / (3.8 - clamp(self.i / 50, -100, 2)),
+        self.F.get_size()[1] / (3.7 - clamp(self.i / 50, -100, 2))))
+        self.screen.blit(surface, (
+        self.scrsize[0] / 2 - surface.get_width() / 2, self.scrsize[1] / 2 - surface.get_height() / 2))
 
         return self.state
+
 
 class Loading():
     def __init__(self, overlay):
@@ -1070,7 +1140,6 @@ class Loading():
         self.backgroundoverlay.set_alpha(self.alpha)
         self.backgroundoverlay.fill(self.backcolor)
 
-
     def Update(self, overlay, State):
         screen = overlay.screen
 
@@ -1093,7 +1162,6 @@ class Loading():
             self.backgroundoverlay.set_alpha(self.alpha)
             self.backgroundoverlay.fill(self.backcolor)
 
-
             self.X = self.X + self.speed
             self.X1 = self.X1 + self.speed / 1.9
             self.X2 = self.X2 + self.speed / 4
@@ -1102,18 +1170,21 @@ class Loading():
             for i in range(0, 90):
                 adder = i / 40 * speedup
 
-                offset = (math.cos(self.X + speedup + adder + self.X2) * self.size, math.sin(self.X + speedup + adder) * self.size)
+                offset = (math.cos(self.X + speedup + adder + self.X2) * self.size,
+                          math.sin(self.X + speedup + adder) * self.size)
                 self.loadingpos = (self.pos[0] + offset[0], self.pos[1] + offset[1])
                 pygame.draw.circle(screen, self.Color1, self.loadingpos, 5)
 
                 shift = 41
-                offset = (math.cos(self.X + speedup + adder + self.X2 + shift) * self.size, math.sin(self.X + speedup + adder + shift) * self.size)
+                offset = (math.cos(self.X + speedup + adder + self.X2 + shift) * self.size,
+                          math.sin(self.X + speedup + adder + shift) * self.size)
                 self.loadingpos = (self.pos[0] + offset[0], self.pos[1] + offset[1])
                 pygame.draw.circle(screen, self.Color2, self.loadingpos, 6)
         else:
             self.X = 0
             self.X1 = 0
             self.X2 = 0
+
 
 class LoginScreen:
     def __init__(self, serverisonline, overlay):
@@ -1144,7 +1215,6 @@ class LoginScreen:
             self.textfield_posz = 20
             self.submit_button_size = (100, 26)
             self.submit_button_posz = 190
-
 
             self.time_wait_before_steam_starts = 20
             self.time_login_inited = time.time()
@@ -1193,7 +1263,6 @@ class LoginScreen:
 
             self.restarted_steam = False
 
-
     def Update(self, screenres, overlay, is_loading, keyevent):
         screen = overlay.screen
         if self.serverisonline == True:
@@ -1222,14 +1291,24 @@ class LoginScreen:
                     scaledLogo = pygame.transform.scale(self.FLogo, (40, 60))
                     screen.blit(scaledLogo, (self.res[0] / 2 - scaledLogo.get_width() / 2, 10))
 
-                    pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.textfield_size[0] / 2,self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz, self.textfield_size[0],self.textfield_size[1]))
-                    pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.textfield_size[0] / 2,2 + self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz,-4 + self.textfield_size[0], -4 + self.textfield_size[1]))
+                    pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.textfield_size[0] / 2,
+                                                                self.res[1] / 2 - self.textfield_size[
+                                                                    1] / 2 + self.textfield_posz,
+                                                                self.textfield_size[0], self.textfield_size[1]))
+                    pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.textfield_size[0] / 2,
+                                                                 2 + self.res[1] / 2 - self.textfield_size[
+                                                                     1] / 2 + self.textfield_posz,
+                                                                 -4 + self.textfield_size[0],
+                                                                 -4 + self.textfield_size[1]))
 
                     mousepos = pygame.mouse.get_pos()
 
                     if pygame.mouse.get_pressed()[0] == True and self.Delaytime < time.time():
-                        if mousepos[0] > self.res[0] / 2 - self.textfield_size[0] / 2 and mousepos[0] < self.res[0] / 2 - self.textfield_size[0] / 2 + self.textfield_size[0]:
-                            if mousepos[1] > self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz and mousepos[1] < self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_size[1] + self.textfield_posz:
+                        if mousepos[0] > self.res[0] / 2 - self.textfield_size[0] / 2 and mousepos[0] < self.res[
+                            0] / 2 - self.textfield_size[0] / 2 + self.textfield_size[0]:
+                            if mousepos[1] > self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_posz and \
+                                    mousepos[1] < self.res[1] / 2 - self.textfield_size[1] / 2 + self.textfield_size[
+                                1] + self.textfield_posz:
                                 self.clicked = True
                                 self.Delaytime = time.time() + 0.5
                             else:
@@ -1253,18 +1332,29 @@ class LoginScreen:
                                     self.enterpressed = True
 
                     TextFont = Colors.FontBig.render(str(self.text.upper()), True, Colors.TextColor)
-                    screen.blit(TextFont, (self.res[0] / 2 - self.textfield_size[0] / 2 + 2,self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz))
+                    screen.blit(TextFont, (self.res[0] / 2 - self.textfield_size[0] / 2 + 2,
+                                           self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz))
 
                     if self.Caretshow and self.clicked == True:
-                        pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.textfield_size[0] / 2 + 5 + TextFont.get_rect()[2],self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz, 2, 24))
+                        pygame.draw.rect(screen, Colors.TextColor, (
+                        self.res[0] / 2 - self.textfield_size[0] / 2 + 5 + TextFont.get_rect()[2],
+                        self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz, 2, 24))
 
                     SubmitFont = Colors.FontBig.render("Submit", True, Colors.TextColor)
-                    pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.submit_button_size[0] / 2,self.submit_button_posz - self.submit_button_size[1] / 2, self.submit_button_size[0],self.submit_button_size[1]))
-                    pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.submit_button_size[0] / 2,2 + self.submit_button_posz - self.submit_button_size[1] / 2, -4 + self.submit_button_size[0],-4 + self.submit_button_size[1]))
-                    screen.blit(SubmitFont, (self.res[0] / 2 - SubmitFont.get_size()[0] / 2, self.submit_button_posz - SubmitFont.get_size()[1] / 2))
+                    pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.submit_button_size[0] / 2,
+                                                                self.submit_button_posz - self.submit_button_size[
+                                                                    1] / 2, self.submit_button_size[0],
+                                                                self.submit_button_size[1]))
+                    pygame.draw.rect(screen, Colors.Background, (2 + self.res[0] / 2 - self.submit_button_size[0] / 2,
+                                                                 2 + self.submit_button_posz - self.submit_button_size[
+                                                                     1] / 2, -4 + self.submit_button_size[0],
+                                                                 -4 + self.submit_button_size[1]))
+                    screen.blit(SubmitFont, (self.res[0] / 2 - SubmitFont.get_size()[0] / 2,
+                                             self.submit_button_posz - SubmitFont.get_size()[1] / 2))
 
                     steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
-                    screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
+                    screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2,
+                                            self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
 
                     if datetime.datetime.now().timestamp() < self.expire_timestamp:
                         TextFont = Colors.FontBig.render(self.expire_date[0], True, (100, 200, 100))
@@ -1272,8 +1362,10 @@ class LoginScreen:
                         TextFont = Colors.FontBig.render(self.expire_date[0], True, (200, 100, 100))
                     screen.blit(TextFont, (screenres[0] - TextFont.get_size()[0] - 10, 10))
 
-                    if mousepos[0] > self.res[0] / 2 - self.submit_button_size[0] / 2 and mousepos[0] < self.res[0] / 2 + self.submit_button_size[0] / 2 or self.enterpressed:
-                        if mousepos[1] > self.submit_button_posz - self.submit_button_size[1] / 2 and mousepos[1] < self.submit_button_posz + self.submit_button_size[1] / 2 or self.enterpressed:
+                    if mousepos[0] > self.res[0] / 2 - self.submit_button_size[0] / 2 and mousepos[0] < self.res[
+                        0] / 2 + self.submit_button_size[0] / 2 or self.enterpressed:
+                        if mousepos[1] > self.submit_button_posz - self.submit_button_size[1] / 2 and mousepos[
+                            1] < self.submit_button_posz + self.submit_button_size[1] / 2 or self.enterpressed:
                             if pygame.mouse.get_pressed()[0] == True or self.enterpressed:
                                 if not self.loading:
                                     self.loading = True
@@ -1288,8 +1380,10 @@ class LoginScreen:
 
                                         self.correct_acc = CheckIfUserExists(Generator(self.account_name))
                                         if self.correct_acc and self.correct_acc_local:
-                                            self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name), Generator(self.text.upper()))
-                                            self.license_is_valid = CheckIfUserLicenseIsValid(Generator(self.account_name))
+                                            self.correct_pass = CheckIfPasswordIsCorrect(Generator(self.account_name),
+                                                                                         Generator(self.text.upper()))
+                                            self.license_is_valid = CheckIfUserLicenseIsValid(
+                                                Generator(self.account_name))
 
                                     self.request_time = time.time()
 
@@ -1312,10 +1406,12 @@ class LoginScreen:
                             self.INCORRECT = False
                         if self.correct_acc_local == False:
                             errorfont = Colors.FontBig.render("Invalid Account", True, (255, 100, 100))
-                            screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
+                            screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2,
+                                                    self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
                         else:
                             errorfont = Colors.FontBig.render("Incorrect Password", True, (255, 100, 100))
-                            screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2, self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
+                            screen.blit(errorfont, (self.res[0] / 2 - errorfont.get_size()[0] / 2,
+                                                    self.submit_button_posz - errorfont.get_size()[1] / 2 - 30))
 
                 self.loadingscreen.Update(overlay, self.loading)
             else:
@@ -1324,34 +1420,42 @@ class LoginScreen:
                 scaledLogo = pygame.transform.scale(self.FLogo, (40, 60))
                 screen.blit(scaledLogo, (self.res[0] / 2 - scaledLogo.get_width() / 2, 10))
                 steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
-                screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
+                screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2,
+                                        self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
                 font = Colors.FontBig.render("Buy a Subscription!", True, (100, 255, 100))
-                screen.blit(font, (self.res[0] / 2 - font.get_size()[0] / 2, self.submit_button_posz - font.get_size()[1] / 2 - 60))
+                screen.blit(font, (
+                self.res[0] / 2 - font.get_size()[0] / 2, self.submit_button_posz - font.get_size()[1] / 2 - 60))
 
                 mousepos = pygame.mouse.get_pos()
 
                 link = Colors.FontBig.render(str(self.link), True, (42, 129, 233))
 
-                if mousepos[0] > self.res[0] / 2 - link.get_size()[0] / 2 and mousepos[0] < self.res[0] / 2 + link.get_size()[0] / 2:
-                    if mousepos[1] > self.submit_button_posz - link.get_size()[1] / 2 - 30 and mousepos[1] < self.submit_button_posz + link.get_size()[1] / 2 - 30:
+                if mousepos[0] > self.res[0] / 2 - link.get_size()[0] / 2 and mousepos[0] < self.res[0] / 2 + \
+                        link.get_size()[0] / 2:
+                    if mousepos[1] > self.submit_button_posz - link.get_size()[1] / 2 - 30 and mousepos[
+                        1] < self.submit_button_posz + link.get_size()[1] / 2 - 30:
                         if pygame.mouse.get_pressed()[0] and self.Delaytime + 0.3 < time.time():
                             self.Delaytime = time.time()
                             callcommand = "explorer " + str(self.link)
                             subprocess.call(callcommand)
 
-                screen.blit(link, (self.res[0] / 2 - link.get_size()[0] / 2, self.submit_button_posz - link.get_size()[1] / 2 - 30))
+                screen.blit(link, (
+                self.res[0] / 2 - link.get_size()[0] / 2, self.submit_button_posz - link.get_size()[1] / 2 - 30))
             return self.state
         else:
             pygame.draw.rect(screen, Colors.Background, (0, 0, self.res[0], self.res[1]))
 
             sprite = Colors.FontBig.render("Database not available", True, (255, 100, 100))
-            screen.blit(sprite, (self.res[0] / 2 - sprite.get_size()[0] / 2, self.res[1] - sprite.get_size()[1] / 2 - 90))
+            screen.blit(sprite,
+                        (self.res[0] / 2 - sprite.get_size()[0] / 2, self.res[1] - sprite.get_size()[1] / 2 - 90))
 
             scaledLogo = pygame.transform.scale(self.FLogo, (40, 60))
             screen.blit(scaledLogo, (self.res[0] / 2 - scaledLogo.get_width() / 2, 10))
 
             steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
-            screen.blit(steamname, (self.res[0] / 2 - steamname.get_size()[0] / 2, self.res[1] - steamname.get_size()[1] / 2 - 130))
+            screen.blit(steamname, (
+            self.res[0] / 2 - steamname.get_size()[0] / 2, self.res[1] - steamname.get_size()[1] / 2 - 130))
+
 
 class ScriptManager:
     def __init__(self, pos, size):
@@ -1376,26 +1480,32 @@ class ScriptManager:
         self.errorsurface = pygame.Surface((self.size[0], 20))
         self.errorsurface.fill((Colors.Background))
 
-        self.unallowedlist = ["unallowedlist", "with open", "while", "os.", "sys.", "Manager", "Colors.", "exec", "compile", "from", "import", "quit()", "exit()", "self.scriptpath", "self.file_list", "self.win_size", "self.pos", "self.size"
-                             "self.clicked_mouse", "self.calc_time", "self.delaytime", "self.error", "self.errortime", "self.errorscroll", "self.errorsurface", "self.refreshpng"]
+        self.unallowedlist = ["unallowedlist", "with open", "while", "os.", "sys.", "Manager", "Colors.", "exec",
+                              "compile", "from", "import", "quit()", "exit()", "self.scriptpath", "self.file_list",
+                              "self.win_size", "self.pos", "self.size"
+                                                           "self.clicked_mouse", "self.calc_time", "self.delaytime",
+                              "self.error", "self.errortime", "self.errorscroll", "self.errorsurface",
+                              "self.refreshpng"]
 
         self.refreshpng = pygame.image.load("Data/Images/Refresh.png")
 
-
-
     def Update(self, screen, mousepos, fps):
         # background
-        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0] - 1, self.pos[1] - 1, self.size[0] + 2, self.size[1] + 2))
+        pygame.draw.rect(screen, Colors.LightBackground,
+                         (self.pos[0] - 1, self.pos[1] - 1, self.size[0] + 2, self.size[1] + 2))
         pygame.draw.rect(screen, Colors.Background, (self.pos[0], self.pos[1], self.size[0], self.size[1]))
         pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0] + 20, self.pos[1], 1, 20))
-        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0], self.pos[1] + self.size[1] - 21, self.size[0], 1))
+        pygame.draw.rect(screen, Colors.LightBackground,
+                         (self.pos[0], self.pos[1] + self.size[1] - 21, self.size[0], 1))
 
         # top bar
         pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0], self.pos[1] + 20, self.size[0], 1))
 
         # refresh files
-        screen.blit(self.refreshpng, (self.pos[0] + 20 / 2 - self.refreshpng.get_width() / 2, self.pos[1] + 20 / 2 - self.refreshpng.get_height() / 2))
-        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + 20 and mousepos[1] > self.pos[1] and mousepos[1] < self.pos[1] + 20:
+        screen.blit(self.refreshpng, (self.pos[0] + 20 / 2 - self.refreshpng.get_width() / 2,
+                                      self.pos[1] + 20 / 2 - self.refreshpng.get_height() / 2))
+        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + 20 and mousepos[1] > self.pos[1] and mousepos[1] < \
+                self.pos[1] + 20:
             if pygame.mouse.get_pressed()[0] == True:
                 self.clicked_mouse = True
             else:
@@ -1417,16 +1527,18 @@ class ScriptManager:
             screen.blit(sprite, (self.pos[0] + 10, self.pos[1] + 25 + i * 20))
 
             # more background to override long names
-            pygame.draw.rect(screen, Colors.Background, (self.pos[0] + self.size[0] - 28, self.pos[1] + 21, 28, self.size[1] - 42))
+            pygame.draw.rect(screen, Colors.Background,
+                             (self.pos[0] + self.size[0] - 28, self.pos[1] + 21, 28, self.size[1] - 42))
 
             # if script not loaded
             if self.file_list[i] not in self.loaded_script_names:
                 # add script
-                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
+                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and \
+                        mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
                     pygame.draw.polygon(screen, (100, 250, 100), (
-                    (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                    (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                    (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
+                        (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                        (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
 
                     if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
 
@@ -1441,24 +1553,24 @@ class ScriptManager:
                                     if self.unallowedlist[x] in lines[y]:
                                         passedtest = False
                                         self.errortime = time.time()
-                                        self.error = "not allowed to run! > '" + str(self.unallowedlist[x]) + "' in line: " + str(y+1)
+                                        self.error = "not allowed to run! > '" + str(
+                                            self.unallowedlist[x]) + "' in line: " + str(y + 1)
                                         break
                             if passedtest == True:
                                 self.loaded_script_names.append(self.file_list[i])
                                 self.loaded_code.append(readfile)
 
-
-
                         self.delaytime = time.time()
                 else:
                     pygame.draw.polygon(screen, (50, 150, 50), (
-                    (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                    (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                    (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
+                        (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
+                        (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
+                        (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
 
             else:
                 # remove script
-                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
+                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and \
+                        mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
                     pygame.draw.polygon(screen, (100, 250, 100), (
                         (3 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
                         (3 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
@@ -1472,10 +1584,9 @@ class ScriptManager:
                         (12 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
 
                     if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
-
                         self.loaded_code.remove(self.loaded_code[self.loaded_script_names.index(self.file_list[i])])
-                        self.loaded_script_names.remove(self.loaded_script_names[self.loaded_script_names.index(self.file_list[i])])
-
+                        self.loaded_script_names.remove(
+                            self.loaded_script_names[self.loaded_script_names.index(self.file_list[i])])
 
                         self.delaytime = time.time()
                 else:
@@ -1501,12 +1612,12 @@ class ScriptManager:
                 self.loaded_script_names.remove(self.loaded_script_names[i])
                 self.errortime = time.time()
 
-
         # error handling
         if self.error != "":
             self.errorsurface.fill(Colors.Background)
             sprite = Colors.FontSmall.render(str(self.error), True, (190, 190, 190))
-            self.errorsurface.blit(sprite, (clamp(-self.errorscroll + 5, -abs(self.size[0] - sprite.get_width() - 5), 5), 0))
+            self.errorsurface.blit(sprite,
+                                   (clamp(-self.errorscroll + 5, -abs(self.size[0] - sprite.get_width() - 5), 5), 0))
             screen.blit(self.errorsurface, (self.pos[0], self.pos[1] + self.size[1] - self.errorsurface.get_height()))
 
             if sprite.get_width() > self.size[0]:

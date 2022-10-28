@@ -41,14 +41,14 @@ def Entities(ESP_state, Aimbot_states, pm, client):
             entity_team = pm.read_uint(entity + m_iTeamNum)
             entities[entity]["entity_team"] = entity_team
 
-            if Aimbot_states[0]:
-                entity_bones = pm.read_uint(entity + m_dwBoneMatrix)
-                entitypos_x = pm.read_float(entity_bones + 0x30 * Index + 0xC)
-                entitypos_y = pm.read_float(entity_bones + 0x30 * Index + 0x1C)
-                entitypos_z = pm.read_float(entity_bones + 0x30 * Index + 0x2C)
-                entities[entity]["entitypos_x"] = entitypos_x
-                entities[entity]["entitypos_y"] = entitypos_y
-                entities[entity]["entitypos_z"] = entitypos_z
+
+            entity_bones = pm.read_uint(entity + m_dwBoneMatrix)
+            entitypos_x = pm.read_float(entity_bones + 0x30 * Index + 0xC)
+            entitypos_y = pm.read_float(entity_bones + 0x30 * Index + 0x1C)
+            entitypos_z = pm.read_float(entity_bones + 0x30 * Index + 0x2C)
+            entities[entity]["entitypos_x"] = entitypos_x
+            entities[entity]["entitypos_y"] = entitypos_y
+            entities[entity]["entitypos_z"] = entitypos_z
 
             entities[entity]["i"] = i
 
