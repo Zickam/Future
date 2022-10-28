@@ -1,8 +1,4 @@
 logs/
 __pycache__
 .idea/
-<<<<<<< HEAD
 venv/
-=======
-venv/
->>>>>>> 69a001ef563e6878337a6aae5b935cb77d79ad1f
