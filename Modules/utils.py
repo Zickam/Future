@@ -22,3 +22,7 @@ def waitForPressSpace(text="Press space to close window"):
 
         else:
             time.sleep(0.01)
+
+def showMessageBox(title: str, text: str):
+    import ctypes
+    ctypes.windll.user32.MessageBoxW(0, str(text), str(title), 0)

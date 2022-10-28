@@ -1,16 +1,15 @@
-import Modules.gui.esp
-guiespesp = Modules.gui.esp.ESP()
-
-
 showCheatFPS = False
 showGUIFPS = False
-DEV = False
+DEV = True # search for 'security' through the file for usage (very important)
 needAdmin = False
+need_to_update_offsets = True
 login_success = False
 csgo_started = False
 login = False
 all_detected_correctly = False
 is_loading = False
+
+MAX_WINDOW_FPS = 60
 
 def getActiveModules(buttons):
     row = []
@@ -62,10 +61,15 @@ def gui_updater(buttons_grid, buttons):
 
     clock = pygame.time.Clock()
 
-    LoginScreen = gui.LoginScreen(ServerDB.Client.CheckIfServerOnline(), overlay)
-    Displayer = LogoDisplayer(overlay)
 
-    is_login_screen = True
+    if not DEV: # security
+        LoginScreen = gui.LoginScreen(ServerDB.Client.CheckIfServerOnline(), overlay)
+        Displayer = LogoDisplayer(overlay)
+
+        is_login_screen = True
+
+    else:
+        is_login_screen = False
 
     while 1:
         # window.overlay.windowmode()
@@ -79,8 +83,10 @@ def gui_updater(buttons_grid, buttons):
         objects_shown = []
         objects_not_shown = []
 
-
-        login_success = gui.LoginScreen.Update(LoginScreen, screen_size, overlay, is_loading, window.pygameevent)
+        if not DEV: # security
+            login_success = gui.LoginScreen.Update(LoginScreen, screen_size, overlay, is_loading, window.pygameevent)
+        else:
+            login_success = True
 
         if Shown == True:
             def unTabDependencies(dependencies):
@@ -166,15 +172,17 @@ def gui_updater(buttons_grid, buttons):
                 window = gui.Window(screen_size, (10, 10), overlay)  # normal gui
                 clock = pygame.time.Clock()
 
-                Displayer = LogoDisplayer(overlay)
+                if not DEV: # security
+                    Displayer = LogoDisplayer(overlay)
 
-            LogoDisplayer.Update(Displayer)
+            if not DEV: # security
+                LogoDisplayer.Update(Displayer)
 
         if showGUIFPS:
             showGUIFPSFunc(int(clock.get_fps()))
 
         gui.Refreshscreen()
-        clock.tick(60)
+        clock.tick(MAX_WINDOW_FPS)
 
 main_program_frames = 0
 main_program_frames_sum = 0
@@ -201,6 +209,9 @@ def loginAndGUI():
     buttons_class = gui.Buttons()
     buttons_grid, buttons = buttons_class.buttons_grid, buttons_class.buttons
     start_new_thread(gui_updater, (buttons_grid, buttons,))
+
+    if DEV: # security
+        return True, buttons
 
     time_to_wait = time.time()
     while 1:
@@ -248,8 +259,11 @@ def main_init():
 
             logIt(f"{client, engine, engine_pointer}", type="START")
 
-            logIt("Checking offsets...")
-            logIt(updateOffsets(), type="START")
+            if need_to_update_offsets:
+                logIt("Checking offsets...")
+                logIt(updateOffsets(), type="START")
+            else:
+                logIt("Offsets updater is disabled", type="START")
             print()
 
             if pm and client and engine and engine_pointer:
@@ -622,7 +636,9 @@ def main(pm, client, engine, engine_pointer, buttons):
             main_init()
 
 def mainOrder():
-    global login
+    global login, guiespesp
+
+    guiespesp = esp.ESP()
 
     login, buttons = loginAndGUI()
     logIt(f"{Fore.GREEN}Logged in, starting cheat...{Style.RESET_ALL}", type="START")
@@ -656,17 +672,33 @@ if __name__ == "__main__":
     from colorama import Fore
     from colorama import Style
 
-    from Modules import Aimbot, BHOP, ChamsFunction, ConfigManager, EntitiesIterator, FakeLag, FastPeek, FovFunction, \
-        GlowESP, Hitsound, Installer, Misc, NoFlashFunction, RadarFunction, RecoilSystem, Slowwalk, Startcsgo, Teleport, \
-        Thirdperson, ToxicChat, Triggerbot, utils
+    try:
+        from Modules import Aimbot, BHOP, ChamsFunction, ConfigManager, EntitiesIterator, FakeLag, FastPeek, FovFunction, \
+            GlowESP, Hitsound, Installer, Misc, NoFlashFunction, RadarFunction, RecoilSystem, Slowwalk, Startcsgo, Teleport, \
+            Thirdperson, ToxicChat, Triggerbot, utils
+    except ImportError as err:
+        from Modules.utils import showMessageBox
+        from Modules.logIt import logIt
+
+        index = err.msg.find("(") - 1
+        if err.msg[:index] == "cannot import name 'dwbSendPackets' from 'Offsets.offsets'":
+            logIt(type="ERROR", text=err)
+            showMessageBox("Future. ERROR handle", "Please reboot your pc or reinstall the cheat haha")
+            exit(-1)
+
+        else:
+            logIt(type="ERROR", text=err)
+            showMessageBox("Future. ERROR handle", err)
 
     from Offsets.offsets import *
 
     import ServerDB.Client
+    from Modules.utils import showMessageBox
     from Modules.logIt import logIt
     from Modules.gui import gui
     from Modules.gui.gui import Initscreen
     from Modules.gui.gui import LogoDisplayer
     from Offsets.Updater import updateOffsets
+    from Modules.gui import esp
 
     mainOrder()

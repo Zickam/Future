@@ -223,6 +223,7 @@ def devCommands():
                 "mp_limitteams 99",
                 "mp_startmoney 999999",
                 "mp_roundtime_defuse 999999",
+                "mp_warmup_end",
                 "bot_add",
                 "bot_add",
                 "bot_add",

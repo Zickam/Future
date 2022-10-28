@@ -80,7 +80,17 @@ def installerfunction():
     except ImportError:
         missingpackages.append("colorama")
 
+    try:
+        import psutil
+        print("psutil")
+    except ImportError:
+        missingpackages.append("psutil")
 
+    try:
+        import win32con
+        print("win32con")
+    except ImportError:
+        missingpackages.append("win32con")
 
     # if all packages are installed
     if len(missingpackages) == 0:

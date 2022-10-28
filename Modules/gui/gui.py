@@ -26,6 +26,8 @@ import ctypes
 from Modules.gui.OverlayV3 import Overlay
 
 
+ctypes.windll.user32.SetProcessDPIAware()
+
 def screen_size():
     return ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
 
@@ -395,7 +397,7 @@ def drawOverlay(overlay, esp_class):
         if esp_class.draw_list[i]["type"] == "polygon":
 
             pygame.draw.polygon(overlay.screen, (255, 255, 255), esp_class.draw_list[i]["points"], 1)
-    esp_class.draw_list[i]
+    esp_class.draw_list.clear()
     overlay.update()
 
 
