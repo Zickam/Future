@@ -35,25 +35,29 @@ class ESP:
 
 
     def calculate(self, entities, pm, client):
-        self.draw_list.clear()
+
 
         viewmatrix = read_matrix(pm, client + dwViewMatrix)
 
 
         for entity, values in entities.items():
-            print(entity)
             entitypos_x = entities[entity]["entitypos_x"]
             entitypos_y = entities[entity]["entitypos_y"]
             entitypos_z = entities[entity]["entitypos_z"]
 
-            x1, y1 = world_to_screen(viewmatrix, (entitypos_x, entitypos_y, entitypos_z), self.screen_size[0], self.screen_size[1])
-            x2, y2 = world_to_screen(viewmatrix, (entitypos_x, entitypos_y, entitypos_z + 64), self.screen_size[0], self.screen_size[1])
+            x1, y1 = world_to_screen(viewmatrix, (entitypos_x, entitypos_y, entitypos_z - 72), self.screen_size[0], self.screen_size[1])
+            x2, y2 = world_to_screen(viewmatrix, (entitypos_x, entitypos_y, entitypos_z), self.screen_size[0], self.screen_size[1])
 
             if self.box:
                 height = y2 - y1
                 width = height / 4
 
-                self.draw_list.append({"type": "rect", "points": [(x1 - width, y1 + height), (x1 + width, y1 - height)]})
+                pos1 = x2 + width, y2
+                pos2 = x1 + width, y1
+                pos3 = x1 - width, y1
+                pos4 = x2 - width, y2
+
+                self.draw_list.append({"type": "polygon", "points": [pos1, pos2, pos3, pos4]})
 
 
 

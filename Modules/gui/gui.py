@@ -389,13 +389,13 @@ def Initscreen(resolution):
 
 
 def drawOverlay(overlay, esp_class):
+
     overlay.screen.fill((0, 0, 0))
     for i in range(0, len(esp_class.draw_list)):
-        if esp_class.draw_list[i]["type"] == "rect":
-            p1 = esp_class.draw_list[i]["points"][0][0], esp_class.draw_list[i]["points"][0][1]
-            p2 = esp_class.draw_list[i]["points"][1][0], esp_class.draw_list[i]["points"][1][1]
-            pygame.draw.rect(overlay.screen, (255, 255, 255), (p1[0], p1[1], p2[0], p2[1]), 1)
+        if esp_class.draw_list[i]["type"] == "polygon":
 
+            pygame.draw.polygon(overlay.screen, (255, 255, 255), esp_class.draw_list[i]["points"], 1)
+    esp_class.draw_list[i]
     overlay.update()
 
 
@@ -416,10 +416,10 @@ class Window():
         self.clicked = (0, 0)
         pygame.display.set_icon(self.logo)
         self.overlay_mode = False
+        self.overlay.draw_fps()
 
         Window = win32gui.FindWindow(None, "Future")
-        win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE,
-                               win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
+        win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
         win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 210, win32con.LWA_ALPHA)
 
         self.Alpha = 210
