@@ -64,8 +64,6 @@ def gui_updater(buttons_grid, buttons):
     is_login_screen = True
 
     while 1:
-        # window.overlay.windowmode()
-
         Mousepos = pygame.mouse.get_pos()
         Framedelta = 1 + clock.get_fps()
 
@@ -155,7 +153,8 @@ def gui_updater(buttons_grid, buttons):
         if login_success and csgo_started:
             is_loading = False
 
-            if (overlay.winsize[2],overlay.winsize[3]) == login_screen_size:
+
+            if (overlay.hwnd_rect[2],overlay.hwnd_rect[3]) == login_screen_size:
                 is_login_screen = False
                 overlay = Initscreen(resolution=screen_size)
                 screen = overlay.screen
