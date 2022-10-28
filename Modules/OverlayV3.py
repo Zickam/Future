@@ -1,15 +1,11 @@
-import math
-import time
-
 import pygame
 import win32api
 import win32gui
 import win32con
 import os
-
 class Overlay:
     def __init__(self, rect: pygame.Rect):
-        print("[overlay V0.5] > Initializing")
+        print("[overlay V0.6] > Initializing")
         pygame.init()
         os.environ["SDL_VIDEO_WINDOW_POS"] = str(pygame.display.Info().current_w) + "," + str(pygame.display.Info().current_h)
 
@@ -18,10 +14,10 @@ class Overlay:
         self.overlay_hwnd = pygame.display.get_wm_info()["window"]
 
         # get resolution / position
-        self.hwnd_rect = rect
+        self.winsize = rect
 
         # move window and make it visible
-        win32gui.MoveWindow(self.overlay_hwnd, self.hwnd_rect[0], self.hwnd_rect[1], self.hwnd_rect[2], self.hwnd_rect[3], True)
+        win32gui.MoveWindow(self.overlay_hwnd, self.winsize[0], self.winsize[1], self.winsize[2], self.winsize[3], True)
         win32gui.ShowWindow(self.overlay_hwnd, win32con.SW_SHOW)
 
         # for fps
@@ -29,30 +25,26 @@ class Overlay:
         self.fps = 1
         self.clock = pygame.time.Clock()
 
-        self.show_value = 254
-        self.increaser = 1
+        self.show_value = 10
+        self.increaser = 5
 
+        self.show_fps = False
+        self.show = False
 
+    def draw_fps(self):
+        self.show_fps = True
 
     def overlaymode(self):
-        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_TRANSPARENT | win32con.WS_EX_LAYERED)
         win32gui.SetLayeredWindowAttributes(self.overlay_hwnd, win32api.RGB(0, 0, 0), 255, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
+        win32gui.BringWindowToTop(self.overlay_hwnd)
 
     def windowmode(self):
-        win32gui.SetWindowLong(self.overlay_hwnd, 16, win32gui.GetWindowLong(self.overlay_hwnd, 16))
-        win32gui.SetLayeredWindowAttributes(self.overlay_hwnd, win32api.RGB(1, 0, 0), 255, win32con.LWA_COLORKEY | win32con.LWA_COLORKEY)
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, -16))
+        win32gui.BringWindowToTop(self.overlay_hwnd)
 
-    def clamp(self, num, min_value, max_value):
-        num = max(min(num, max_value), min_value)
-        return num
-
-    def show(self):
-        if self.show_value >= 254:
-            self.increaser = -250 * (1 / self.fps)
-        if self.show_value <= 1:
-            self.increaser = 250 * (1 / self.fps)
-        self.show_value += self.increaser
-        pygame.draw.rect(self.screen, (0, self.clamp(self.show_value, 0, 255), 0), (0, 0, self.hwnd_rect[2], self.hwnd_rect[3]), 4)
+    def show_window(self):
+        self.show = True
 
     def set_cap(self, framecap: int):
         self.framecap = framecap
@@ -60,25 +52,23 @@ class Overlay:
     def update(self):
         self.clock.tick(self.framecap)
         self.fps = 1 + self.clock.get_fps()
+        win32gui.SetWindowPos(self.overlay_hwnd, -1, 0, 0, 0, 0, 2 | 1)
+
+        if self.show_fps:
+            self.font = pygame.font.SysFont("Courier", 20, True, False)
+            self.sprite = self.font.render(str(round(self.fps)), True, (255, 255, 0))
+            pygame.draw.rect(self.screen, (40, 40, 40), (self.winsize[2] - self.sprite.get_width() - 5, 5, self.sprite.get_width(), 20))
+            self.screen.blit(self.sprite, (self.winsize[2] - self.sprite.get_width() - 5, 5))
+
+        if self.show:
+            if self.show_value >= 250:
+                self.increaser = -300 * (1 / self.fps)
+            if self.show_value <= 5:
+                self.increaser = 300 * (1 / self.fps)
+            self.show_value += self.increaser
+            pygame.draw.rect(self.screen, (0, max(min(self.show_value, 255), 0), 0), (0, 0, self.winsize[2], self.winsize[3]), 2)
+
 
         pygame.display.flip()
         return pygame.event.get()
 
-    def display_fps(self):
-        self.font = pygame.font.SysFont("Courier", 20, True, False)
-        self.sprite = self.font.render(str(round(self.fps)), True, (255, 255, 0))
-        pygame.draw.rect(self.screen, (40, 40, 40), (self.hwnd_rect[2] - self.sprite.get_width() - 5, 5, self.sprite.get_width(), 20))
-        self.screen.blit(self.sprite, (self.hwnd_rect[2] - self.sprite.get_width() - 5, 5))
-
-
-overlay = Overlay(pygame.Rect(100, 100, 100, 100))
-overlay.overlaymode()
-
-
-while True:
-    overlay.screen.fill((0, 0, 0))
-
-    pygame.draw.circle(overlay.screen, (255, 255, 255), (50, 50), 30)
-
-    overlay.show()
-    overlay.update()

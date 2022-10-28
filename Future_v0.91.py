@@ -73,6 +73,7 @@ def gui_updater(buttons_grid, buttons):
         objects_shown = []
         objects_not_shown = []
 
+
         login_success = gui.LoginScreen.Update(LoginScreen, screen_size, overlay, is_loading, window.pygameevent)
 
         if Shown == True:

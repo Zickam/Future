@@ -452,6 +452,7 @@ class Window():
         self.screen = overlay.screen
         self.clicked = (0, 0)
         pygame.display.set_icon(self.logo)
+        self.overlay_mode = False
 
         Window = win32gui.FindWindow(None, "Future")
         win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
@@ -481,9 +482,9 @@ class Window():
 
         self.pygameevent = pygame.event.get()
 
-        self.screen.fill(Colors.Background)
         # main window
         if self.Foreground == True:
+            self.screen.fill(Colors.Background)
 
             separate_line = pygame.draw.line(self.screen, (220, 220, 220), (70, 0), (70, 500), 2)
 
@@ -528,34 +529,22 @@ class Window():
                 win32gui.SetWindowPos(Window, None, self.CustomMouse.position[0] - self.clicked[0], self.CustomMouse.position[1] - self.clicked[1], 0, 0, 1)
 
         else:
-
-            Window = win32gui.FindWindow(None, "Future")
-            WindowRect = win32gui.GetWindowRect(Window)
-
-            self.overlay = Overlay(pygame.Rect(0, 0, 1920, 1080))
-            pygame.draw.rect(self.screen, (255, 255, 255), (0, 0, 10000, 10000))
+            pygame.draw.rect(self.overlay.screen, (255, 255, 255), (100, 100, 100, 100), 5)
+            self.overlay.update()
 
         if not is_login_screen:
             if keyboard.is_pressed("right_shift") and self.Foreground == True and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
-                Window = win32gui.FindWindow(None, "Future")
-                WindowRect = win32gui.GetWindowRect(Window)
-                win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
-                win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 160, win32con.LWA_ALPHA)
-                rect = win32gui.GetWindowRect(Window)
-                win32gui.SetWindowPos(Window, win32con.HWND_TOPMOST, rect[0], rect[1], 0, 0, win32con.SWP_NOSIZE)
-                self.ActiveModuleRes = (self.active_modules_dimensions[0], self.active_modules_dimensions[1])
-                self.position = (rect[1], rect[0])
+                self.overlay = Overlay(pygame.Rect(10, 10, 500, 500))
+                self.overlay.overlaymode()
+                print("Overlay init")
                 self.Foreground = False
 
             elif keyboard.is_pressed("right_shift") and self.Foreground == False and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
-                Window = win32gui.FindWindow(None, "Future")
-                WindowRect = win32gui.GetWindowRect(Window)
-                win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
-                win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 210, win32con.LWA_ALPHA)
-                win32gui.SetWindowPos(Window, win32con.HWND_TOPMOST, self.position[1], self.position[0], 0, 0, win32con.SWP_NOSIZE)
-                pygame.display.set_mode(self.resolution, pygame.NOFRAME)
+                self.overlay = Overlay(pygame.Rect(round(1920 / 2 - 410 / 2), round(1080 / 2 - 410 / 2), 410, 410))
+                self.overlay.windowmode()
+                print("Window init")
                 self.Foreground = True
 
         global ChangeAlpha
