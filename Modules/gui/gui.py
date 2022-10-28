@@ -4,6 +4,7 @@ import math
 import psutil
 import pygame.display
 import time
+import random
 import win32api
 from Modules import Startcsgo
 from Modules.Startcsgo import RestartSteam
@@ -17,6 +18,7 @@ from Modules.LicenseChecker import GetActiveAccount, CheckValid, GetWebHelpersLi
 from Modules.Generator import Generator
 from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid, FetchUserTimeLicenseExpire
 import json
+import ctypes
 
 from Modules.gui.OverlayV3 import Overlay
 
@@ -464,23 +466,29 @@ class Window():
                 win32gui.SetWindowPos(Window, None, self.CustomMouse.position[0] - self.clicked[0], self.CustomMouse.position[1] - self.clicked[1], 0, 0, 1)
 
         else:
-            print("overlay uopdated")
+
             self.overlay.update()
 
         if not is_login_screen:
             if keyboard.is_pressed("right_shift") and self.Foreground == True and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
-                self.overlay = Overlay(pygame.Rect(10, 10, 500, 500))
+
+                ctypes.windll.user32
+                screensize = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
+
+                self.overlay = Overlay(pygame.Rect(0, 0, screensize[0], screensize[1]))
                 self.overlay.overlaymode()
                 self.overlay.show = True
-                print("Overlay init&mode")
                 self.Foreground = False
 
             elif keyboard.is_pressed("right_shift") and self.Foreground == False and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
-                self.overlay = Overlay(pygame.Rect(round(1920 / 2 - 410 / 2), round(1080 / 2 - 410 / 2), 410, 410))
+
+                ctypes.windll.user32
+                screensize = ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
+
+                self.overlay = Overlay(pygame.Rect(round(screensize[0] / 2 - 410 / 2), round(screensize[1] / 2 - 410 / 2), 410, 410))
                 self.overlay.windowmode()
-                print("Window init")
                 self.Foreground = True
 
         global ChangeAlpha
@@ -495,8 +503,7 @@ class Window():
         else:
             if not self.overlay.overlay_mode:
                 self.overlay.windowmode()
-                print("shit")
-            # win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 255, win32con.ULW_ALPHA)
+
 
         if is_login_screen:
             return False
