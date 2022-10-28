@@ -1,14 +1,12 @@
-import pymem
+import pygame
 
-pm = pymem.Pymem("csgo.exe")
-client = pymem.process.module_from_name(pm.process_handle, "client.dll").lpBaseOfDll
-engine = pymem.process.module_from_name(pm.process_handle, "engine.dll").lpBaseOfDll
-engine_pointer = pm.read_uint(engine + 0x58cfdc)
-count = 0
+from gui.OverlayV3 import Overlay
 
-print(engine_pointer + 0x4d90, engine_pointer + 0x4d90 + 0x4)
+overlay = Overlay(pygame.Rect(0, 0, 1500, 800))
+overlay.overlaymode()
 
-# while 1:
-#     x, y = pm.read_float(engine_pointer + 0x4d90), pm.read_float(engine_pointer + 0x4d90 + 0x4)
-#     print(f"{count} {x} {y}")
-#     count += 1
+overlay.show = True
+overlay.set_cap(60)
+
+while 1:
+    overlay.update()

@@ -631,7 +631,7 @@ def main(pm, client, engine, engine_pointer, buttons):
 
             logIt("other error")
             logIt(f"Some error: {_ex}", type="START")
-            raise _ex
+            # raise _ex
 
             main_init()
 
