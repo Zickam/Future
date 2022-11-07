@@ -1,348 +1,149 @@
-import keyboard
-import os
+import copy
+import ctypes
+import datetime
 import math
-import psutil
-import pygame.display
+import os
+import subprocess
 import time
-import random
-import win32api
 
-import Modules.gui.esp
-from Modules import Startcsgo
-from Modules.Startcsgo import RestartSteam
+import keyboard
+import pygame.display
+import win32api
 import win32con
 import win32gui
-import datetime
-import subprocess
 from pynput.mouse import Controller
-from hashlib import sha256
-from Modules.LicenseChecker import GetActiveAccount, CheckValid, GetWebHelpersList
+
+from Modules import Startcsgo
 from Modules.Generator import Generator
+from Modules.LicenseChecker import GetActiveAccount, CheckValid, GetWebHelpersList
+from Modules.gui.OverlayV3 import Overlay
 from ServerDB.Client import CheckIfUserExists, CheckIfPasswordIsCorrect, CheckIfUserLicenseIsValid, \
     FetchUserTimeLicenseExpire
-import json
-import ctypes
-
-from Modules.gui.OverlayV3 import Overlay
-
 
 ctypes.windll.user32.SetProcessDPIAware()
 
-def screen_size():
-    return ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
-
-class Buttons:
-    def __init__(self):
-
-        visualspng = pygame.image.load("Data/Images/Visuals.png")
-        aimbotpng = pygame.image.load("Data/Images/Aimbot.png")
-        miscpng = pygame.image.load("Data/Images/Misc.png")
-        scriptspng = pygame.image.load("Data/Images/Scripts.png")
-        configpng = pygame.image.load("Data/Images/Config.png")
-
-        # window
-        button_size = (80, 25)
-        firstlvlbutton_size = (80, 50)
-        slider_size = (80, 10)
-        slider_offsets = (0, 13)
-        checkbox_size = (18, 18)
-        checkbox_offset = (0, 3)
-
-        self.buttons_grid = {
-            "Visuals": {"type": "FirstLevelButton", "picture": visualspng, "pos": (0, 0),
-                        "size": firstlvlbutton_size, "dependencies": {
-                    "GlowESP": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                        "EnemyR": {"type": "button", "pos": (0, 0), "size": button_size},
-                        "EnemyG": {"type": "button", "pos": (0, 0), "size": button_size},
-                        "EnemyB": {"type": "button", "pos": (0, 0), "size": button_size},
-                        "TeamR": {"type": "button", "pos": (0, 0), "size": button_size},
-                        "TeamG": {"type": "button", "pos": (0, 0), "size": button_size},
-                        "TeamB": {"type": "button", "pos": (0, 0), "size": button_size},
-                    }},
-                    "Sky": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                        "skySelector": {"type": "selector", "pos": (0, 20), "size": button_size,
-                                        "array": ["cs_tibet", "embassy", "italy", "jungle", "nukeblank", "office",
-                                                  "sky_cs15_daylight01_hdr", "sky_cs15_daylight02_hdr",
-                                                  "sky_cs15_daylight03_hdr", "sky_cs15_daylight04_hdr",
-                                                  "sky_csgo_cloudy01", "sky_csgo_night02", "sky_csgo_night02b",
-                                                  "sky_day02_05", "sky_dust", "sky_lunacy", "sky_venice", "vertigo",
-                                                  "vertigoblue_hdr", "vietnam", ]},
-                    }},
-                    "Radar": {"type": "button", "pos": (0, 0), "size": button_size},
-                    "Chams": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                        "Glow": {"type": "button", "pos": (0, 0), "size": button_size},
-                        "Color": {"type": "colorPicker", "pos": (0, 0), "size": (100, 100)},
-                        "Color1": {"type": "colorPicker", "pos": (110, -30), "size": (100, 100)}
-                    }},
-                    "NoFlash": {"type": "button", "pos": (0, 0), "size": button_size},
-                    "FOV": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                        "Hands": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 70,
-                                  "end": 170},
-                        "Fov": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 70,
-                                "end": 170},
-                        "Reset FOV": {"type": "button", "pos": (0, 0), "size": button_size},
-                    }},
-                    "3D Person": {"type": "button", "pos": (0, 0), "size": button_size},
-                    "Grenade Prediction": {"type": "button", "pos": (0, 0), "size": button_size},
-                    "Night Mode": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                        "Brightness": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 1,
-                                       "end": 200},
-                    }},
-                    "No Smoke": {"type": "button", "pos": (0, 0), "size": button_size},
-                    "ShowFPS": {"type": "button", "pos": (0, 0), "size": button_size},
-                    "TESTESP": {"type": "button", "pos": (0, 0), "size": button_size},
-
-                }},
-            "Combat": {"type": "FirstLevelButton", "picture": aimbotpng, "pos": (0, 0), "size": firstlvlbutton_size,
-                       "dependencies": {
-                           "AimBot": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                               "Enemies": {"type": "button", "pos": (0, 0), "size": button_size},
-                               "Team": {"type": "button", "pos": (0, 0), "size": button_size},
-                               "Markplayer": {"type": "button", "pos": (0, 0), "size": button_size},
-                               "AimFOV": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 1,
-                                          "end": 90},
-                               "Smooth": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 0,
-                                          "end": 100},
-                               "Overaim": {"type": "slider", "pos": (0, 25), "size": slider_size, "start": 0,
-                                           "end": 20},
-                               "Selector": {"type": "selector", "pos": (0, 20), "size": button_size,
-                                            "array": ["Head", "Chest", "Stomach"]},
-                               "Selector1": {"type": "selector", "pos": (90, -10), "size": button_size,
-                                             "array": ["Crosshair", "Distance"]},
-                               "Multipoint": {"type": "button", "pos": (90, -240), "size": button_size},
-                           }},
-                           "TriggerBot": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                               "Highacc": {"type": "button", "pos": (0, 0), "size": button_size},
-                               "MaxSpeed": {"type": "slider", "pos": (0, 15), "size": slider_size, "start": 0,
-                                            "end": 300},
-
-                               "OnPress": {"type": "button", "pos": (0, 8), "size": button_size},
-                               "Enemies": {"type": "button", "pos": (0, 8), "size": button_size},
-                               "Team": {"type": "button", "pos": (0, 8), "size": button_size},
-                               "Humanizer": {"type": "slider", "pos": (0, 23), "size": slider_size, "start": 0,
-                                             "end": 100},
-                               # PercentChance
-                               "Delay": {"type": "slider", "pos": (0, 20), "size": slider_size, "start": 0,
-                                         "end": 1000},
-                               # milliseconds
-                           }},
-                           "Recoil": {"type": "button", "pos": (0, 0), "size": button_size},
-                           "RapidFire": {"type": "button", "pos": (0, 0), "size": button_size},
-                           "FastPeek": {"type": "button", "pos": (0, 0), "size": button_size}
-                       }},
-            "Misc": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size,
-                     "dependencies": {
-                         "SkinChange": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                             "Skin name": {"type": "searchbox", "pos": (0, 0), "size": button_size,
-                                           "array": self.getskins()},
-                             "Weapon": {"type": "searchbox", "pos": (110, -30), "size": button_size,
-                                        "array": self.getweapons()[1]},
-                             "Update": {"type": "button", "pos": (0, -110), "size": button_size},
-                         }},
-
-                         "ToxicChat": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                             "KillCounter": {"type": "button", "pos": (0, 0), "size": button_size},
-                             "AfterKill": {"type": "button", "pos": (0, 0), "size": button_size},
-                             "Spam": {"type": "button", "pos": (0, 0), "size": button_size},
-
-                         }},
-
-                         "Sound": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                             "OnHit": {"type": "button", "pos": (0, 0), "size": button_size},
-                             "OnKill": {"type": "button", "pos": (0, 0), "size": button_size},
-                             "SelectSound": {"type": "selector", "pos": (0, 0), "size": button_size,
-                                             "array": ["Neverlose", "Bell", "Cod", "Fatality"]},
-                         }},
-                         "FakeLag": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                             "DelayStart": {"type": "slider", "pos": (0, 10), "size": slider_size, "start": 10,
-                                            "end": 100},
-                             # milliseconds
-                             "DelayBetween": {"type": "slider", "pos": (0, 17), "size": slider_size, "start": 10,
-                                              "end": 300},
-                             # milliseconds
-                         }},
-                         "Teleport": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                             "DelayStart": {"type": "slider", "pos": (0, 10), "size": slider_size, "start": 0,
-                                            "end": 5000},
-                             # milliseconds
-                             "DelayBetween": {"type": "slider", "pos": (0, 17), "size": slider_size, "start": 0,
-                                              "end": 800},
-                             # milliseconds
-                         }},
-                         "BunnyHop": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                             "AutoStrafe": {"type": "button", "pos": (0, 0), "size": button_size},
-                         }},
-                         "Slowwalk": {"type": "button", "pos": (0, 0), "size": button_size, "dependencies": {
-                             "Speed": {"type": "slider", "pos": slider_offsets, "size": slider_size, "start": 0,
-                                       "end": 200},
-                         }},
-                         "ForceCrosshair": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
-                         "ClanTag": {"type": "checkbox", "pos": checkbox_offset, "size": checkbox_size},
-                         "DevCommands": {"type": "button", "pos": (0, 0), "size": button_size}
-                     }},
-            "Scripts": {"type": "FirstLevelButton", "picture": scriptspng, "pos": (0, 0),
-                        "size": firstlvlbutton_size, "dependencies": {
-                    "Load": {"type": "scriptmanager", "pos": (0, 0), "size": (290, 335)},
-
-                }},
-            "Config": {"type": "FirstLevelButton", "picture": configpng, "pos": (0, 0), "size": firstlvlbutton_size,
-                       "dependencies": {
-                           "Load": {"type": "button", "pos": (0, 0), "size": button_size},
-                           "Save": {"type": "button", "pos": (0, 0), "size": button_size},
-                           "ConfigSelector": {"type": "selector", "pos": (0, 0), "size": button_size,
-                                              "array": ["Custom", "Rage", "Semi", "Legit", "Dev"]},
-                       }},
-            "Settings": {"type": "FirstLevelButton", "picture": miscpng, "pos": (0, 0), "size": firstlvlbutton_size,
-                         "dependencies": {
-                             "Transparency": {"type": "slider", "pos": slider_offsets, "size": slider_size,
-                                              "start": 50, "end": 255},
-                             "Change Transparency": {"type": "checkbox", "pos": checkbox_offset,
-                                                     "size": checkbox_size},
-                             "Highlight": {"type": "colorPicker", "pos": (0, 0), "size": (100, 100)},
-                             "Colorstyle": {"type": "colorPicker", "pos": (110, -30), "size": (100, 100)},
-                         }},
-            # "Reset": {"pos": (0, 0), "size": button_size}
-            "End": {"type": "end"}
-        }
-
-        def iterateThroughButtonDependencies(object_name, object_dependencies, start_pos_dependencies):
-
-            objects = {}
-            for object_name, object_props in object_dependencies.items():
-                if object_props["type"] == "button":
-                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                    _object = Button((pos_x, pos_y), object_props["size"], object_name)
-                    start_pos_dependencies[1] += gap_y
-
-                elif object_props["type"] == "selector":
-                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                    _object = Selector((pos_x, pos_y), object_props["size"], object_name, object_props["array"])
-                    start_pos_dependencies[1] += gap_y
-
-                elif object_props["type"] == "slider":
-                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                    _object = Slider((pos_x, pos_y), object_props["size"], object_name, object_props["start"],
-                                     object_props["end"])
-                    start_pos_dependencies[1] += gap_y
-
-
-                elif object_props["type"] == "checkbox":
-                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                    _object = Checkbox((pos_x, pos_y), object_props["size"], object_name, (255, 255, 255))
-                    start_pos_dependencies[1] += gap_y
-
-
-                elif object_props["type"] == "colorPicker":
-                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                    _object = ColorPicker((pos_x, pos_y), object_props["size"], object_name)
-                    start_pos_dependencies[1] += gap_y
-
-                elif object_props["type"] == "searchbox":
-                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                    _object = Searchbox((pos_x, pos_y), object_props["size"], object_name,
-                                        object_props["array"])
-                    start_pos_dependencies[1] += gap_y
-
-                elif object_props["type"] == "scriptmanager":
-                    pos_x = object_props["pos"][0] + start_pos_dependencies[0]
-                    pos_y = object_props["pos"][1] + start_pos_dependencies[1]
-                    _object = ScriptManager((pos_x, pos_y), object_props["size"])
-                    start_pos_dependencies[1] += gap_y
-
-                elif object_props["type"] == "end":
-                    continue
-
-                if "dependencies" in object_props:
-                    _start_pos_for_dependencies = [start_pos_dependencies[0] + gap_x,
-                                                   start_pos_dependencies[1] - gap_y]
-                    dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"],
-                                                                    _start_pos_for_dependencies)
-
-                else:
-                    dependencies = None
-                objects[object_name] = [_object, dependencies]
-            start_pos_dependencies[0] += gap_x
-
-            return objects
-
-        self.buttons = {}
-        pos = [10, 60]
-        gap_y = button_size[1] + 5
-        gap_x = button_size[0] + 10
-
-        gap_y_first_level_btn = firstlvlbutton_size[1] + 5
-
-        start_pos = [pos[0], pos[1]]
-        start_pos_default = [pos[0], pos[1]]
-
-        for object_name, object_props in self.buttons_grid.items():
-            if object_props["type"] == "FirstLevelButton":
-                pos_x = object_props["pos"][0] + start_pos[0]
-                pos_y = object_props["pos"][1] + start_pos[1]
-                _object = FirstLevelButton(object_props["picture"], (pos_x, pos_y), object_props["size"],
-                                           object_name)
-
-            if object_props["type"] == "end":
-                break
-
-            if "dependencies" in object_props:
-                start_pos_for_dependencies = [pos_x + gap_x, start_pos_default[1]]
-                dependencies = iterateThroughButtonDependencies(object_name, object_props["dependencies"],
-                                                                start_pos_for_dependencies)
-            else:
-                dependencies = None
-
-            self.buttons[object_name] = [_object, dependencies]
-            start_pos[1] += gap_y_first_level_btn
-
-    def getskins(self):
-        skinlist = []
-        with open("Data/Structs/skins.json") as file:
-            options = json.load(file)
-            for element in options:
-                skinlist.append(str(element))
-        return skinlist
-
-    def getweapons(self):
-        from pathlib import Path
-
-        weapons_specs_file = os.path.join(Path(__file__).parents[2], "Data\\Structs\\WeaponSpecs.json")
-
-        idlist = []
-        namelist = []
-        dmglist = []
-        rangelist = []
-        armorpen = []
-        with open(weapons_specs_file, "r") as file:
-            options = json.load(file)
-            for element in options:
-                idlist.append(element)
-            for element in range(0, len(idlist)):
-                namelist.append(options[idlist[element]]["name"])
-                dmglist.append(options[idlist[element]]["damage"])
-                rangelist.append(options[idlist[element]]["accrange"])
-                armorpen.append(options[idlist[element]]["armorpen"])
-        return idlist, namelist, dmglist, rangelist, armorpen
-
-
-default_font_size = 15
-default_font = "Microsoft Sans Serif"
 ChangeAlpha = False
 
 
-class color_changer:
+def fetchAllObjectsFromClass(class_obj):
+    """
+    Kinda stupid function that may not work
+    """
+    objects = []
+    for obj in vars(class_obj).items():
+        if not obj[0].__contains__("_"):
+            objects.append(obj[1])
+
+    if len(objects) == 0:
+        return None
+
+    return objects
+
+
+def clamp(num, min_value, max_value):
+    num = max(min(num, max_value), min_value)
+    return num
+
+
+def initscreen(resolution):
+    rect = win32gui.GetWindowRect(win32gui.GetDesktopWindow())
+    print(f"[OVERLAY INITFUNCTION], {rect, resolution}")
+    screen = Overlay(
+        pygame.Rect(rect[2] / 2 - resolution[0] / 2, rect[3] / 2 - resolution[1] / 2, resolution[0], resolution[1]))
+    return screen
+
+
+def refreshscreen():
+    pygame.display.flip()
+
+
+def drawOverlay(overlay):
+    overlay.screen.fill((0, 0, 0))
+    overlay.update()
+
+
+def screenSize():
+    return ctypes.windll.user32.GetSystemMetrics(0), ctypes.windll.user32.GetSystemMetrics(1)
+
+
+class Vec2:
+    def __init__(self, x: int | float, y: int | float):
+        self.x = x
+        self.y = y
+
+    def add(self, vec2_to_add: tuple[int, int]):
+        self.x += vec2_to_add.x
+        self.y += vec2_to_add.y
+
+    def toTuple(self):
+        return (self.x, self.y)
+
+
+# alias for typical coordinates data
+vector2 = tuple[int, int] | Vec2
+
+
+class Consts:
+    class Sizes:
+        btn_size: vector2 = Vec2(80, 25)
+        firstlvl_btn_size: vector2 = Vec2(80, 50)
+        slider_size: vector2 = Vec2(80, 10)
+        checkbox_size: vector2 = Vec2(18, 18)
+        selector_size: vector2 = Vec2(80, 25)
+        colorpicker_size: vector2 = Vec2(100, 100)
+        searchbox_size: vector2 = Vec2(80, 25)
+        scriptmanager_size: vector2 = Vec2(290, 335)
+        holder_size: vector2 = Vec2(200, 300)
+
+    class Offsets:
+        """Its better to make all of them Vec2(0, 0)"""
+        btn_offset: vector2 = Vec2(0, 0)
+        firstlvl_btn_offset: vector2 = Vec2(0, 0)
+        slider_offset: vector2 = Vec2(0, 13)
+        checkbox_offset: vector2 = Vec2(0, 3)
+        selector_offset: vector2 = Vec2(0, 20)
+        colorpicker_offset: vector2 = Vec2(0, 0)
+        searchbox_offset: vector2 = Vec2(0, 0)
+        scriptmanager_offset: vector2 = Vec2(0, 0)
+        holder_offset: vector2 = Vec2(0, 0)
+
+    class Fonts:
+        default_font_size: int = 15
+        default_font = "Microsoft Sans Serif"
+
+
+class Images:
+    undefined_icon = pygame.image.load("Data/Images/Undefined.png")
+    visuals_icon = pygame.image.load("Data/Images/Visuals.png")
+    aimbot_icon = pygame.image.load("Data/Images/Aimbot.png")
+    misc_icon = pygame.image.load("Data/Images/Misc.png")
+    script_icon = pygame.image.load("Data/Images/Scripts.png")
+    config_icon = pygame.image.load("Data/Images/Config.png")
+
+
+class Colors:
+    Background = (20, 20, 20, 150)  # background
+    LightBackground = (50, 50, 50)
+    AlphaAnim = False
+    HighlightBackground = (20, 40, 60)  # background slider / selector etc
+    TextColor = (200, 200, 200)  # textcolor
+    DisableColor = (20, 20, 20)
+    ColorStyle = (40, 60, 80)  # slider red on start
+    Transparency = 100
+
+    pygame.font.init()
+    FontBig = pygame.font.SysFont("Microsoft Sans Serif", 20, False, False)
+    FontMed = pygame.font.SysFont("Microsoft Sans Serif", 15, False, False)
+    FontSmall = pygame.font.SysFont("Microsoft Sans Serif", 14, False, False)
+
+
+class ColorChanger:
     def __init__(self):
         self.SmoothedR = 255
         self.SmoothedG = 255
         self.SmoothedB = 255
 
-    def color_surface(self, surface, color, fps):
+    def colorSurface(self, surface, color, fps):
         global SmoothedR, SmoothedG, SmoothedB
         arr = pygame.surfarray.pixels3d(surface)
         if fps == 0:
@@ -361,178 +162,73 @@ class color_changer:
                     arr[x][y][2] = clamp(arr[x][y][2] - 255 + self.SmoothedB, 0, 255)
 
 
-class Colors():
-    Background = (20, 20, 20, 150)  # background
-    LightBackground = (50, 50, 50)
-    AlphaAnim = False
-    HighlightBackground = (20, 40, 60)  # background slider / selector etc
-    TextColor = (200, 200, 200)  # textcolor
-    DisableColor = (20, 20, 20)
-    ColorStyle = (40, 60, 80)  # slider red on start
-    Transparency = 100
+# GUI OBJECTS CLASSES
+class GuiObjWithDeps:
+    """
+    Should be child class of another class with 'class SomeClass(GuiObjWithDeps):'
+    Actually a parent class mustnt have any dependencies, but its better to have any
 
-    pygame.font.init()
-    FontBig = pygame.font.SysFont("Microsoft Sans Serif", 20, False, False)
-    FontMed = pygame.font.SysFont("Microsoft Sans Serif", 15, False, False)
-    FontSmall = pygame.font.SysFont("Microsoft Sans Serif", 14, False, False)
+    BaseClass that contains base methods
+    e.g. to update dependencies,
+    to make neighbours untabbed,
+    to make dependencies untabbed and more
+    """
+    def __init__(self):
+        """
+        Should be called as 'super().__init__()'
+        inside of the some function __init__
+        """
+        self.objects = fetchAllObjectsFromClass(self)
+        # self.neighbours = fetchAllObjectsFromClass(self)
+        self.tabbed = False
 
+    def _untabDependencies(self):
+        for _object in self.objects:
+            if _object.objects:
+                _object.Tab = False
+                _object._untabDependencies()
 
-def clamp(num, min_value, max_value):
-    num = max(min(num, max_value), min_value)
-    return num
+        self.tabbed = False
 
+    def _untabNeighbours(self, not_to_untab):
+        for _object in self.objects:
+            if _object != not_to_untab and _object.objects:
+                _object.Tab = False
 
-def Initscreen(resolution):
-    rect = win32gui.GetWindowRect(win32gui.GetDesktopWindow())
-    print(f"[OVERLAY INITFUNCTION], {rect, resolution}")
-    screen = Overlay(
-        pygame.Rect(rect[2] / 2 - resolution[0] / 2, rect[3] / 2 - resolution[1] / 2, resolution[0], resolution[1]))
-    return screen
+    def _updateSelf(self, screen, mousepos, framedelta):
+        """Function for .Update() object itself"""
+        self.Update(screen, mousepos, framedelta)
 
+    def _updateDependencies(self, screen, mousepos, framedelta):
+        """Function for .Update() objects inside of the object"""
 
-def drawOverlay(overlay, esp_class):
-
-    overlay.screen.fill((0, 0, 0))
-    for i in range(0, len(esp_class.draw_list)):
-        if esp_class.draw_list[i]["type"] == "polygon":
-
-            pygame.draw.polygon(overlay.screen, (255, 255, 255), esp_class.draw_list[i]["points"], 1)
-    esp_class.draw_list.clear()
-    overlay.update()
-
-
-class Window():
-    def __init__(self, resolution, position, overlay):
-        # window
-        pygame.display.set_caption("Future")
-        self.resolution = resolution
-        self.ActiveModuleRes = resolution
-        self.position = position
-        self.CustomMouse = Controller()
-        self.Foreground = True
-        self.logo = pygame.image.load("Data\Images\Icon.png")
-        self.starttime = time.time()
-
-        self.overlay = overlay
-        self.screen = overlay.screen
-        self.clicked = (0, 0)
-        pygame.display.set_icon(self.logo)
-        self.overlay_mode = False
-        self.overlay.draw_fps()
-
-        Window = win32gui.FindWindow(None, "Future")
-        win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
-        win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 210, win32con.LWA_ALPHA)
-
-        self.Alpha = 210
-
-        self.origSurface = self.logo
-        self.origSurface.convert_alpha()
-        self.LogoUpdate = False
-        self.coloredSurface = self.logo
-        self.clock = pygame.time.Clock()
-
-        self.active_modules_dimensions = [120, 20]
-        self.active_modules_margin = (10, 500)
-
-        self.pygameevent = None
-
-        self.colorchanger = color_changer()
-
-    def Update(self, ActiveModules, Framedelta, is_login_screen, esp_class):
-        Window = win32gui.FindWindow(None, "Future")
-        WindowRect = win32gui.GetWindowRect(Window)
-
-        Mousepos = pygame.mouse.get_pos()
-
-        self.pygameevent = pygame.event.get()
-
-        # main window
-        if self.Foreground == True:
-            self.screen.fill(Colors.Background)
-
-            separate_line = pygame.draw.line(self.screen, (220, 220, 220), (70, 0), (70, 500), 2)
-
-            # logo color change
-            if self.LogoUpdate == True:
-                self.coloredSurface = self.origSurface.copy()
-                self.colorchanger.color_surface(self.coloredSurface, Colors.ColorStyle, self.clock.get_fps())
-
-            self.screen.blit(self.coloredSurface, (10, 10))
-
-            if abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][0] - Colors.ColorStyle[0]) > 2 or abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][1] - Colors.ColorStyle[1]) > 2 or abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][2] - Colors.ColorStyle[2]) > 2:
-
-                self.LogoUpdate = True
+        for _object in self.objects:
+            if _object.objects:
+                _object._updateObjAndDependencies(screen, mousepos, framedelta)
+                if _object.Tab:
+                    self._untabNeighbours(_object)
             else:
-                self.LogoUpdate = False
+                _object.Update(screen, mousepos, framedelta)
 
-            # exit button
-            close_button_rect = Colors.FontBig.render("x", True, (150, 50, 50))
-            self.screen.blit(close_button_rect, (self.resolution[0] - close_button_rect.get_width() - 2, -4))
+        self.tabbed = True
 
-            for event in self.pygameevent:
-                if Mousepos[0] > self.resolution[0] - close_button_rect.get_width() and Mousepos[0] < self.resolution[0] and Mousepos[1] > 0 and Mousepos[1] < close_button_rect.get_height():
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        pygame.quit()
-                        exit(0)
+    def _updateObjAndDependencies(self, screen, mousepos, framedelta):
+        """Calls .Update() for class itself and for its dependencies if they exist"""
+        self._updateSelf(screen, mousepos, framedelta)
 
-                if Mousepos[0] > 0 and Mousepos[0] < self.resolution[0] - close_button_rect.get_width() and Mousepos[1] > 0 and Mousepos[1] < 35:
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        self.clicked = (Mousepos[0], Mousepos[1])
-                    if event.type == pygame.MOUSEBUTTONUP:
-                        self.clicked = (0, 0)
+        if self.objects and self.Tab:
+            self._updateDependencies(screen, mousepos, framedelta)
 
-                if event.type == pygame.MOUSEBUTTONUP:
-                    self.clicked = (0, 0)
-
-            if self.clicked != (0, 0):
-                win32gui.SetWindowPos(Window, None, self.CustomMouse.position[0] - self.clicked[0], self.CustomMouse.position[1] - self.clicked[1], 0, 0, 1)
-
-        else:
-            drawOverlay(self.overlay, esp_class)
-
-        if not is_login_screen:
-            if keyboard.is_pressed("right_shift") and self.Foreground == True and self.starttime + 0.15 < time.time():
-                self.starttime = time.time()
-
-                self.overlay = Overlay(pygame.Rect(0, 0, screen_size()[0], screen_size()[1]))
-                self.overlay.overlaymode()
-                self.overlay.show = True
-                self.Foreground = False
-
-            elif keyboard.is_pressed("right_shift") and self.Foreground == False and self.starttime + 0.15 < time.time():
-                self.starttime = time.time()
-
-                self.overlay = Overlay(pygame.Rect(round(screen_size()[0] / 2 - 410 / 2), round(screen_size()[1] / 2 - 410 / 2), 410, 410))
-                self.overlay.windowmode()
-                self.Foreground = True
-
-        global ChangeAlpha
-        if ChangeAlpha == True:
-            # changing alpha
-            if self.CustomMouse.position[0] > WindowRect[0] and self.CustomMouse.position[0] < WindowRect[2] and \
-                    self.CustomMouse.position[1] > WindowRect[1] and self.CustomMouse.position[1] < WindowRect[3]:
-                self.Alpha -= (self.Alpha - 255) * (1 / Framedelta) * 16
-            else:
-                self.Alpha -= (self.Alpha - Colors.Transparency) * (1 / Framedelta) * 16
-
-            win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), round(clamp(self.Alpha, 0, 255)),
-                                                win32con.LWA_ALPHA)
-        else:
-            if not self.overlay.overlay_mode:
-                self.overlay.windowmode()
-
-        if is_login_screen:
-            return False
-
-        return self.Foreground
+        elif self.objects and not self.Tab:
+            self._untabDependencies()
 
 
-class Button():
-    def __init__(self, position, size, name, State=False, Tab=False):
-
-        self.position = position
-        self.size = size
+class Button(GuiObjWithDeps):
+    def __init__(self, name: str = "Button_Name", position: vector2 = Consts.Offsets.btn_offset,
+                 size: vector2 = Consts.Sizes.btn_size, State=False, Tab=False):
+        super().__init__()
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
         self.name = name
         self.State = State
         self.DelayTime = time.time()
@@ -546,16 +242,33 @@ class Button():
         self.CustomColorB = Colors.DisableColor[2]
         self.CustomColor = (self.CustomColorR, self.CustomColorG, self.CustomColorB)
 
+    def _checkIfMouseIsInsideOfTheButton(self, mousepos):
+        if mousepos[0] > self.position.x and mousepos[0] < self.position.x + self.size.x and mousepos[
+            1] > self.position.y and \
+                mousepos[1] < self.position.y + self.size.y:
+            return True
+        return False
+
+    def _checkIfRightMouseGetPressed(self):
+        if pygame.mouse.get_pressed()[2]:
+            return True
+        return False
+
+    def _checkIfLeftMouseGetPressed(self):
+        if pygame.mouse.get_pressed()[0]:
+            return True
+        return False
+
     def Update(self, screen, mousepos, framedelta):
 
-        if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > \
-                self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
+        if self._checkIfMouseIsInsideOfTheButton(mousepos):
 
-            if pygame.mouse.get_pressed()[0] and self.DelayTime + 0.15 <= time.time():
+            if self._checkIfLeftMouseGetPressed() and self.DelayTime + 0.15 <= time.time():
                 self.State = not self.State
+                self.show = not self.show  # Important (i broke animations when open dependencies)
                 self.DelayTime = time.time()
 
-            if pygame.mouse.get_pressed()[2] and self.DelayTime + 0.15 <= time.time():
+            if self._checkIfRightMouseGetPressed() and self.DelayTime + 0.15 <= time.time():
                 self.Tab = not self.Tab
                 self.DelayTime = time.time()
 
@@ -565,35 +278,35 @@ class Button():
             self.CustomColorG -= (self.CustomColorG - Colors.ColorStyle[1]) * (1 / framedelta) * 3
             self.CustomColorB -= (self.CustomColorB - Colors.ColorStyle[2]) * (1 / framedelta) * 3
             self.CustomColor = (
-            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+                clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
             # button design
             pygame.draw.rect(screen, Colors.ColorStyle,
-                             (self.position[0], self.position[1], self.size[0], self.size[1]),
+                             (self.position.x, self.position.y, self.size.x, self.size.y),
                              border_radius=self.rounding)
             pygame.draw.rect(screen, self.CustomColor,
-                             (self.position[0] + 2, self.position[1] + 2, self.size[0] - 4, self.size[1] - 4),
+                             (self.position.x + 2, self.position.y + 2, self.size.x - 4, self.size.y - 4),
                              border_radius=self.rounding)
             rect = Colors.FontMed.render(str(self.name), True, (0, 0, 0))
             screen.blit(rect, (
-            self.position[0] - round(rect.get_width() / 2) + round(self.size[0] / 2), self.position[1] + 3))
+                self.position.x - round(rect.get_width() / 2) + round(self.size.x / 2), self.position.y + 3))
         else:
             # color animation
             self.CustomColorR -= (self.CustomColorR - Colors.DisableColor[0]) * (1 / framedelta) * 10
             self.CustomColorG -= (self.CustomColorG - Colors.DisableColor[1]) * (1 / framedelta) * 10
             self.CustomColorB -= (self.CustomColorB - Colors.DisableColor[2]) * (1 / framedelta) * 10
             self.CustomColor = (
-            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+                clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
 
             # button design
             pygame.draw.rect(screen, Colors.ColorStyle,
-                             (self.position[0], self.position[1], self.size[0], self.size[1]),
+                             (self.position.x, self.position.y, self.size.x, self.size.y),
                              border_radius=self.rounding)
             pygame.draw.rect(screen, self.CustomColor,
-                             (self.position[0] + 2, self.position[1] + 2, self.size[0] - 4, self.size[1] - 4),
+                             (self.position.x + 2, self.position.y + 2, self.size.x - 4, self.size.y - 4),
                              border_radius=self.rounding)
             rect = Colors.FontMed.render(str(self.name), True, Colors.TextColor)
             screen.blit(rect, (
-            self.position[0] - round(rect.get_width() / 2) + round(self.size[0] / 2), self.position[1] + 3))
+                self.position.x - round(rect.get_width() / 2) + round(self.size.x / 2), self.position.y + 3))
 
         if self.show == False:
             self.CustomColor = Colors.DisableColor
@@ -604,12 +317,15 @@ class Button():
         return self.State, self.Tab
 
 
-class FirstLevelButton():
-    def __init__(self, picture, position, size, name):
-        self.pos = position
-        self.size = size
+class FirstLevelButton(GuiObjWithDeps):
+    def __init__(self, picture: pygame.image = Images.undefined_icon, name: str = "FirstLvlBtn_Name",
+                 position: vector2 = Consts.Offsets.firstlvl_btn_offset, size: vector2 = Consts.Sizes.firstlvl_btn_size,
+                 Tab: bool = False):
+        super().__init__()
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
         self.name = name
-        self.Tab = False
+        self.Tab = Tab
         self.DelayTime = time.time()
         self.picture_update = False
 
@@ -619,27 +335,39 @@ class FirstLevelButton():
             self.picture = picture
 
         self.coloredSurface = self.picture
-        self.colorchanger = color_changer()
+        self.colorchanger = ColorChanger()
+
+    def _checkIfMouseIsInsideOfTheButton(self, mousepos):
+        if mousepos[0] > self.position.x and mousepos[0] < self.position.x + self.size.x and mousepos[
+            1] > self.position.y and \
+                mousepos[1] < self.position.y + self.size.y:
+            return True
+        return False
+
+    def _checkIfRightMouseGetPressed(self):
+        if pygame.mouse.get_pressed()[2]:
+            return True
+        return False
 
     def Update(self, screen, mousepos, framedelta):
 
-        screen.blit(self.picture, self.pos)
+        screen.blit(self.picture, (self.position.x, self.position.y))
 
-        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + self.size[0] and mousepos[1] > self.pos[1] and \
-                mousepos[1] < self.pos[1] + self.size[1]:
-            if pygame.mouse.get_pressed()[2] and self.DelayTime + 0.15 <= time.time():
+        if self._checkIfMouseIsInsideOfTheButton(mousepos):
+            if self._checkIfRightMouseGetPressed() and self.DelayTime + 0.15 <= time.time():
                 self.Tab = not self.Tab
                 self.DelayTime = time.time()
 
+        if self.Tab and self.objects:
+            self._updateDependencies(screen, mousepos, framedelta)
 
-def Refreshscreen():
-    pygame.display.flip()
 
-
-class Slider():
-    def __init__(self, position, size, name, start, end):
-        self.position = position
-        self.size = size
+class Slider:
+    def __init__(self, start: int, end: int, name: str = "Slider_Name",
+                 position: vector2 = Consts.Offsets.slider_offset, size: vector2 = Consts.Sizes.slider_size):
+        self.objects = None
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
         self.name = name
         self.start = start
         self.end = end
@@ -651,7 +379,7 @@ class Slider():
         self.SliderVisState = 0
         self.Mbdown = False
         self.rounding = 0
-        self.Multiplier = (self.end - self.start) / self.size[0]
+        self.Multiplier = (self.end - self.start) / self.size.x
         self.VisualState = round(self.start + self.State * self.Multiplier)
 
         pygame.font.init()
@@ -661,19 +389,19 @@ class Slider():
         self.VisualState = round(self.start + self.State * self.Multiplier)
 
     def Update(self, screen, mousepos, framedelta):
-        pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0], 5),
+        pygame.draw.rect(screen, Colors.HighlightBackground, (self.position.x, self.position.y, self.size.x, 5),
                          border_radius=self.rounding)
-        pygame.draw.rect(screen, Colors.ColorStyle, (self.position[0], self.position[1], self.SliderVisState, 5),
+        pygame.draw.rect(screen, Colors.ColorStyle, (self.position.x, self.position.y, self.SliderVisState, 5),
                          border_radius=self.rounding)
 
         self.VisualState = round(self.start + self.State * self.Multiplier)
         self.SliderVisState -= (self.SliderVisState - self.State) * (1 / framedelta) * 12
 
         rect = self.font.render(str(self.VisualState), True, Colors.TextColor)
-        screen.blit(self.font.render(str(self.name), True, Colors.TextColor), (self.position[0], self.position[1] - 20))
+        screen.blit(self.font.render(str(self.name), True, Colors.TextColor), (self.position.x, self.position.y - 20))
 
-        if mousepos[0] > self.position[0] - 1 and mousepos[0] < self.position[0] + self.size[0] + 1 and mousepos[1] > \
-                self.position[1] and mousepos[1] < self.position[1] + self.size[1]:
+        if mousepos[0] > self.position.x - 1 and mousepos[0] < self.position.x + self.size.x + 1 and mousepos[1] > \
+                self.position.y and mousepos[1] < self.position.y + self.size.y:
             if pygame.mouse.get_pressed()[0]:
                 self.Mbdown = True
 
@@ -681,16 +409,16 @@ class Slider():
             self.Mbdown = False
 
         if self.Mbdown == True:
-            if mousepos[0] > self.position[0] - 1 and mousepos[0] < self.position[0] + self.size[0] + 1:
-                self.State = (mousepos[0] - self.position[0])
+            if mousepos[0] > self.position.x - 1 and mousepos[0] < self.position.x + self.size.x + 1:
+                self.State = (mousepos[0] - self.position.x)
 
-            if mousepos[0] > self.position[0] + self.size[0]:
-                self.State = self.size[0]
+            if mousepos[0] > self.position.x + self.size.x:
+                self.State = self.size.x
 
-            if mousepos[0] < self.position[0]:
+            if mousepos[0] < self.position.x:
                 self.State = 0
 
-        screen.blit(rect, (self.position[0] + self.size[0] - rect.get_width(), self.position[1] + 5))
+        screen.blit(rect, (self.position.x + self.size.x - rect.get_width(), self.position.y + 5))
 
         if self.show == False:
             self.SliderVisState = 0
@@ -698,10 +426,11 @@ class Slider():
         return self.VisualState, self.OutputTab
 
 
-class Selector():
-    def __init__(self, position, size, name, array):
-        self.position = position
-        self.size = size
+class Selector:
+    def __init__(self, array: list[str, ...] = ["Empty selector"], name: str = "Selector_Name",
+                 position: vector2 = Consts.Offsets.selector_offset, size: vector2 = Consts.Sizes.selector_size):
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
         self.rounding = 0
         self.array = array
         self.name = name
@@ -728,7 +457,7 @@ class Selector():
         if self.clicked == True:
             pygame.draw.rect(screen, Colors.HighlightBackground, (self.position[0], self.position[1], self.size[0],
                                                                   rect.get_height() * len(self.array) + ((
-                                                                                                                     baserect.centery - rect.get_height() / 2) -
+                                                                                                                 baserect.centery - rect.get_height() / 2) -
                                                                                                          self.position[
                                                                                                              1]) * 2))
 
@@ -742,8 +471,8 @@ class Selector():
                     if mousepos[1] > self.position[1] + rect.get_height() * i and mousepos[1] < self.position[
                         1] + rect.get_height() * (i + 1):
                         pygame.draw.rect(screen, (255, 255, 255), (
-                        self.position[0], self.position[1] + rect.get_height() * i, self.size[0],
-                        rect.get_height() + ((baserect.centery - rect.get_height() / 2) - self.position[1]) * 2),
+                            self.position[0], self.position[1] + rect.get_height() * i, self.size[0],
+                            rect.get_height() + ((baserect.centery - rect.get_height() / 2) - self.position[1]) * 2),
                                          width=1)
                         if pygame.mouse.get_pressed()[0] and self.Delaytime + 0.15 < time.time():
                             self.Delaytime = time.time()
@@ -757,25 +486,27 @@ class Selector():
         return self.array[self.selected], self.clicked
 
 
-class ColorPicker():
-    def __init__(self, position, size, name):
+class ColorPicker:
+    def __init__(self, name: str = "ColorPicker_Name", position: vector2 = Consts.Offsets.colorpicker_offset,
+                 size: vector2 = Consts.Sizes.colorpicker_size):
+        self.objects = None
         self.name = name
-        self.position = position
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
         self.State = True
-        self.size = size
         self.Outputstate = (0, 0, 0)
         self.image = pygame.image.load("Data\Images\picker.png")
-        self.image = pygame.transform.scale(self.image, size)
+        self.image = pygame.transform.scale(self.image, size.toTuple())
         # self.image = pygame.draw.circle(self.image, (255, 0, 0), (100, 100), 5)
         self.picker = pygame.image.load("Data\Images\circle.png")
         self.picker = pygame.transform.scale(self.picker, (self.image.get_width() / 12, self.image.get_height() / 12))
-        self.picker_x, self.picker_y = self.position[0] + self.image.get_width() / 2 - self.picker.get_width() / 2, \
-                                       self.position[1] + self.image.get_height() / 2 - self.picker.get_height() / 2
+        self.picker_x, self.picker_y = self.position.x + self.image.get_width() / 2 - self.picker.get_width() / 2, \
+                                       self.position.y + self.image.get_height() / 2 - self.picker.get_height() / 2
         self.color = (255, 255, 255)
         self.color_display_size = (self.image.get_width(), 20)
         self.color_display_rounding = 0
-        self.font = default_font
-        self.font_size = default_font_size
+        self.font = Consts.Fonts.default_font
+        self.font_size = Consts.Fonts.default_font_size
 
         self.brightness = 0
         self.processedcolor = self.color
@@ -784,46 +515,46 @@ class ColorPicker():
 
     def Update(self, screen, mousepos, framedelta):
         if self.opened == True:
-            screen.blit(self.image, (self.position[0], self.position[1]))
+            screen.blit(self.image, (self.position.x, self.position.y))
             screen.blit(self.picker, (self.picker_x, self.picker_y))
 
-            if mousepos[0] > self.position[0] and mousepos[0] < self.image.get_width() + self.position[0] and mousepos[
-                1] > self.position[1] and mousepos[1] < self.image.get_height() + self.position[1]:
+            if mousepos[0] > self.position.x and mousepos[0] < self.image.get_width() + self.position.x and mousepos[
+                1] > self.position.y and mousepos[1] < self.image.get_height() + self.position.y:
                 if pygame.mouse.get_pressed()[0]:
                     self.picker_x, self.picker_y = mousepos[0] - self.picker.get_width() / 2, mousepos[
                         1] - self.picker.get_height() / 2
                     self.color = (screen.get_at((int(mousepos[0]), int(mousepos[1]))))[:3]
-                    self.processedcolor = (clamp(round(self.color[0] - self.brightness * (255 / self.size[1])), 0, 255),
-                                           clamp(round(self.color[1] - self.brightness * (255 / self.size[1])), 0, 255),
-                                           clamp(round(self.color[2] - self.brightness * (255 / self.size[1])), 0, 255))
+                    self.processedcolor = (clamp(round(self.color[0] - self.brightness * (255 / self.size.y)), 0, 255),
+                                           clamp(round(self.color[1] - self.brightness * (255 / self.size.y)), 0, 255),
+                                           clamp(round(self.color[2] - self.brightness * (255 / self.size.y)), 0, 255))
 
             # darkness slider
             pygame.draw.rect(screen, Colors.HighlightBackground,
-                             (self.position[0] + self.size[0] + 5, self.position[1], 5, self.size[1]))
+                             (self.position.x + self.size.x + 5, self.position.y, 5, self.size.y))
             pygame.draw.rect(screen, self.processedcolor, (
-            self.position[0] + self.size[0] + 5, self.position[1] + self.brightness, 5, self.size[1] - self.brightness))
+                self.position.x + self.size.x + 5, self.position.y + self.brightness, 5, self.size.y - self.brightness))
 
-            if mousepos[0] > self.position[0] + self.size[0] + 5 and mousepos[0] < self.position[0] + self.size[
-                1] + 10 and mousepos[1] > self.position[1] - 1 and mousepos[1] < self.position[1] + self.size[1] + 1:
+            if mousepos[0] > self.position.x + self.size.x + 5 and mousepos[0] < self.position.x + self.size.y + 10 and \
+                    mousepos[1] > self.position.y - 1 and mousepos[1] < self.position.y + self.size.y + 1:
                 if pygame.mouse.get_pressed()[0] == True:
-                    self.brightness = mousepos[1] - self.position[1]
-                    self.processedcolor = (clamp(round(self.color[0] - self.brightness * (255 / self.size[1])), 0, 255),
-                                           clamp(round(self.color[1] - self.brightness * (255 / self.size[1])), 0, 255),
-                                           clamp(round(self.color[2] - self.brightness * (255 / self.size[1])), 0, 255))
+                    self.brightness = mousepos[1] - self.position.y
+                    self.processedcolor = (clamp(round(self.color[0] - self.brightness * (255 / self.size.y)), 0, 255),
+                                           clamp(round(self.color[1] - self.brightness * (255 / self.size.y)), 0, 255),
+                                           clamp(round(self.color[2] - self.brightness * (255 / self.size.y)), 0, 255))
 
-            if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + self.size[0] and mousepos[1] > \
-                    self.position[1] and mousepos[1] < self.size[1] + self.position[1]:
+            if mousepos[0] > self.position.x and mousepos[0] < self.position.x + self.size.x and mousepos[1] > \
+                    self.position.y and mousepos[1] < self.size.y + self.position.y:
                 if pygame.mouse.get_pressed()[2] == True:
                     if self.starttime + 0.25 < time.time():
                         self.starttime = time.time()
                         self.opened = not self.opened
         else:
-            pygame.draw.rect(screen, self.processedcolor, (self.position[0], self.position[1], 30, 30))
+            pygame.draw.rect(screen, self.processedcolor, (self.position.x, self.position.y, 30, 30))
             screen.blit(Colors.FontMed.render(str(self.name), True, self.processedcolor),
-                        (self.position[0], self.position[1] + 30))
+                        (self.position.x, self.position.y + 30))
 
-            if mousepos[0] > self.position[0] and mousepos[0] < self.position[0] + 30 and mousepos[1] > self.position[
-                1] and mousepos[1] < 30 + self.position[1]:
+            if mousepos[0] > self.position.x and mousepos[0] < self.position.x + 30 and mousepos[
+                1] > self.position.y and mousepos[1] < 30 + self.position.y:
                 if pygame.mouse.get_pressed()[2] == True:
                     if self.starttime + 0.25 < time.time():
                         self.starttime = time.time()
@@ -832,10 +563,13 @@ class ColorPicker():
         return self.processedcolor
 
 
-class Checkbox():
-    def __init__(self, pos, size, name, color):
-        self.pos = pos
-        self.size = size
+class Checkbox:
+    def __init__(self, color, name: str = "Checkbox_Name", position: vector2 = Consts.Offsets.checkbox_offset,
+                 size: vector2 = Consts.Sizes.checkbox_size):
+        """color is undefined and is not known"""
+        self.objects = None
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
         self.name = name
         self.color = color
         self.clicked = False
@@ -848,10 +582,12 @@ class Checkbox():
 
     def Update(self, screen, Mousepos, framedelta):
 
-        if Mousepos[0] > self.pos[0] and Mousepos[0] < self.pos[0] + self.size[0] and Mousepos[1] > self.pos[1] and \
-                Mousepos[1] < self.pos[1] + self.size[1]:
+        if Mousepos[0] > self.position.x and Mousepos[0] < self.position.x + self.size.x and Mousepos[
+            1] > self.position.y and \
+                Mousepos[1] < self.position.y + self.size.y:
             if pygame.mouse.get_pressed()[0] and self.delaytime + 0.1 < time.time():
                 self.clicked = not self.clicked
+                print(self.clicked)
                 self.delaytime = time.time()
 
         if self.show == True and self.clicked == True:
@@ -859,13 +595,13 @@ class Checkbox():
             self.CustomColorG -= (self.CustomColorG - Colors.ColorStyle[1]) * (1 / framedelta) * 7
             self.CustomColorB -= (self.CustomColorB - Colors.ColorStyle[2]) * (1 / framedelta) * 7
             self.CustomColor = (
-            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+                clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
         else:
             self.CustomColorR -= (self.CustomColorR - Colors.DisableColor[0]) * (1 / framedelta) * 13
             self.CustomColorG -= (self.CustomColorG - Colors.DisableColor[1]) * (1 / framedelta) * 13
             self.CustomColorB -= (self.CustomColorB - Colors.DisableColor[2]) * (1 / framedelta) * 13
             self.CustomColor = (
-            clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
+                clamp(self.CustomColorR, 0, 255), clamp(self.CustomColorG, 0, 255), clamp(self.CustomColorB, 0, 255))
 
         if self.show == False:
             self.CustomColorR = Colors.DisableColor[0]
@@ -873,20 +609,23 @@ class Checkbox():
             self.CustomColorB = Colors.DisableColor[2]
             self.CustomColor = Colors.DisableColor
 
-        rect = pygame.draw.rect(screen, self.CustomColor, (self.pos[0], self.pos[1], self.size[0], self.size[1]))
-        rect = pygame.draw.rect(screen, Colors.ColorStyle, (self.pos[0], self.pos[1], self.size[0], self.size[1]),
+        rect = pygame.draw.rect(screen, self.CustomColor, (self.position.x, self.position.y, self.size.x, self.size.y))
+        rect = pygame.draw.rect(screen, Colors.ColorStyle, (self.position.x, self.position.y, self.size.x, self.size.y),
                                 width=2)
 
         textrect = Colors.FontMed.render(str(self.name), True, Colors.TextColor)
-        screen.blit(textrect, (self.pos[0] + self.size[0] + 5, rect.centery - textrect.get_height() / 2))
+        screen.blit(textrect, (self.position.x + self.size.x + 5, rect.centery - textrect.get_height() / 2))
 
         return self.clicked
 
 
-class Searchbox():
-    def __init__(self, position, size, name, array):
-        self.position = position
-        self.size = size
+class Searchbox:
+    def __init__(self, array, name: str = "Searchbox_Name", position: vector2 = Consts.Offsets.searchbox_offset,
+                 size: vector2 = Consts.Sizes.searchbox_size):
+        """array is undefined and is not known"""
+
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
         self.rounding = 0
 
         self.name = name
@@ -966,7 +705,8 @@ class Searchbox():
                                      self.size[1]
                         rectright = rectangle.centerx - elementrect.get_width() / 2
                         pygame.draw.rect(screen, Colors.TextColor, (
-                        rectright - 1, rectheight - 1, elementrect.get_rect()[2] + 2, elementrect.get_rect()[3] + 2))
+                            rectright - 1, rectheight - 1, elementrect.get_rect()[2] + 2,
+                            elementrect.get_rect()[3] + 2))
                         pygame.draw.rect(screen, Colors.HighlightBackground,
                                          (rectright, rectheight, elementrect.get_rect()[2], elementrect.get_rect()[3]))
                         if pygame.mouse.get_pressed()[0] == True:
@@ -981,7 +721,404 @@ class Searchbox():
         return self.array[self.selected], self.clicked
 
 
-class LogoDisplayer():
+class ScriptManager(GuiObjWithDeps):
+    def __init__(self, position: vector2 = Consts.Offsets.scriptmanager_offset,
+                 size: vector2 = Consts.Sizes.scriptmanager_size):
+        # get the run file and path of all "scripts"
+        super().__init__()
+        self.objects = None
+        self.scriptpath = os.getcwd() + "\\scripts\\"
+        self.file_list = os.listdir(self.scriptpath)
+        self.win_size = (410, 380)
+        self.position = Vec2(position.x, position.y)
+        self.size = Vec2(size.x, size.y)
+
+        self.clicked_mouse = False
+        self.calc_time = 0
+        self.delaytime = time.time()
+
+        self.loaded_code = []
+        self.loaded_script_names = []
+
+        self.error = ""
+        self.errortime = time.time()
+        self.errorfile = ""
+        self.errorscroll = 0
+        self.errorsurface = pygame.Surface((self.size.x, 20))
+        self.errorsurface.fill((Colors.Background))
+
+        self.unallowedlist = ["unallowedlist", "with open", "while", "os.", "sys.", "Manager", "Colors.", "exec",
+                              "compile", "from", "import", "quit()", "exit()", "self.scriptpath", "self.file_list",
+                              "self.win_size", "self.pos", "self.size"
+                                                           "self.clicked_mouse", "self.calc_time", "self.delaytime",
+                              "self.error", "self.errortime", "self.errorscroll", "self.errorsurface",
+                              "self.refreshpng"]
+
+        self.refreshpng = pygame.image.load("Data/Images/Refresh.png")
+
+    def Update(self, screen, mousepos, fps):
+        """i dont know what to do with fps so ive hardcoded it"""
+        # background
+        pygame.draw.rect(screen, Colors.LightBackground,
+                         (self.position.x - 1, self.position.y - 1, self.size.x + 2, self.size.y + 2))
+        pygame.draw.rect(screen, Colors.Background, (self.position.x, self.position.y, self.size.x, self.size.y))
+        pygame.draw.rect(screen, Colors.LightBackground, (self.position.x + 20, self.position.y, 1, 20))
+        pygame.draw.rect(screen, Colors.LightBackground,
+                         (self.position.x, self.position.y + self.size.y - 21, self.size.x, 1))
+
+        # top bar
+        pygame.draw.rect(screen, Colors.LightBackground, (self.position.x, self.position.y + 20, self.size.x, 1))
+
+        # refresh files
+        screen.blit(self.refreshpng, (self.position.x + 20 / 2 - self.refreshpng.get_width() / 2,
+                                      self.position.y + 20 / 2 - self.refreshpng.get_height() / 2))
+        if mousepos[0] > self.position.x and mousepos[0] < self.position.x + 20 and mousepos[1] > self.position.y and \
+                mousepos[1] < \
+                self.position.y + 20:
+            if pygame.mouse.get_pressed()[0] == True:
+                self.clicked_mouse = True
+            else:
+                if self.clicked_mouse == True:
+                    self.clicked_mouse = False
+                    self.file_list = os.listdir(self.scriptpath)
+                    self.loaded_code.clear()
+
+        # calculating time ( added lag technically )
+        self.calc_time -= (self.calc_time - round(1 / (1 + fps) * 10000)) * (1 / (1 + fps)) * 10
+        if self.calc_time >= 10000:
+            self.calc_time = 0
+        sprite = Colors.FontSmall.render(str(round(self.calc_time)) + "ms", True, (190, 190, 190))
+        screen.blit(sprite, (self.position.x + 25, self.position.y + 20 / 2 - sprite.get_height() / 2))
+
+        # list all files
+        for i in range(0, len(self.file_list)):
+            sprite = Colors.FontSmall.render(str(self.file_list[i]), True, (190, 190, 190))
+            screen.blit(sprite, (self.position.x + 10, self.position.y + 25 + i * 20))
+
+            # more background to override long names
+            pygame.draw.rect(screen, Colors.Background,
+                             (self.position.x + self.size.x - 28, self.position.y + 21, 28, self.size.y - 42))
+
+            # if script not loaded
+            if self.file_list[i] not in self.loaded_script_names:
+                # add script
+                if mousepos[0] > self.position.x + self.size.x - 25 and mousepos[0] < self.position.x + self.size.x and \
+                        mousepos[1] > self.position.y + 25 + i * 20 and mousepos[1] < self.position.y + 25 + (
+                        i + 1) * 20:
+                    pygame.draw.polygon(screen, (100, 250, 100), (
+                        (2 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20),
+                        (2 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (16 + self.position.x + self.size.x - 25, 8 + self.position.y + 25 + i * 20)))
+
+                    if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
+
+                        # save enviroment
+                        with open(self.scriptpath + self.file_list[i], "r") as file:
+
+                            passedtest = True
+                            readfile = file.read()
+                            lines = readfile.split("\n")
+                            for x in range(0, len(self.unallowedlist)):
+                                for y in range(0, len(lines)):
+                                    if self.unallowedlist[x] in lines[y]:
+                                        passedtest = False
+                                        self.errortime = time.time()
+                                        self.error = "not allowed to run! > '" + str(
+                                            self.unallowedlist[x]) + "' in line: " + str(y + 1)
+                                        break
+                            if passedtest == True:
+                                self.loaded_script_names.append(self.file_list[i])
+                                self.loaded_code.append(readfile)
+
+                        self.delaytime = time.time()
+                else:
+                    pygame.draw.polygon(screen, (50, 150, 50), (
+                        (2 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20),
+                        (2 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (16 + self.position.x + self.size.x - 25, 8 + self.position.y + 25 + i * 20)))
+
+            else:
+                # remove script
+                if mousepos[0] > self.position.x + self.size.x - 25 and mousepos[0] < self.position.x + self.size.x and \
+                        mousepos[1] > self.position.y + 25 + i * 20 and mousepos[1] < self.position.y + 25 + (
+                        i + 1) * 20:
+                    pygame.draw.polygon(screen, (100, 250, 100), (
+                        (3 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20),
+                        (3 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (6 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (6 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20)))
+
+                    pygame.draw.polygon(screen, (100, 250, 100), (
+                        (9 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20),
+                        (9 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (12 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (12 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20)))
+
+                    if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
+                        self.loaded_code.remove(self.loaded_code[self.loaded_script_names.index(self.file_list[i])])
+                        self.loaded_script_names.remove(
+                            self.loaded_script_names[self.loaded_script_names.index(self.file_list[i])])
+
+                        self.delaytime = time.time()
+                else:
+                    pygame.draw.polygon(screen, (50, 150, 50), (
+                        (3 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20),
+                        (3 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (6 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (6 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20)))
+
+                    pygame.draw.polygon(screen, (50, 150, 50), (
+                        (9 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20),
+                        (9 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (12 + self.position.x + self.size.x - 25, 16 + self.position.y + 25 + i * 20),
+                        (12 + self.position.x + self.size.x - 25, 2 + self.position.y + 25 + i * 20)))
+
+        ## magic :)
+        for i in range(0, len(self.loaded_code)):
+            try:
+                exec(compile(self.loaded_code[i], self.loaded_script_names[i], "exec"))
+            except Exception as error:
+                self.error = error
+                self.loaded_code.remove(self.loaded_code[i])
+                self.loaded_script_names.remove(self.loaded_script_names[i])
+                self.errortime = time.time()
+
+        # error handling
+        if self.error != "":
+            self.errorsurface.fill(Colors.Background)
+            sprite = Colors.FontSmall.render(str(self.error), True, (190, 190, 190))
+            self.errorsurface.blit(sprite,
+                                   (clamp(-self.errorscroll + 5, -abs(self.size.x - sprite.get_width() - 5), 5), 0))
+            screen.blit(self.errorsurface, (self.position.x, self.pos.y + self.size.y - self.errorsurface.get_height()))
+
+            if sprite.get_width() > self.size.x:
+                if self.errortime + 1.5 < time.time():
+                    if self.errorscroll < abs(self.size.x - sprite.get_width()) * 5:
+                        self.errorscroll += self.calc_time / 100
+                    else:
+                        self.error = ""
+                        self.errorscroll = 0
+            else:
+                if self.errortime + 1.5 < time.time():
+                    self.error = ""
+
+
+class Holder:
+    def __init__(self, name: str = "Holder_Name", items: list = list(), position: vector2 = Consts.Offsets.holder_offset,
+                 size: vector2 = Consts.Sizes.holder_size):
+        self.objects = None
+        self.position: vector2 = position
+        self.size: vector2 = size
+        self.items: list = items
+
+        self.rect = pygame.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
+        self.font = pygame.font.SysFont("Microsoft Sans Serif", 13, False, False)
+        self.sprite = self.font.render(str(name), True, (200, 200, 200))
+        self.render_surf = pygame.Surface((self.size.x - 20, self.size.y - 30))
+
+        self.item_height = 5 + len(items) * 20
+        if self.item_height > self.size.y:
+            self.scrollbar = True
+        else:
+            self.scrollbar = False
+
+        # 0 - 100
+        self.scroll_state = 0
+
+        # scroll bar multiplier
+        self.scroll_mult1 = (self.size.y - 65) / 100
+
+        # item scroll multiplier
+        self.scroll_mult2 = abs(self.item_height - self.size.y + 20) / 100
+
+        self.color_dark = 25, 25, 25
+        self.color_bright = 40, 40, 40
+        self.color_bright2 = 70, 70, 70
+
+    def Update(self, screen, mousepos, framedelta):  # , globalevent=pygame.event.get()
+        globalevent = pygame.event.get()
+
+        pygame.draw.rect(screen, self.color_dark,
+                         (self.position.x, self.position.y + 10, self.size.x, self.size.y - 10))
+        screen.blit(self.sprite, (self.position.x + 10, self.position.y + 10 - self.sprite.get_height() / 2))
+
+        pointslist = (self.position.x + 5, self.position.y + 10), (self.position.x, self.position.y + 10), (
+        self.position.x, self.position.y + self.size.y), (
+                     self.position.x + self.size.x, self.position.y + self.size.y), (
+                     self.position.x + self.size.x, self.position.y + 10), (
+                     self.position.x + 15 + self.sprite.get_width(), self.position.y + 10)
+
+        pygame.draw.lines(screen, self.color_bright, False, pointslist)
+
+        if self.scrollbar:
+            pygame.draw.rect(screen, self.color_bright,
+                             (self.position.x + self.size.x - 10, self.position.y + 10, 10, self.size.y - 10))
+
+            pygame.draw.rect(screen, self.color_bright2, (
+            self.position.x + self.size.x - 7, self.position.y + 13 + self.scroll_state * self.scroll_mult1, 5, 50),
+                             border_radius=50)
+
+            if self.rect.collidepoint(mousepos[0], mousepos[1]):
+                for event in globalevent:  # Important (make globalevent really global)
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                    if event.type == pygame.MOUSEWHEEL:
+                        if self.scroll_state > 0 and event.y > 0:
+                            self.scroll_state -= event.y * 10
+
+                        if self.scroll_state < 100 and event.y < 0:
+                            self.scroll_state -= event.y * 10
+
+                if self.scroll_state < 0:
+                    self.scroll_state = 0
+
+                if self.scroll_state > self.size.y - 65:
+                    self.scroll_state = self.size.y - 65
+
+        self.render_surf.fill((self.color_dark))
+        for i in range(0, len(self.items)):
+            sprite = self.font.render(str(self.items[i]), True, (200, 200, 200))
+            self.render_surf.blit(sprite, (10, i * 20 - self.scroll_state * self.scroll_mult2))
+        screen.blit(self.render_surf, (self.position.x + 10, self.position.y + 20))
+
+
+# SCREENS
+class Window:
+    def __init__(self, resolution, position, overlay):
+        # window
+        pygame.display.set_caption("Future")
+        self.resolution = resolution
+        self.ActiveModuleRes = resolution
+        self.position = position
+        self.CustomMouse = Controller()
+        self.Foreground = True
+        self.logo = pygame.image.load("Data\Images\Icon.png")
+        self.starttime = time.time()
+
+        self.overlay = overlay
+        self.screen = overlay.screen
+        self.clicked = (0, 0)
+        pygame.display.set_icon(self.logo)
+        self.overlay_mode = False
+        self.overlay.draw_fps()
+
+        Window = win32gui.FindWindow(None, "Future")
+        win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE,
+                               win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
+        win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 210, win32con.LWA_ALPHA)
+
+        self.Alpha = 210
+
+        self.origSurface = self.logo
+        self.origSurface.convert_alpha()
+        self.LogoUpdate = False
+        self.coloredSurface = self.logo
+        self.clock = pygame.time.Clock()
+
+        self.active_modules_dimensions = [120, 20]
+        self.active_modules_margin = (10, 500)
+
+        self.pygameevent = None
+
+        self.colorchanger = ColorChanger()
+
+    def Update(self, Framedelta, is_login_screen):
+        Window = win32gui.FindWindow(None, "Future")
+        WindowRect = win32gui.GetWindowRect(Window)
+
+        Mousepos = pygame.mouse.get_pos()
+
+        self.pygameevent = pygame.event.get()
+
+        # main window
+        if self.Foreground == True:
+            self.screen.fill(Colors.Background)
+
+            separate_line = pygame.draw.line(self.screen, (220, 220, 220), (70, 0), (70, 500), 2)
+
+            # logo color change
+            if self.LogoUpdate == True:
+                self.coloredSurface = self.origSurface.copy()
+                self.colorchanger.colorSurface(self.coloredSurface, Colors.ColorStyle, self.clock.get_fps())
+
+            self.screen.blit(self.coloredSurface, (10, 10))
+
+            if abs(pygame.Surface.get_at(self.screen, (20, 20))[:-1][0] - Colors.ColorStyle[0]) > 2 or abs(
+                    pygame.Surface.get_at(self.screen, (20, 20))[:-1][1] - Colors.ColorStyle[1]) > 2 or abs(
+                    pygame.Surface.get_at(self.screen, (20, 20))[:-1][2] - Colors.ColorStyle[2]) > 2:
+
+                self.LogoUpdate = True
+            else:
+                self.LogoUpdate = False
+
+            # exit button
+            close_button_rect = Colors.FontBig.render("x", True, (150, 50, 50))
+            self.screen.blit(close_button_rect, (self.resolution[0] - close_button_rect.get_width() - 2, -4))
+
+            for event in self.pygameevent:
+                if Mousepos[0] > self.resolution[0] - close_button_rect.get_width() and Mousepos[0] < self.resolution[
+                    0] and Mousepos[1] > 0 and Mousepos[1] < close_button_rect.get_height():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        pygame.quit()
+                        exit(0)
+
+                if Mousepos[0] > 0 and Mousepos[0] < self.resolution[0] - close_button_rect.get_width() and Mousepos[
+                    1] > 0 and Mousepos[1] < 35:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.clicked = (Mousepos[0], Mousepos[1])
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        self.clicked = (0, 0)
+
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.clicked = (0, 0)
+
+            if self.clicked != (0, 0):
+                win32gui.SetWindowPos(Window, None, self.CustomMouse.position[0] - self.clicked[0],
+                                      self.CustomMouse.position[1] - self.clicked[1], 0, 0, 1)
+
+        else:
+            drawOverlay(self.overlay)
+
+        if not is_login_screen:
+            if keyboard.is_pressed("right_shift") and self.Foreground == True and self.starttime + 0.15 < time.time():
+                self.starttime = time.time()
+
+                self.overlay = Overlay(pygame.Rect(0, 0, screenSize()[0], screenSize()[1]))
+                self.overlay.overlaymode()
+                self.overlay.show = True
+                self.Foreground = False
+
+            elif keyboard.is_pressed(
+                    "right_shift") and self.Foreground == False and self.starttime + 0.15 < time.time():
+                self.starttime = time.time()
+
+                self.overlay = Overlay(
+                    pygame.Rect(round(screenSize()[0] / 2 - 410 / 2), round(screenSize()[1] / 2 - 410 / 2), 410, 410))
+                self.overlay.windowmode()
+                self.Foreground = True
+
+        global ChangeAlpha
+        if ChangeAlpha == True:
+            # changing alpha
+            if self.CustomMouse.position[0] > WindowRect[0] and self.CustomMouse.position[0] < WindowRect[2] and \
+                    self.CustomMouse.position[1] > WindowRect[1] and self.CustomMouse.position[1] < WindowRect[3]:
+                self.Alpha -= (self.Alpha - 255) * (1 / Framedelta) * 16
+            else:
+                self.Alpha -= (self.Alpha - Colors.Transparency) * (1 / Framedelta) * 16
+
+            win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), round(clamp(self.Alpha, 0, 255)),
+                                                win32con.LWA_ALPHA)
+        else:
+            if not self.overlay.overlay_mode:
+                self.overlay.windowmode()
+
+        if is_login_screen:
+            return False
+
+        return self.Foreground
+
+
+class LogoDisplayer:
     def __init__(self, overlay):
         self.screen = overlay.screen
         self.i = 0
@@ -1025,10 +1162,10 @@ class LogoDisplayer():
 
         # draw bottom lines
         pygame.draw.rect(self.screen, self.dark, (
-        self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i, 0, self.width), 1))
+            self.scrsize[0] / 2, self.scrsize[1] / 2 + self.heightoffset, clamp(self.i, 0, self.width), 1))
         pygame.draw.rect(self.screen, self.dark, (
-        self.scrsize[0] / 2 - clamp(self.i, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
-        clamp(self.i, 0, self.width), 1))
+            self.scrsize[0] / 2 - clamp(self.i, 0, self.width) + 1, self.scrsize[1] / 2 + self.heightoffset,
+            clamp(self.i, 0, self.width), 1))
 
         # left right lines
         if self.i >= self.width:
@@ -1112,15 +1249,15 @@ class LogoDisplayer():
         # center logo
         self.futuresurface.set_alpha(clamp(self.i, 0, 255))
         surface = pygame.transform.scale(self.futuresurface, (
-        self.F.get_size()[0] / (3.8 - clamp(self.i / 50, -100, 2)),
-        self.F.get_size()[1] / (3.7 - clamp(self.i / 50, -100, 2))))
+            self.F.get_size()[0] / (3.8 - clamp(self.i / 50, -100, 2)),
+            self.F.get_size()[1] / (3.7 - clamp(self.i / 50, -100, 2))))
         self.screen.blit(surface, (
-        self.scrsize[0] / 2 - surface.get_width() / 2, self.scrsize[1] / 2 - surface.get_height() / 2))
+            self.scrsize[0] / 2 - surface.get_width() / 2, self.scrsize[1] / 2 - surface.get_height() / 2))
 
         return self.state
 
 
-class Loading():
+class Loading:
     def __init__(self, overlay):
         self.X = 0
         self.X1 = 0
@@ -1339,8 +1476,8 @@ class LoginScreen:
 
                     if self.Caretshow and self.clicked == True:
                         pygame.draw.rect(screen, Colors.TextColor, (
-                        self.res[0] / 2 - self.textfield_size[0] / 2 + 5 + TextFont.get_rect()[2],
-                        self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz, 2, 24))
+                            self.res[0] / 2 - self.textfield_size[0] / 2 + 5 + TextFont.get_rect()[2],
+                            self.res[1] / 2 - self.textfield_size[1] / 2 + 3 + self.textfield_posz, 2, 24))
 
                     SubmitFont = Colors.FontBig.render("Submit", True, Colors.TextColor)
                     pygame.draw.rect(screen, Colors.TextColor, (self.res[0] / 2 - self.submit_button_size[0] / 2,
@@ -1426,7 +1563,7 @@ class LoginScreen:
                                         self.submit_button_posz - steamname.get_size()[1] / 2 - 100))
                 font = Colors.FontBig.render("Buy a Subscription!", True, (100, 255, 100))
                 screen.blit(font, (
-                self.res[0] / 2 - font.get_size()[0] / 2, self.submit_button_posz - font.get_size()[1] / 2 - 60))
+                    self.res[0] / 2 - font.get_size()[0] / 2, self.submit_button_posz - font.get_size()[1] / 2 - 60))
 
                 mousepos = pygame.mouse.get_pos()
 
@@ -1442,7 +1579,7 @@ class LoginScreen:
                             subprocess.call(callcommand)
 
                 screen.blit(link, (
-                self.res[0] / 2 - link.get_size()[0] / 2, self.submit_button_posz - link.get_size()[1] / 2 - 30))
+                    self.res[0] / 2 - link.get_size()[0] / 2, self.submit_button_posz - link.get_size()[1] / 2 - 30))
             return self.state
         else:
             pygame.draw.rect(screen, Colors.Background, (0, 0, self.res[0], self.res[1]))
@@ -1456,179 +1593,121 @@ class LoginScreen:
 
             steamname = Colors.FontBig.render(self.account_name, True, Colors.TextColor)
             screen.blit(steamname, (
-            self.res[0] / 2 - steamname.get_size()[0] / 2, self.res[1] - steamname.get_size()[1] / 2 - 130))
+                self.res[0] / 2 - steamname.get_size()[0] / 2, self.res[1] - steamname.get_size()[1] / 2 - 130))
 
 
-class ScriptManager:
-    def __init__(self, pos, size):
-        # get the run file and path of all "scripts"
-        self.scriptpath = os.getcwd() + "\\scripts\\"
-        self.file_list = os.listdir(self.scriptpath)
-        self.win_size = (410, 380)
-        self.pos = pos
-        self.size = size
+# SUMMARIZING
+class GuiGrid(GuiObjWithDeps):
+    """
+    main GuiGrid class that contains all the gui objects.
+    Could be used with .updateDepencencies() to recursively update the whole gui.
+    Actually look GuiObjWithDeps docs
+    """
 
-        self.clicked_mouse = False
-        self.calc_time = 0
-        self.delaytime = time.time()
+    class Visuals(FirstLevelButton):
+        class VisualsHolder(Holder):
+            pass
+        def __init__(self, **kwargs):
+            self.VisualsHolder = self.VisualsHolder(name="Visuals")
+            super().__init__(**kwargs)
 
-        self.loaded_code = []
-        self.loaded_script_names = []
+    class Combat(FirstLevelButton):
+        class AimBot(Button): pass
 
-        self.error = ""
-        self.errortime = time.time()
-        self.errorfile = ""
-        self.errorscroll = 0
-        self.errorsurface = pygame.Surface((self.size[0], 20))
-        self.errorsurface.fill((Colors.Background))
+        def __init__(self, **kwargs):
+            self.AimBot = self.AimBot(name="AimBot")
+            super().__init__(**kwargs)
 
-        self.unallowedlist = ["unallowedlist", "with open", "while", "os.", "sys.", "Manager", "Colors.", "exec",
-                              "compile", "from", "import", "quit()", "exit()", "self.scriptpath", "self.file_list",
-                              "self.win_size", "self.pos", "self.size"
-                                                           "self.clicked_mouse", "self.calc_time", "self.delaytime",
-                              "self.error", "self.errortime", "self.errorscroll", "self.errorsurface",
-                              "self.refreshpng"]
+    class Misc(FirstLevelButton):
+        class ToxicChat(Button): pass
 
-        self.refreshpng = pygame.image.load("Data/Images/Refresh.png")
+        def __init__(self, **kwargs):
+            self.ToxicChat = self.ToxicChat(name="ToxicChat")
+            super().__init__(**kwargs)
 
-    def Update(self, screen, mousepos, fps):
-        # background
-        pygame.draw.rect(screen, Colors.LightBackground,
-                         (self.pos[0] - 1, self.pos[1] - 1, self.size[0] + 2, self.size[1] + 2))
-        pygame.draw.rect(screen, Colors.Background, (self.pos[0], self.pos[1], self.size[0], self.size[1]))
-        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0] + 20, self.pos[1], 1, 20))
-        pygame.draw.rect(screen, Colors.LightBackground,
-                         (self.pos[0], self.pos[1] + self.size[1] - 21, self.size[0], 1))
+    class Scripts(FirstLevelButton):
+        class ScriptManager(ScriptManager): pass
 
-        # top bar
-        pygame.draw.rect(screen, Colors.LightBackground, (self.pos[0], self.pos[1] + 20, self.size[0], 1))
+        def __init__(self, **kwargs):
+            self.ScriptManager = self.ScriptManager()
+            super().__init__(**kwargs)
 
-        # refresh files
-        screen.blit(self.refreshpng, (self.pos[0] + 20 / 2 - self.refreshpng.get_width() / 2,
-                                      self.pos[1] + 20 / 2 - self.refreshpng.get_height() / 2))
-        if mousepos[0] > self.pos[0] and mousepos[0] < self.pos[0] + 20 and mousepos[1] > self.pos[1] and mousepos[1] < \
-                self.pos[1] + 20:
-            if pygame.mouse.get_pressed()[0] == True:
-                self.clicked_mouse = True
-            else:
-                if self.clicked_mouse == True:
-                    self.clicked_mouse = False
-                    self.file_list = os.listdir(self.scriptpath)
-                    self.loaded_code.clear()
+    class Config(FirstLevelButton):
+        class Load(Button): pass
 
-        # calculating time ( added lag technically )
-        self.calc_time -= (self.calc_time - round(1 / (1 + fps) * 10000)) * (1 / (1 + fps)) * 10
-        if self.calc_time >= 10000:
-            self.calc_time = 0
-        sprite = Colors.FontSmall.render(str(round(self.calc_time)) + "ms", True, (190, 190, 190))
-        screen.blit(sprite, (self.pos[0] + 25, self.pos[1] + 20 / 2 - sprite.get_height() / 2))
+        class Save(Button): pass
 
-        # list all files
-        for i in range(0, len(self.file_list)):
-            sprite = Colors.FontSmall.render(str(self.file_list[i]), True, (190, 190, 190))
-            screen.blit(sprite, (self.pos[0] + 10, self.pos[1] + 25 + i * 20))
+        def __init__(self, **kwargs):
+            self.Load = self.Load(name="Load")
+            self.Save = self.Save(name="Save")
+            super().__init__(**kwargs)
 
-            # more background to override long names
-            pygame.draw.rect(screen, Colors.Background,
-                             (self.pos[0] + self.size[0] - 28, self.pos[1] + 21, 28, self.size[1] - 42))
+    class Settings(FirstLevelButton):
+        class Transparency(Slider): pass
 
-            # if script not loaded
-            if self.file_list[i] not in self.loaded_script_names:
-                # add script
-                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and \
-                        mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
-                    pygame.draw.polygon(screen, (100, 250, 100), (
-                        (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                        (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
+        class ChangeTransparency(Checkbox): pass
 
-                    if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
+        class Highlight(ColorPicker): pass
 
-                        # save enviroment
-                        with open(self.scriptpath + self.file_list[i], "r") as file:
+        class ColorStyle(ColorPicker): pass
 
-                            passedtest = True
-                            readfile = file.read()
-                            lines = readfile.split("\n")
-                            for x in range(0, len(self.unallowedlist)):
-                                for y in range(0, len(lines)):
-                                    if self.unallowedlist[x] in lines[y]:
-                                        passedtest = False
-                                        self.errortime = time.time()
-                                        self.error = "not allowed to run! > '" + str(
-                                            self.unallowedlist[x]) + "' in line: " + str(y + 1)
-                                        break
-                            if passedtest == True:
-                                self.loaded_script_names.append(self.file_list[i])
-                                self.loaded_code.append(readfile)
+        def __init__(self, **kwargs):
+            self.Transparency = self.Transparency(start=50, end=255)
+            self.ChangeTransparency = self.ChangeTransparency(color=(255, 255, 255))
+            self.Highlight = self.Highlight()
+            self.ColorStyle = self.ColorStyle(position=Vec2(110, -30))
+            super().__init__(**kwargs)
 
-                        self.delaytime = time.time()
-                else:
-                    pygame.draw.polygon(screen, (50, 150, 50), (
-                        (2 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                        (2 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (16 + self.pos[0] + self.size[0] - 25, 8 + self.pos[1] + 25 + i * 20)))
+    def __init__(self):
+        self.Visuals = self.Visuals(name="Visuals", picture=Images.visuals_icon)
+        self.Combat = self.Combat(name="Combat", picture=Images.aimbot_icon)
+        self.Misc = self.Misc(name="Misc", picture=Images.misc_icon)
+        self.Scripts = self.Scripts(name="Scripts", picture=Images.script_icon)
+        self.Config = self.Config(name="Config", picture=Images.config_icon)
+        self.Settings = self.Settings(name="Settings", picture=Images.config_icon)
+        super().__init__()
 
-            else:
-                # remove script
-                if mousepos[0] > self.pos[0] + self.size[0] - 25 and mousepos[0] < self.pos[0] + self.size[0] and \
-                        mousepos[1] > self.pos[1] + 25 + i * 20 and mousepos[1] < self.pos[1] + 25 + (i + 1) * 20:
-                    pygame.draw.polygon(screen, (100, 250, 100), (
-                        (3 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                        (3 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (6 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (6 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
 
-                    pygame.draw.polygon(screen, (100, 250, 100), (
-                        (9 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                        (9 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (12 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (12 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
+class Gui:
+    """
+    This class is used to initialize gui_grid, which contains
+    all the objects of gui (all the buttons, sliders, etc)
+    """
 
-                    if pygame.mouse.get_pressed()[0] == True and self.delaytime + 0.1 < time.time():
-                        self.loaded_code.remove(self.loaded_code[self.loaded_script_names.index(self.file_list[i])])
-                        self.loaded_script_names.remove(
-                            self.loaded_script_names[self.loaded_script_names.index(self.file_list[i])])
+    def __init__(self):
 
-                        self.delaytime = time.time()
-                else:
-                    pygame.draw.polygon(screen, (50, 150, 50), (
-                        (3 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                        (3 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (6 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (6 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
+        self.gui_grid = GuiGrid()
 
-                    pygame.draw.polygon(screen, (50, 150, 50), (
-                        (9 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20),
-                        (9 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (12 + self.pos[0] + self.size[0] - 25, 16 + self.pos[1] + 25 + i * 20),
-                        (12 + self.pos[0] + self.size[0] - 25, 2 + self.pos[1] + 25 + i * 20)))
+        self.applyGuiSizesAndGaps()
+        print()
 
-        ## magic :)
-        for i in range(0, len(self.loaded_code)):
-            try:
-                exec(compile(self.loaded_code[i], self.loaded_script_names[i], "exec"))
-            except Exception as error:
-                self.error = error
-                self.loaded_code.remove(self.loaded_code[i])
-                self.loaded_script_names.remove(self.loaded_script_names[i])
-                self.errortime = time.time()
+    def applyGuiSizesAndGaps(self):
 
-        # error handling
-        if self.error != "":
-            self.errorsurface.fill(Colors.Background)
-            sprite = Colors.FontSmall.render(str(self.error), True, (190, 190, 190))
-            self.errorsurface.blit(sprite,
-                                   (clamp(-self.errorscroll + 5, -abs(self.size[0] - sprite.get_width() - 5), 5), 0))
-            screen.blit(self.errorsurface, (self.pos[0], self.pos[1] + self.size[1] - self.errorsurface.get_height()))
+        def applyGuiSizesAndGapsToDependencies(_object, _start_pos):
+            """Iterate through all the dependencies recursively"""
 
-            if sprite.get_width() > self.size[0]:
-                if self.errortime + 1.5 < time.time():
-                    if self.errorscroll < abs(self.size[0] - sprite.get_width()) * 5:
-                        self.errorscroll += self.calc_time / 100
-                    else:
-                        self.error = ""
-                        self.errorscroll = 0
-            else:
-                if self.errortime + 1.5 < time.time():
-                    self.error = ""
+            _start_pos_default: vector2 = copy.deepcopy(_start_pos)
+            _start_pos_for_dependencies: vector2 = copy.deepcopy(_start_pos_default)
+            _start_pos_for_dependencies.x += gaps.x
+
+            for __object in _object.objects:
+                __object.position.add(_start_pos_default)
+                if __object.objects:
+                    applyGuiSizesAndGapsToDependencies(__object, _start_pos_for_dependencies)
+
+                _start_pos_default.y += gaps.y
+
+        start_pos_default: vector2 = Vec2(10, 60)
+        gaps: vector2 = Vec2(90, 40)
+        gaps_firstlvl: vector2 = Vec2(0, 60)
+        start_pos_for_dependencies: vector2 = copy.deepcopy(start_pos_default)
+        start_pos_for_dependencies.x += gaps.x
+
+        print("Gonna change sizes and positions")
+        for _object in self.gui_grid.objects:
+            _object.position.add(start_pos_default)
+            if _object.objects:
+                applyGuiSizesAndGapsToDependencies(_object, start_pos_for_dependencies)
+
+            start_pos_default.y += gaps_firstlvl.y
+        print()

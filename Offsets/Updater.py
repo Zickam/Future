@@ -1,9 +1,17 @@
 import os
 import subprocess
 import json
+import sys
+
 import requests
 
 offsets_file = "Offsets/offsets.py"
+files_to_delete = ["csgo.hpp", "csgo.cs", "csgo.json", "csgo.min.json", "csgo.toml",
+                   "csgo.vb", "csgo.yaml", "hazedumper.log"]
+
+def addOffsetsFolderToPath():
+    sys.path.append(f"{os.getcwd()}\\Offsets\\hazedumper-v2.4.1.exe")
+
 
 def updateOffsets():
     try:
@@ -11,10 +19,10 @@ def updateOffsets():
         link_to_config_file = "https://raw.githubusercontent.com/frk1/hazedumper/master/config.json"
         response = requests.get(link_to_config_file)
 
-        with open("config.json", "w") as f:
+        with open("Offsets/config.json", "w") as f:
             f.write(response.text)
 
-        subprocess.call("Offsets/hazedumper-v2.4.1.exe")
+        subprocess.call(f"Offsets/hazedumper-v2.4.1.exe")
 
         with open("csgo.json") as file:
             json_data = json.load(file)
@@ -31,35 +39,12 @@ def updateOffsets():
             for i in netvars:
                 file.write("{} = {}\n".format(i, hex(netvars[i])))
 
-        tmp_1 = os.path.join(os.getcwd(), "csgo.hpp")
-        if os.path.isfile(tmp_1):
-            os.remove(tmp_1)
+        for _ in files_to_delete:
+            _ = os.path.join(os.getcwd(), _)
+            if os.path.isfile(_):
+                os.remove(_)
 
-        tmp_1 = os.path.join(os.getcwd(), "csgo.cs")
-        if os.path.isfile(tmp_1):
-            os.remove(tmp_1)
-
-        tmp_1 = os.path.join(os.getcwd(), "csgo.json")
-        if os.path.isfile(tmp_1):
-            os.remove(tmp_1)
-
-        tmp_1 = os.path.join(os.getcwd(), "csgo.min.json")
-        if os.path.isfile(tmp_1):
-            os.remove(tmp_1)
-
-        tmp_1 = os.path.join(os.getcwd(), "csgo.toml")
-        if os.path.isfile(tmp_1):
-            os.remove(tmp_1)
-
-        tmp_1 = os.path.join(os.getcwd(), "csgo.vb")
-        if os.path.isfile(tmp_1):
-            os.remove(tmp_1)
-
-        tmp_1 = os.path.join(os.getcwd(), "csgo.yaml")
-        if os.path.isfile(tmp_1):
-            os.remove(tmp_1)
-
-        return "Offsets updated"
+        return True
 
     except Exception as _ex:
         return "ERROR", _ex

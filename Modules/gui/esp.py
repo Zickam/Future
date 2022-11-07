@@ -30,7 +30,7 @@ class ESP:
 
         self.draw_list = []
 
-        self.screen_size = Modules.gui.gui.screen_size()
+        self.screen_size = Modules.gui.gui.screenSize()
 
 
 

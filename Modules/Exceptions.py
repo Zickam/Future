@@ -1,0 +1,2 @@
+class CSGODidntStarted(Exception):
+    pass

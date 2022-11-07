@@ -87,10 +87,10 @@ def installerfunction():
         missingpackages.append("psutil")
 
     try:
-        import win32con
-        print("win32con")
+        import loguru
+        print("loguru")
     except ImportError:
-        missingpackages.append("win32con")
+        missingpackages.append("loguru")
 
     # if all packages are installed
     if len(missingpackages) == 0:

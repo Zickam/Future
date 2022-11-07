@@ -1,15 +1,43 @@
 showCheatFPS = False
 showGUIFPS = False
 DEV = True # search for 'security' through the file for usage (very important)
-needAdmin = False
-need_to_update_offsets = True
-login_success = False
+need_to_update_offsets = False
+need_admin = False
+need_to_check_for_dependencies = False
+
 csgo_started = False
-login = False
 all_detected_correctly = False
+offsets_updated = False
 is_loading = False
+is_logged_in = False
+threads = {}
+is_gui_running = False
 
 MAX_WINDOW_FPS = 60
+TIME_TO_WAIT_FOR_CSGO_STARTS = 1
+SCREEN_SIZE = (410, 410)
+LOGIN_SCREEN_SIZE = (410, 220)
+
+logs_folder = "logs"
+logs_file = "logs.log"
+
+import os
+import sys
+import subprocess
+
+try:
+    from loguru import logger
+except ImportError:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'loguru'])
+    print("Installed loguru")
+
+try:
+    log_file_path = os.path.join(logs_folder, logs_file)
+    logger.add(log_file_path, format="[{level}] {time} {message}",
+               level="DEBUG", rotation="1 MB", compression="zip")
+except Exception as err:
+    raise err
+
 
 def getActiveModules(buttons):
     row = []
@@ -34,6 +62,7 @@ gui_program_frames_sum = 0
 gui_program_count_seconds = 0
 gui_program_start_time = -1
 
+
 def showGUIFPSFunc(fps):
     global gui_program_frames, gui_program_start_time, gui_program_count_seconds, gui_program_frames_sum
 
@@ -50,144 +79,130 @@ def showGUIFPSFunc(fps):
             f"GUI_FPS: {Fore.LIGHTBLUE_EX}{gui_program_frames_old}{Style.RESET_ALL} AVG_GUI_FPS: {Fore.LIGHTBLUE_EX}{gui_program_avg_fps}{Style.RESET_ALL} CLOCK_FPS: {Fore.LIGHTBLUE_EX}{fps}{Style.RESET_ALL}",
             type="GUI_FPS")
 
-def gui_updater(buttons_grid, buttons):
-    global login_success, csgo_started, is_loading
 
-    login_screen_size = (410, 220)
-    screen_size = (410, 410)
-    overlay = Initscreen(resolution=login_screen_size)
+def initGuiVars():
+    overlay = initscreen(resolution=LOGIN_SCREEN_SIZE)
     screen = overlay.screen
-    window = gui.Window(screen_size, [10, 10], overlay)  # login window
-
+    window = gui.Window(SCREEN_SIZE, [10, 10], overlay)  # login window
     clock = pygame.time.Clock()
 
+    return window, screen, overlay, clock
 
-    if not DEV: # security
+
+def loginScreenUpdate(overlay, window, clock, screen):
+    global is_login_screen, is_loading, is_logged_in
+
+    if not DEV:  # security
         LoginScreen = gui.LoginScreen(ServerDB.Client.CheckIfServerOnline(), overlay)
         Displayer = LogoDisplayer(overlay)
 
         is_login_screen = True
 
     else:
+        is_logged_in = True
         is_login_screen = False
+        is_loading = False
+        overlay = initscreen(resolution=SCREEN_SIZE)
+        screen = overlay.screen
+        window = gui.Window(SCREEN_SIZE, [10, 10], overlay)  # login window
+        clock = pygame.time.Clock()
+        return window, screen, overlay, clock
+
 
     while 1:
-        # window.overlay.windowmode()
+        mousepos = pygame.mouse.get_pos()
+        framedelta = 1 + clock.get_fps()
 
-        Mousepos = pygame.mouse.get_pos()
-        Framedelta = 1 + clock.get_fps()
+        Shown = window.Update(framedelta, is_login_screen)
 
-        modules_to_display = getActiveModules(buttons)
-        Shown = window.Update(modules_to_display, Framedelta, is_login_screen, guiespesp)
+        if Shown: break
 
-        objects_shown = []
-        objects_not_shown = []
+        is_logged_in = gui.LoginScreen.Update(LoginScreen, SCREEN_SIZE, overlay, is_loading, window.pygameevent)
 
-        if not DEV: # security
-            login_success = gui.LoginScreen.Update(LoginScreen, screen_size, overlay, is_loading, window.pygameevent)
-        else:
-            login_success = True
-
-        if Shown == True:
-            def unTabDependencies(dependencies):
-
-                for object_name, object_props in dependencies.items():
-                    if hasattr(object_props[0], "Tab"):
-                        object_props[0].Tab = False
-
-            def changeTabInRowExcludeOne(_object_name, row):
-
-                for object_name, object_props in row.items():
-                    object_init = object_props[0]
-                    if object_init.name != _object_name:
-                        object_init.Tab = False
-
-            def iterateThroughButtonDependencies(object_name, object_dependencies):
-
-                for object_name, object_props in object_dependencies.items():
-                    _object = object_props[0]
-                    dependencies = object_props[1]
-                    _object.Update(screen, Mousepos, Framedelta)
-                    if hasattr(_object, "Tab"):
-                        if _object.Tab == True:
-                            changeTabInRowExcludeOne(object_name, object_dependencies)
-                            if dependencies != None:
-                                objects_shown.append(dependencies.values())
-                            _object.Update(screen, Mousepos, Framedelta)
-                            if dependencies != None:
-                                iterateThroughButtonDependencies(object_name, dependencies)
-
-                        elif _object.Tab == False:
-                            if dependencies != None:
-                                unTabDependencies(dependencies)
-                                objects_not_shown.append(dependencies.values())
-
-                    if hasattr(_object, "State"):
-                        if _object.State == True:
-                            _object.Update(screen, Mousepos, Framedelta)
-
-            for object_name, object_props in buttons.items():
-                _object = object_props[0]
-                dependencies = object_props[1]
-                _object.Update(screen, Mousepos, Framedelta)
-                if hasattr(_object, "Tab"):
-                    if _object.Tab == True:
-                        changeTabInRowExcludeOne(object_name, buttons)
-                        objects_shown.append(dependencies.values())
-                        if dependencies != None:
-                            iterateThroughButtonDependencies(object_name, dependencies)
-
-
-                    elif _object.Tab == False:
-                        unTabDependencies(dependencies)
-                        objects_not_shown.append(dependencies.values())
-
-                if hasattr(_object, "State"):
-                    if _object.State == True:
-                        _object.Update(screen, Mousepos, Framedelta)
-
-            for i in objects_shown:
-                for j in i:
-                    j[0].show = True
-
-            for i in objects_not_shown:
-                for j in i:
-                    j[0].show = False
-
-            gui.Colors.ColorStyle = buttons["Settings"][1]["Colorstyle"][0].processedcolor
-            gui.Colors.HighlightBackground = buttons["Settings"][1]["Highlight"][0].processedcolor
-            gui.ChangeAlpha = buttons["Settings"][1]["Change Transparency"][0].clicked
-            gui.Colors.Transparency = buttons["Settings"][1]["Transparency"][0].VisualState
-
-        if login_success:
+        if is_logged_in:
             is_loading = True
 
-        if login_success and csgo_started:
+        if is_logged_in and csgo_started:
             is_loading = False
 
-            if (overlay.winsize[2],overlay.winsize[3]) == login_screen_size:
+            if (overlay.winsize[2], overlay.winsize[3]) == LOGIN_SCREEN_SIZE:
                 is_login_screen = False
-                overlay = Initscreen(resolution=screen_size)
+                overlay = initscreen(resolution=SCREEN_SIZE)
                 screen = overlay.screen
-                window = gui.Window(screen_size, (10, 10), overlay)  # normal gui
+                window = gui.Window(SCREEN_SIZE, (10, 10), overlay)  # normal gui
                 clock = pygame.time.Clock()
-
-                if not DEV: # security
-                    Displayer = LogoDisplayer(overlay)
-
-            if not DEV: # security
-                LogoDisplayer.Update(Displayer)
+  # security
+                Displayer = LogoDisplayer(overlay)
+ # security
+            LogoDisplayer.Update(Displayer)
 
         if showGUIFPS:
             showGUIFPSFunc(int(clock.get_fps()))
 
-        gui.Refreshscreen()
+        gui.refreshscreen()
         clock.tick(MAX_WINDOW_FPS)
+
+    return window, screen, overlay, clock
+
+
+def designsApply(gui_grid):
+    if gui.Colors.ColorStyle != gui_grid.Settings.ColorStyle.processedcolor:
+        gui.Colors.ColorStyle = gui_grid.Settings.ColorStyle.processedcolor
+
+    if gui.Colors.HighlightBackground != gui_grid.Settings.Highlight.processedcolor:
+        gui.Colors.HighlightBackground = gui_grid.Settings.Highlight.processedcolor
+
+    if gui.ChangeAlpha != gui_grid.Settings.ChangeTransparency.clicked:
+        gui.ChangeAlpha = gui_grid.Settings.ChangeTransparency.clicked
+
+    if gui.Colors.Transparency != gui_grid.Settings.Transparency.VisualState:
+        gui.Colors.Transparency = gui_grid.Settings.Transparency.VisualState
+
+
+def guiUpdater(gui_grid_class):
+    global csgo_started, is_loading, is_logged_in, is_gui_running
+    try:
+        window, screen, overlay, clock = initGuiVars()
+
+        window, screen, overlay, clock = loginScreenUpdate(overlay, window, clock, screen)
+
+        from Modules.gui.gui import GuiGrid
+        gui_grid: GuiGrid = gui_grid_class.gui_grid
+
+        while 1:
+            mousepos = pygame.mouse.get_pos()
+            framedelta = 1 + clock.get_fps()
+
+            Shown = window.Update(framedelta, is_login_screen)
+
+            objects_shown = []
+            objects_not_shown = []
+
+            if Shown == True:
+
+                gui_grid_class.gui_grid._updateDependencies(screen, mousepos, framedelta)
+
+                designsApply(gui_grid)
+
+            if showGUIFPS:
+                showGUIFPSFunc(int(clock.get_fps()))
+
+            gui.refreshscreen()
+            clock.tick(MAX_WINDOW_FPS)
+
+    except Exception as err:
+        print(err)
+        raise err
+
+    # finally:
+    #     is_gui_running = False
+    #     sys.exit()
 
 main_program_frames = 0
 main_program_frames_sum = 0
 main_program_count_seconds = 0
 main_program_start_time = -1
+
 
 def ExecutionsCounter():
     global main_program_frames, main_program_start_time, main_program_count_seconds, main_program_frames_sum
@@ -205,90 +220,170 @@ def ExecutionsCounter():
             f"IC: {Fore.LIGHTBLUE_EX}{main_program_frames_old}{Style.RESET_ALL} AVG_IC: {Fore.LIGHTBLUE_EX}{main_program_avg_fps}{Style.RESET_ALL}",
             type="IC")
 
-def loginAndGUI():
-    buttons_class = gui.Buttons()
-    buttons_grid, buttons = buttons_class.buttons_grid, buttons_class.buttons
-    start_new_thread(gui_updater, (buttons_grid, buttons,))
+
+def guiInit():
+    global is_gui_running
+    _gui = gui.Gui()
+    gui_grid = _gui.gui_grid
+
+    thread = start_new_thread(guiUpdater, (_gui, ))
+
+    threads["gui_thread"] = thread
+    is_gui_running = True
+
+    return gui_grid
+
+
+def login():
+    """This function wait for user to log in"""
+
+    gui_grid = guiInit()
 
     if DEV: # security
-        return True, buttons
+        return True, gui_grid
 
     time_to_wait = time.time()
     while 1:
-        if time_to_wait - 1 < time.time() and not login_success:
+        if time_to_wait - 1 < time.time() and not is_logged_in:
             time.sleep(0.001)
             time_to_wait = time.time()
         else:
-            return True, buttons
+            return True, gui_grid
 
-def main_init():
-    global csgo_started, login
 
-    if login:
+def offsetsUpdater():
+    global offsets_updated
+    """Calls updateOffsets()"""
 
-        pm = 0
-        time_to_wait = time.time()
+    if need_to_update_offsets and not offsets_updated:
+        logIt("Checking offsets...")
+
+        res = updateOffsets()
+
+        logIt(res, type="Offsets updater")
+        if res is not True:
+            logIt("Something went wrong during offsets updating", type="ERROR")
+            showMessageBox("Future. Error handling", res)
+            quit(-1)
+
+        else:
+            logIt(text="Offsets updated", type="START")
+            offsets_updated = True
+
+    else:
+        logIt("Offsets updater is disabled", type="START")
+
+
+def detectPm():
+
+    pm = 0
+    time_interval = 5
+    time_updated = -1
+
+    while 1:
+
+        if time_updated + time_interval < time.time():
+            logIt("Trying to detect pm", type="START")
+            time_updated = time.time()
+            try:
+                pm = pymem.Pymem("csgo.exe")
+
+            except Exception as _ex:
+                if str(_ex) == "Could not find process: csgo.exe":
+                    logIt(f"csgo_started - {csgo_started}", type="WARNING")
+                    logIt("Ive removed function to start csgo from this line", type="START")
+
+        if pm:
+            return pm
+
+
+def detectClient(pm):
+    try:
+        client = pymem.process.module_from_name(pm.process_handle, "client.dll").lpBaseOfDll
+        if client:
+            logIt("Window detected correctly", type="START")
+            return client
+
+        else:
+            return False
+    except Exception as err:
+        if str(err) == "'NoneType' object has no attribute 'lpBaseOfDll'":
+            logIt("Waiting for csgo to start")
+            return False
+
+
+def detectEngine(pm):
+    try:
+        engine = pymem.process.module_from_name(pm.process_handle, "engine.dll").lpBaseOfDll
+        if engine:
+            logIt("Engine detected", type="START")
+            return engine
+
+        else:
+            return False
+    except Exception as err:
+        logIt(err)
+        return False
+
+
+def varsInit():
+    global csgo_started, is_logged_in
+
+    if is_logged_in:
+
         logIt(f"{Fore.GREEN}Logged in, starting CS:GO...{Style.RESET_ALL}", type="START")
 
-        while 1:
+        time.sleep(TIME_TO_WAIT_FOR_CSGO_STARTS)
 
-            if time_to_wait + 5 < time.time():
-                logIt("Trying to detect", type="START")
-                time_to_wait = time.time()
-                try:
-                    pm = pymem.Pymem("csgo.exe")
+        pm = detectPm()
+        if not pm:
+            return varsInit()
 
-                except Exception as _ex:
-                    if str(_ex) == "Could not find process: csgo.exe":
-                        logIt(f"csgo_started - {csgo_started}", type="WARNING")
-                        logIt("Ive removed function to start csgo from this line", type="START")
-
-            if pm:
-                break
         try:
-            if pm:
-                logIt("CS:GO Detected", type="START")
+            logIt("CS:GO Detected", type="START")
 
-            client = pymem.process.module_from_name(pm.process_handle, "client.dll").lpBaseOfDll
-            if client:
-                logIt("Window detected correctly", type="START")
-            engine = pymem.process.module_from_name(pm.process_handle, "engine.dll").lpBaseOfDll
-            if engine:
-                logIt("Engine detected", type="START")
+            client = detectClient(pm)
+            if not client:
+                return varsInit()
+
+            engine = detectEngine(pm)
+            if not engine:
+                return varsInit()
+
             engine_pointer = pm.read_uint(engine + dwClientState)
 
-            logIt(f"{client, engine, engine_pointer}", type="START")
+            if client and engine and engine_pointer:
+                logIt(f"{client, engine, engine_pointer}", type="START")
 
-            if need_to_update_offsets:
-                logIt("Checking offsets...")
-                logIt(updateOffsets(), type="START")
-            else:
-                logIt("Offsets updater is disabled", type="START")
-            print()
+                offsetsUpdater()
 
-            if pm and client and engine and engine_pointer:
+                print()
+
                 logIt(f"{Fore.GREEN}All detected correctly{Style.RESET_ALL}", type="START")
 
-                os.system("cls")
+                # os.system("cls")
                 csgo_started = True
                 return (pm, client, engine, engine_pointer)
+
+            else:
+                return varsInit()
 
         except Exception as _ex:
             if str(_ex) == "Could not find process: csgo.exe":
                 logIt("Start CSGO!", type="START")
-                return main_init()
+                return varsInit()
             elif str(_ex) == "'NoneType' object has no attribute 'lpBaseOfDll'":
                 logIt("Waiting for CSGO to start", type="START")
-                time.sleep(5)
-                return main_init()
+                return varsInit()
             else:
                 logIt(f"Some problem: {_ex}", type="START")
-
+                return varsInit()
     else:
         logIt(f"{Fore.RED}Login failed{Style.RESET_ALL}", type="START")
         return (False, False, False, False)
 
-def main(pm, client, engine, engine_pointer, buttons):
+
+def mainThread(pm, client, engine, engine_pointer, buttons):
     global csgo_started
 
     try:
@@ -299,13 +394,18 @@ def main(pm, client, engine, engine_pointer, buttons):
 
         while 1:
 
+            if not is_gui_running:
+                sys.exit()
+
             if showCheatFPS:
                 ExecutionsCounter()
 
             try:
-                ConfigLoad = buttons["Config"][1]["Load"][0].State
-                ConfigSave = buttons["Config"][1]["Save"][0].State
+                # ConfigLoad = buttons["Config"][1]["Load"][0].State
+                # ConfigSave = buttons["Config"][1]["Save"][0].State
 
+                ConfigSave = False
+                ConfigLoad = False
                 if ConfigSave:
                     time.sleep(0.1)
 
@@ -405,7 +505,7 @@ def main(pm, client, engine, engine_pointer, buttons):
                     main_init()
                 else:
                     logIt(f"Some problem: {_ex}", type="START")
-
+                    raise _ex
             try:
 
                 # define some variables
@@ -440,13 +540,6 @@ def main(pm, client, engine, engine_pointer, buttons):
                     # show_fps = buttons["Visuals"][1]["ShowFPS"][0].State
                     # Misc.ShowFPS(show_fps, pm)
                     Misc.ChangeSky(buttons["Visuals"][1]["Sky"][1]["skySelector"][0].array[buttons["Visuals"][1]["Sky"][1]["skySelector"][0].selected], pm)
-
-                    # overlay esp
-                    if buttons["Visuals"][1]["TESTESP"][0].State == True:
-                        guiespesp.box = True
-                        guiespesp.calculate(entities, pm, client)
-                    else:
-                        guiespesp.box = False
 
 
                     # GlowESP
@@ -635,70 +728,96 @@ def main(pm, client, engine, engine_pointer, buttons):
 
             main_init()
 
-def mainOrder():
-    global login, guiespesp
 
-    guiespesp = esp.ESP()
+@logger.catch
+def main():
+    global is_logged_in
+    """
+    Waits for user to log in and then 
+    proceeds to main cheat function
+    """
 
-    login, buttons = loginAndGUI()
+    try:
+        is_logged_in, gui_grid = login()
+    except Exception as err:
+        logIt(type="GUI_ERROR", text=str(err))
+        raise err
+
     logIt(f"{Fore.GREEN}Logged in, starting cheat...{Style.RESET_ALL}", type="START")
     # os.system("cls")
 
-    pm, client, engine, engine_pointer = main_init()
+    pm, client, engine, engine_pointer = varsInit()
     if pm and client and engine and engine_pointer:
-        main(pm, client, engine, engine_pointer, buttons)
+        mainThread(pm, client, engine, engine_pointer, gui_grid)
 
     else:
         logIt("state 1 occured!!!!!!! (search for it in main file)")  # i dont think it has ever occured
-        pm, client, engine, engine_pointer = main_init()
-        main(pm, client, engine, engine_pointer, buttons)
+        pm, client, engine, engine_pointer = varsInit()
+        mainThread(pm, client, engine, engine_pointer, gui_grid)
+
 
 if __name__ == "__main__":
-    if needAdmin:
-        from Modules import utils
-
-        utils.requestAdminRights()
-
-    from Modules import Installer
-
-    Installer.installerfunction()
-
-    import os
-    import pygame.time
-    import pymem
-    import pymem.process
-    import time
-    from _thread import start_new_thread
-    from colorama import Fore
-    from colorama import Style
-
     try:
-        from Modules import Aimbot, BHOP, ChamsFunction, ConfigManager, EntitiesIterator, FakeLag, FastPeek, FovFunction, \
-            GlowESP, Hitsound, Installer, Misc, NoFlashFunction, RadarFunction, RecoilSystem, Slowwalk, Startcsgo, Teleport, \
-            Thirdperson, ToxicChat, Triggerbot, utils
-    except ImportError as err:
+        if need_admin:
+            from Modules import utils
+
+            utils.requestAdminRights()
+
+        if need_to_check_for_dependencies:
+            from Modules import Installer
+
+            Installer.installerfunction()
+
+        import os
+        import pygame.time
+        import pymem
+        import pymem.process
+        import time
+        from _thread import start_new_thread
+        from colorama import Fore
+        from colorama import Style
+
+        try:
+            from Modules import Aimbot, BHOP, ChamsFunction, ConfigManager, EntitiesIterator, FakeLag, FastPeek, FovFunction, \
+                GlowESP, Hitsound, Installer, Misc, NoFlashFunction, RadarFunction, RecoilSystem, Slowwalk, Startcsgo, Teleport, \
+                Thirdperson, ToxicChat, Triggerbot, utils
+
+        except ImportError as err:
+            from Modules.utils import showMessageBox
+            from Modules.logIt import logIt
+
+            index = err.msg.find("(") - 1
+            if err.msg[:index] == "cannot import name 'dwbSendPackets' from 'Offsets.offsets'":
+                logIt(type="ERROR", text=err)
+                showMessageBox("Future. ERROR handle", "Please reboot your pc or reinstall the cheat haha")
+                exit(-1)
+
+            else:
+                logIt(type="ERROR", text=err)
+                showMessageBox("Future. ERROR handle", err)
+
+            raise err
+
+        from Offsets.offsets import *
+
+        import ServerDB.Client
         from Modules.utils import showMessageBox
         from Modules.logIt import logIt
+        from Modules.gui import gui
+        from Modules.gui.gui import initscreen, Gui
+        from Modules.gui.gui import LogoDisplayer
+        from Offsets.Updater import updateOffsets
 
-        index = err.msg.find("(") - 1
-        if err.msg[:index] == "cannot import name 'dwbSendPackets' from 'Offsets.offsets'":
-            logIt(type="ERROR", text=err)
-            showMessageBox("Future. ERROR handle", "Please reboot your pc or reinstall the cheat haha")
-            exit(-1)
+        main()
 
-        else:
-            logIt(type="ERROR", text=err)
-            showMessageBox("Future. ERROR handle", err)
+    except Exception as err:
+        print(err)
+        raise err
 
-    from Offsets.offsets import *
+    except KeyboardInterrupt as err:
+        print(err)
+        quit()
 
-    import ServerDB.Client
-    from Modules.utils import showMessageBox
-    from Modules.logIt import logIt
-    from Modules.gui import gui
-    from Modules.gui.gui import Initscreen
-    from Modules.gui.gui import LogoDisplayer
-    from Offsets.Updater import updateOffsets
-    from Modules.gui import esp
-
-    mainOrder()
+    # finally:
+    #     sys.exit()
+    #     quit()
