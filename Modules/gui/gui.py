@@ -919,12 +919,12 @@ class ScriptManager(GuiObjWithDeps):
 
 
 class Holder:
-    def __init__(self, name: str = "Holder_Name", items: list = list(), position: vector2 = Consts.Offsets.holder_offset,
+    def __init__(self, name: str = "Holder_Name", items: list[Button | Slider | Selector | ColorPicker | Checkbox, ...] = list(), position: vector2 = Consts.Offsets.holder_offset,
                  size: vector2 = Consts.Sizes.holder_size):
+        self.items: list[Button | Slider | Selector | ColorPicker | Checkbox, ...] = fetchAllObjectsFromClass(self)
         self.objects = None
         self.position: vector2 = position
         self.size: vector2 = size
-        self.items: list = items
 
         self.rect = pygame.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
         self.font = pygame.font.SysFont("Microsoft Sans Serif", 13, False, False)
@@ -935,7 +935,25 @@ class Holder:
         self.color_bright = 40, 40, 40
         self.color_bright2 = 70, 70, 70
 
+        self.checked_if_scrollbar_needed = False
+
+    def applyGuiSizesAndGaps(self):
+        print(self.position.y)
+        print(self.items)
+        start_pos_default: vector2 = Vec2(self.position.x + 5, self.position.y + 20)
+        gaps_firstlvl: vector2 = Vec2(0, 40)
+
+        for _object in self.items:
+            _object.position.add(start_pos_default)
+            start_pos_default.y += gaps_firstlvl.y
+
+        print(start_pos_default.y)
+
+
     def checkIfScrollbarNeeded(self):
+
+        self.applyGuiSizesAndGaps()
+
         self.item_height = 5 + len(self.items) * 20
 
         if self.item_height > self.size.y:
@@ -953,7 +971,10 @@ class Holder:
         self.scroll_mult2 = abs(self.item_height - self.size.y + 20) / 100
 
     def Update(self, screen, mousepos, pygameevent, framedelta):  # , globalevent=pygame.event.get()
-        self.checkIfScrollbarNeeded()
+
+        if not self.checked_if_scrollbar_needed:
+            self.checkIfScrollbarNeeded()
+            self.checked_if_scrollbar_needed = True
 
         pygame.draw.rect(screen, self.color_dark,
                          (self.position.x, self.position.y + 10, self.size.x, self.size.y - 10))
@@ -980,6 +1001,7 @@ class Holder:
                     if event.type == pygame.QUIT:
                         pygame.quit()
                     if event.type == pygame.MOUSEWHEEL:
+
                         if self.scroll_state > 0 and event.y > 0:
                             self.scroll_state -= event.y * 10
 
@@ -993,12 +1015,17 @@ class Holder:
                     self.scroll_state = self.size.y - 65
 
         self.render_surf.fill((self.color_dark))
-        for i in range(0, len(self.items)):
-            sprite = self.font.render(str(self.items[i]), True, (200, 200, 200))
-            self.render_surf.blit(sprite, (10, i * 20 - self.scroll_state * self.scroll_mult2))
+        # for i in range(0, len(self.items)):
+        #     sprite = self.font.render(str(self.items[i]), True, (200, 200, 200))
+        #     self.render_surf.blit(sprite, (10, i * 20 - self.scroll_state * self.scroll_mult2))
 
         screen.blit(self.render_surf, (self.position.x + 10, self.position.y + 20))
 
+        self.updateItems(screen, mousepos, pygameevent, framedelta)
+
+    def updateItems(self, screen, mousepos, pygameevent, framedelta):
+        for item in self.items:
+            item.Update(screen, mousepos, pygameevent, framedelta)
 
 # SCREENS
 class Window:
@@ -1619,13 +1646,57 @@ class GuiGrid(GuiObjWithDeps):
     """
 
     class Visuals(FirstLevelButton):
+
         class VisualsHolder(Holder):
-            pass
+            class GlowESP(Button):
+                class EnableButton(Button): pass
+
+                class EnemyR(Button): pass
+
+                class EnemyG(Button): pass
+
+                class EnemyB(Button): pass
+
+                class TeamR(Button): pass
+
+                class TeamG(Button): pass
+
+                class TeamB(Button): pass
+
+                def __init__(self, **kwargs):
+                    self.EnableButton = self.EnableButton(name="Enabled")
+                    self.EnemyR = self.EnemyR(name="EnemyR")
+                    self.EnemyG = self.EnemyG(name="EnemyG")
+                    self.EnemyB = self.EnemyB(name="EnemyB")
+                    self.TeamR = self.TeamR(name="TeamR")
+                    self.TeamG = self.TeamG(name="TeamG")
+                    self.TeamB = self.TeamB(name="TeamB")
+                    super().__init__(**kwargs)
+
+            class Sky(Button): pass
+
+            class Radar(Button): pass
+
+            class Chams(Button): pass
+
+            class NoFlash(Button): pass
+
+            class FOV(Button): pass
+
+            class ThirdPerson(Button): pass
+
+
+            def __init__(self, **kwargs):
+                self.GlowESP = self.GlowESP(name="GlowESP")
+                self.Sky = self.Sky(name="Sky")
+                self.Radar = self.Radar(name="Radar")
+                super().__init__(**kwargs)
+
+        #class Other(Holder):
+
 
         def __init__(self, **kwargs):
-            self.VisualsHolder = self.VisualsHolder(name="Visuals")
-            self.VisualsHolder.items = ["SHIT"] * 10 + ["NOT SHIT"] * 10
-
+            self.VisualsHolder = self.VisualsHolder()
             super().__init__(**kwargs)
 
     class Combat(FirstLevelButton):
@@ -1720,13 +1791,11 @@ class Gui:
         start_pos_for_dependencies: vector2 = copy.deepcopy(start_pos_default)
         start_pos_for_dependencies.x += gaps.x
 
-        print("Gonna change sizes and positions")
         for _object in self.gui_grid.objects:
             _object.position.add(start_pos_default)
             if _object.objects:
                 applyGuiSizesAndGapsToDependencies(_object, start_pos_for_dependencies)
 
             start_pos_default.y += gaps_firstlvl.y
-        print()
 
 
