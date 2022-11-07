@@ -182,44 +182,58 @@ class GuiObjWithDeps:
         # self.neighbours = fetchAllObjectsFromClass(self)
         self.tabbed = False
 
+    def _makeDependenciesNotShown(self):
+        for _object in self.objects:
+            _object.show = False
+
+    def _makeDependenciesShown(self):
+        for _object in self.objects:
+            _object.show = True
+
     def _untabDependencies(self):
+        self._makeDependenciesNotShown()
+
         for _object in self.objects:
             if _object.objects:
                 _object.Tab = False
                 _object._untabDependencies()
 
         self.tabbed = False
+        # for objects_not_shown (for animations when open tabs)
 
     def _untabNeighbours(self, not_to_untab):
         for _object in self.objects:
             if _object != not_to_untab and _object.objects:
                 _object.Tab = False
 
-    def _updateSelf(self, screen, mousepos, framedelta):
+    def _updateSelf(self, screen, mousepos, pygameevent, framedelta):
         """Function for .Update() object itself"""
-        self.Update(screen, mousepos, framedelta)
+        self.Update(screen, mousepos, pygameevent, framedelta)
 
-    def _updateDependencies(self, screen, mousepos, framedelta):
+    def _updateDependencies(self, screen, mousepos, pygameevent, framedelta):
         """Function for .Update() objects inside of the object"""
 
         for _object in self.objects:
             if _object.objects:
-                _object._updateObjAndDependencies(screen, mousepos, framedelta)
+                _object._updateObjAndDependencies(screen, mousepos, pygameevent, framedelta)
                 if _object.Tab:
+                    self._makeDependenciesShown()
                     self._untabNeighbours(_object)
             else:
-                _object.Update(screen, mousepos, framedelta)
+                _object.Update(screen, mousepos, pygameevent, framedelta)
 
         self.tabbed = True
 
-    def _updateObjAndDependencies(self, screen, mousepos, framedelta):
+    def _updateObjAndDependencies(self, screen, mousepos, pygameevent, framedelta):
         """Calls .Update() for class itself and for its dependencies if they exist"""
-        self._updateSelf(screen, mousepos, framedelta)
+        self._updateSelf(screen, mousepos, pygameevent, framedelta)
 
         if self.objects and self.Tab:
-            self._updateDependencies(screen, mousepos, framedelta)
+            self._makeDependenciesShown()
+            self._updateDependencies(screen, mousepos, pygameevent, framedelta)
 
         elif self.objects and not self.Tab:
+            self._makeDependenciesNotShown()
             self._untabDependencies()
 
 
@@ -259,7 +273,7 @@ class Button(GuiObjWithDeps):
             return True
         return False
 
-    def Update(self, screen, mousepos, framedelta):
+    def Update(self, screen, mousepos, pygameevent, framedelta):
 
         if self._checkIfMouseIsInsideOfTheButton(mousepos):
 
@@ -270,6 +284,7 @@ class Button(GuiObjWithDeps):
 
             if self._checkIfRightMouseGetPressed() and self.DelayTime + 0.15 <= time.time():
                 self.Tab = not self.Tab
+
                 self.DelayTime = time.time()
 
         if self.show == True and self.State == True:
@@ -349,7 +364,7 @@ class FirstLevelButton(GuiObjWithDeps):
             return True
         return False
 
-    def Update(self, screen, mousepos, framedelta):
+    def Update(self, screen, mousepos, pygameevent, framedelta):
 
         screen.blit(self.picture, (self.position.x, self.position.y))
 
@@ -359,7 +374,7 @@ class FirstLevelButton(GuiObjWithDeps):
                 self.DelayTime = time.time()
 
         if self.Tab and self.objects:
-            self._updateDependencies(screen, mousepos, framedelta)
+            self._updateDependencies(screen, mousepos, pygameevent, framedelta)
 
 
 class Slider:
@@ -388,7 +403,7 @@ class Slider:
     def UpdateState(self):
         self.VisualState = round(self.start + self.State * self.Multiplier)
 
-    def Update(self, screen, mousepos, framedelta):
+    def Update(self, screen, mousepos, pygameevent, framedelta):
         pygame.draw.rect(screen, Colors.HighlightBackground, (self.position.x, self.position.y, self.size.x, 5),
                          border_radius=self.rounding)
         pygame.draw.rect(screen, Colors.ColorStyle, (self.position.x, self.position.y, self.SliderVisState, 5),
@@ -441,7 +456,7 @@ class Selector:
         self.Delaytime = time.time()
         self.iwannadie = 0
 
-    def Update(self, screen, mousepos, framedelta):
+    def Update(self, screen, mousepos, pygameevent, framedelta):
         baserect = pygame.draw.rect(screen, Colors.HighlightBackground,
                                     (self.position[0], self.position[1], self.size[0], self.size[1]),
                                     border_radius=self.rounding)
@@ -513,7 +528,7 @@ class ColorPicker:
         self.starttime = time.time()
         self.opened = False
 
-    def Update(self, screen, mousepos, framedelta):
+    def Update(self, screen, mousepos, pygameevent, framedelta):
         if self.opened == True:
             screen.blit(self.image, (self.position.x, self.position.y))
             screen.blit(self.picker, (self.picker_x, self.picker_y))
@@ -580,7 +595,7 @@ class Checkbox:
         self.CustomColorB = Colors.DisableColor[2]
         self.CustomColor = (self.CustomColorR, self.CustomColorG, self.CustomColorB)
 
-    def Update(self, screen, Mousepos, framedelta):
+    def Update(self, screen, Mousepos, pygameevent, framedelta):
 
         if Mousepos[0] > self.position.x and Mousepos[0] < self.position.x + self.size.x and Mousepos[
             1] > self.position.y and \
@@ -640,7 +655,7 @@ class Searchbox:
         self.text = ""
         self.textstop = False
 
-    def Update(self, screen, mousepos, framedelta):
+    def Update(self, screen, mousepos, pygameevent, framedelta):
         rectangle = pygame.draw.rect(screen, Colors.HighlightBackground,
                                      (self.position[0], self.position[1], self.size[0], self.size[1]),
                                      border_radius=self.rounding)
@@ -756,7 +771,7 @@ class ScriptManager(GuiObjWithDeps):
 
         self.refreshpng = pygame.image.load("Data/Images/Refresh.png")
 
-    def Update(self, screen, mousepos, fps):
+    def Update(self, screen, mousepos, pygameevent, fps):
         """i dont know what to do with fps so ive hardcoded it"""
         # background
         pygame.draw.rect(screen, Colors.LightBackground,
@@ -916,7 +931,13 @@ class Holder:
         self.sprite = self.font.render(str(name), True, (200, 200, 200))
         self.render_surf = pygame.Surface((self.size.x - 20, self.size.y - 30))
 
-        self.item_height = 5 + len(items) * 20
+        self.color_dark = 25, 25, 25
+        self.color_bright = 40, 40, 40
+        self.color_bright2 = 70, 70, 70
+
+    def checkIfScrollbarNeeded(self):
+        self.item_height = 5 + len(self.items) * 20
+
         if self.item_height > self.size.y:
             self.scrollbar = True
         else:
@@ -931,12 +952,8 @@ class Holder:
         # item scroll multiplier
         self.scroll_mult2 = abs(self.item_height - self.size.y + 20) / 100
 
-        self.color_dark = 25, 25, 25
-        self.color_bright = 40, 40, 40
-        self.color_bright2 = 70, 70, 70
-
-    def Update(self, screen, mousepos, framedelta):  # , globalevent=pygame.event.get()
-        globalevent = pygame.event.get()
+    def Update(self, screen, mousepos, pygameevent, framedelta):  # , globalevent=pygame.event.get()
+        self.checkIfScrollbarNeeded()
 
         pygame.draw.rect(screen, self.color_dark,
                          (self.position.x, self.position.y + 10, self.size.x, self.size.y - 10))
@@ -959,7 +976,7 @@ class Holder:
                              border_radius=50)
 
             if self.rect.collidepoint(mousepos[0], mousepos[1]):
-                for event in globalevent:  # Important (make globalevent really global)
+                for event in pygameevent:  # Important (make globalevent really global)
                     if event.type == pygame.QUIT:
                         pygame.quit()
                     if event.type == pygame.MOUSEWHEEL:
@@ -979,12 +996,13 @@ class Holder:
         for i in range(0, len(self.items)):
             sprite = self.font.render(str(self.items[i]), True, (200, 200, 200))
             self.render_surf.blit(sprite, (10, i * 20 - self.scroll_state * self.scroll_mult2))
+
         screen.blit(self.render_surf, (self.position.x + 10, self.position.y + 20))
 
 
 # SCREENS
 class Window:
-    def __init__(self, resolution, position, overlay):
+    def __init__(self, resolution: vector2, position: vector2, overlay: Overlay):
         # window
         pygame.display.set_caption("Future")
         self.resolution = resolution
@@ -1022,13 +1040,9 @@ class Window:
 
         self.colorchanger = ColorChanger()
 
-    def Update(self, Framedelta, is_login_screen):
+    def Update(self, Framedelta, is_login_screen, Mousepos, pygameevent):
         Window = win32gui.FindWindow(None, "Future")
         WindowRect = win32gui.GetWindowRect(Window)
-
-        Mousepos = pygame.mouse.get_pos()
-
-        self.pygameevent = pygame.event.get()
 
         # main window
         if self.Foreground == True:
@@ -1055,7 +1069,7 @@ class Window:
             close_button_rect = Colors.FontBig.render("x", True, (150, 50, 50))
             self.screen.blit(close_button_rect, (self.resolution[0] - close_button_rect.get_width() - 2, -4))
 
-            for event in self.pygameevent:
+            for event in pygameevent:
                 if Mousepos[0] > self.resolution[0] - close_button_rect.get_width() and Mousepos[0] < self.resolution[
                     0] and Mousepos[1] > 0 and Mousepos[1] < close_button_rect.get_height():
                     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -1607,8 +1621,11 @@ class GuiGrid(GuiObjWithDeps):
     class Visuals(FirstLevelButton):
         class VisualsHolder(Holder):
             pass
+
         def __init__(self, **kwargs):
             self.VisualsHolder = self.VisualsHolder(name="Visuals")
+            self.VisualsHolder.items = ["SHIT"] * 10 + ["NOT SHIT"] * 10
+
             super().__init__(**kwargs)
 
     class Combat(FirstLevelButton):
@@ -1711,3 +1728,5 @@ class Gui:
 
             start_pos_default.y += gaps_firstlvl.y
         print()
+
+

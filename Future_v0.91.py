@@ -62,7 +62,6 @@ gui_program_frames_sum = 0
 gui_program_count_seconds = 0
 gui_program_start_time = -1
 
-
 def showGUIFPSFunc(fps):
     global gui_program_frames, gui_program_start_time, gui_program_count_seconds, gui_program_frames_sum
 
@@ -111,9 +110,11 @@ def loginScreenUpdate(overlay, window, clock, screen):
 
     while 1:
         mousepos = pygame.mouse.get_pos()
+        pygameevent = pygame.event.get()
+
         framedelta = 1 + clock.get_fps()
 
-        Shown = window.Update(framedelta, is_login_screen)
+        Shown = window.Update(framedelta, is_login_screen, mousepos, pygameevent)
 
         if Shown: break
 
@@ -171,16 +172,18 @@ def guiUpdater(gui_grid_class):
 
         while 1:
             mousepos = pygame.mouse.get_pos()
+            pygameevent = pygame.event.get()
+
             framedelta = 1 + clock.get_fps()
 
-            Shown = window.Update(framedelta, is_login_screen)
+            Shown = window.Update(framedelta, is_login_screen, mousepos, pygameevent)
 
             objects_shown = []
             objects_not_shown = []
 
             if Shown == True:
 
-                gui_grid_class.gui_grid._updateDependencies(screen, mousepos, framedelta)
+                gui_grid_class.gui_grid._updateDependencies(screen, mousepos, pygameevent, framedelta)
 
                 designsApply(gui_grid)
 
