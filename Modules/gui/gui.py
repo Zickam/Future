@@ -344,11 +344,13 @@ class FirstLevelButton(GuiObjWithDeps):
         self.DelayTime = time.time()
         self.picture_update = False
 
+
         if picture.get_width() > 30 and picture.get_height() > 30:
             self.picture = pygame.transform.scale(picture, (50, 50))
         else:
             self.picture = picture
 
+        print(self.picture)
         self.coloredSurface = self.picture
         self.colorchanger = ColorChanger()
 
@@ -365,6 +367,9 @@ class FirstLevelButton(GuiObjWithDeps):
         return False
 
     def Update(self, screen, mousepos, pygameevent, framedelta):
+
+        self.coloredSurface = self.origSurface.copy()
+        self.colorchanger.colorSurface(self.coloredSurface, Colors.ColorStyle, self.clock.get_fps())
 
         screen.blit(self.picture, (self.position.x, self.position.y))
 
@@ -1647,31 +1652,30 @@ class GuiGrid(GuiObjWithDeps):
 
     class Visuals(FirstLevelButton):
 
-        class VisualsHolder(Holder):
-            class GlowESP(Button):
-                class EnableButton(Button): pass
+        class GlowESP(Holder):
+            class EnableButton(Button): pass
 
-                class EnemyR(Button): pass
+            class EnemyR(Button): pass
 
-                class EnemyG(Button): pass
+            class EnemyG(Button): pass
 
-                class EnemyB(Button): pass
+            class EnemyB(Button): pass
 
-                class TeamR(Button): pass
+            class TeamR(Button): pass
 
-                class TeamG(Button): pass
+            class TeamG(Button): pass
 
-                class TeamB(Button): pass
+            class TeamB(Button): pass
 
-                def __init__(self, **kwargs):
-                    self.EnableButton = self.EnableButton(name="Enabled")
-                    self.EnemyR = self.EnemyR(name="EnemyR")
-                    self.EnemyG = self.EnemyG(name="EnemyG")
-                    self.EnemyB = self.EnemyB(name="EnemyB")
-                    self.TeamR = self.TeamR(name="TeamR")
-                    self.TeamG = self.TeamG(name="TeamG")
-                    self.TeamB = self.TeamB(name="TeamB")
-                    super().__init__(**kwargs)
+            def __init__(self, **kwargs):
+                self.EnableButton = self.EnableButton(name="Enabled")
+                self.EnemyR = self.EnemyR(name="EnemyR")
+                self.EnemyG = self.EnemyG(name="EnemyG")
+                self.EnemyB = self.EnemyB(name="EnemyB")
+                self.TeamR = self.TeamR(name="TeamR")
+                self.TeamG = self.TeamG(name="TeamG")
+                self.TeamB = self.TeamB(name="TeamB")
+                super().__init__(**kwargs)
 
             class Sky(Button): pass
 
@@ -1686,17 +1690,13 @@ class GuiGrid(GuiObjWithDeps):
             class ThirdPerson(Button): pass
 
 
-            def __init__(self, **kwargs):
-                self.GlowESP = self.GlowESP(name="GlowESP")
-                self.Sky = self.Sky(name="Sky")
-                self.Radar = self.Radar(name="Radar")
-                super().__init__(**kwargs)
+
 
         #class Other(Holder):
 
 
         def __init__(self, **kwargs):
-            self.VisualsHolder = self.VisualsHolder()
+            self.GlowESP = self.GlowESP(name="GlowESP")
             super().__init__(**kwargs)
 
     class Combat(FirstLevelButton):
