@@ -1,0 +1,11 @@
+import socket
+
+host = "185.87.51.106"
+port = 8001
+
+sock = socket.socket()
+sock.bind((host, port))
+sock.listen(10)
+
+while 1:
+    sock.accept()
