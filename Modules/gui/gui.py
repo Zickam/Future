@@ -1057,7 +1057,7 @@ class Window:
                                win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
         win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 255, win32con.LWA_ALPHA)
 
-        self.Alpha = 210
+        self.Alpha = 255
 
         self.origSurface = self.logo
         self.origSurface.convert_alpha()
