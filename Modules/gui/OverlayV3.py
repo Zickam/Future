@@ -16,10 +16,7 @@ class Overlay:
 
         # get resolution / position
         self.winsize = rect
-
-        # move window and make it visible
-        win32gui.MoveWindow(self.overlay_hwnd, self.winsize[0], self.winsize[1], self.winsize[2], self.winsize[3], True)
-        win32gui.ShowWindow(self.overlay_hwnd, win32con.SW_SHOW)
+        self.old_winsize = rect
 
         # for fps
         self.framecap = 1000
@@ -38,15 +35,34 @@ class Overlay:
     def draw_fps(self):
         self.show_fps = True
 
-    def overlaymode(self):
-        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_TRANSPARENT | win32con.WS_EX_LAYERED)
+    def overlaymode(self, rect: pygame.Rect):
+        # move window and make it visible
+
+        current_rect_pos = list(win32gui.GetWindowRect(self.overlay_hwnd))
+        current_rect_pos[2] = current_rect_pos[2] - current_rect_pos[0]
+        current_rect_pos[3] = current_rect_pos[3] - current_rect_pos[1]
+
+        self.old_winsize = current_rect_pos
+        self.winsize = rect
+
+        win32gui.MoveWindow(self.overlay_hwnd, self.winsize[0], self.winsize[1], self.winsize[2], self.winsize[3], True)
+        win32gui.ShowWindow(self.overlay_hwnd, win32con.SW_SHOW)
+
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.WS_EX_LAYERED, win32gui.GetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_TRANSPARENT | win32con.WS_EX_LAYERED)
         win32gui.SetLayeredWindowAttributes(self.overlay_hwnd, win32api.RGB(0, 0, 0), 255, win32con.LWA_COLORKEY | win32con.LWA_ALPHA)
         win32gui.BringWindowToTop(self.overlay_hwnd)
         self.overlay_mode = True
         self.window_mode = False
 
     def windowmode(self):
-        win32gui.SetWindowLong(self.overlay_hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(self.overlay_hwnd, -16))
+        # move window and make it visible
+
+        self.winsize = self.old_winsize
+        win32gui.MoveWindow(self.overlay_hwnd, self.winsize[0], self.winsize[1], self.winsize[2], self.winsize[3], True)
+        win32gui.ShowWindow(self.overlay_hwnd, win32con.SW_SHOW)
+
+
+        win32gui.SetWindowLong(self.overlay_hwnd, win32con.WS_EX_LAYERED, win32gui.GetWindowLong(self.overlay_hwnd, -16))
         win32gui.BringWindowToTop(self.overlay_hwnd)
         self.overlay_mode = False
         self.window_mode = True

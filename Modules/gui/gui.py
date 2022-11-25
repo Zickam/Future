@@ -48,8 +48,8 @@ def clamp(num, min_value, max_value):
 def initscreen(resolution):
     rect = win32gui.GetWindowRect(win32gui.GetDesktopWindow())
     print(f"[OVERLAY INITFUNCTION], {rect, resolution}")
-    screen = Overlay(
-        pygame.Rect(rect[2] / 2 - resolution[0] / 2, rect[3] / 2 - resolution[1] / 2, resolution[0], resolution[1]))
+    screen = Overlay(pygame.Rect(rect[2] / 2 - resolution[0] / 2, rect[3] / 2 - resolution[1] / 2, resolution[0], resolution[1]))
+    screen.windowmode()
     return screen
 
 
@@ -368,8 +368,8 @@ class FirstLevelButton(GuiObjWithDeps):
 
     def Update(self, screen, mousepos, pygameevent, framedelta):
 
-        self.coloredSurface = self.origSurface.copy()
-        self.colorchanger.colorSurface(self.coloredSurface, Colors.ColorStyle, self.clock.get_fps())
+        # self.coloredSurface = self.origSurface.copy()
+        # self.colorchanger.colorSurface(self.coloredSurface, Colors.ColorStyle, self.clock.get_fps())
 
         screen.blit(self.picture, (self.position.x, self.position.y))
 
@@ -1055,7 +1055,7 @@ class Window:
         Window = win32gui.FindWindow(None, "Future")
         win32gui.SetWindowLong(Window, win32con.GWL_EXSTYLE,
                                win32gui.GetWindowLong(Window, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
-        win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 210, win32con.LWA_ALPHA)
+        win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), 255, win32con.LWA_ALPHA)
 
         self.Alpha = 210
 
@@ -1073,8 +1073,8 @@ class Window:
         self.colorchanger = ColorChanger()
 
     def Update(self, Framedelta, is_login_screen, Mousepos, pygameevent):
-        Window = win32gui.FindWindow(None, "Future")
-        WindowRect = win32gui.GetWindowRect(Window)
+        self.Window = win32gui.FindWindow(None, "Future")
+        WindowRect = win32gui.GetWindowRect(self.Window)
 
         # main window
         if self.Foreground == True:
@@ -1119,7 +1119,7 @@ class Window:
                     self.clicked = (0, 0)
 
             if self.clicked != (0, 0):
-                win32gui.SetWindowPos(Window, None, self.CustomMouse.position[0] - self.clicked[0],
+                win32gui.SetWindowPos(self.Window, None, self.CustomMouse.position[0] - self.clicked[0],
                                       self.CustomMouse.position[1] - self.clicked[1], 0, 0, 1)
 
         else:
@@ -1129,22 +1129,18 @@ class Window:
             if keyboard.is_pressed("right_shift") and self.Foreground == True and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
 
-                self.overlay = Overlay(pygame.Rect(0, 0, screenSize()[0], screenSize()[1]))
-                self.overlay.overlaymode()
+                self.overlay.overlaymode(pygame.Rect(0, 0, screenSize()[0], screenSize()[1]))
                 self.overlay.show = True
                 self.Foreground = False
 
             elif keyboard.is_pressed(
                     "right_shift") and self.Foreground == False and self.starttime + 0.15 < time.time():
                 self.starttime = time.time()
-
-                self.overlay = Overlay(
-                    pygame.Rect(round(screenSize()[0] / 2 - 410 / 2), round(screenSize()[1] / 2 - 410 / 2), 410, 410))
-                self.overlay.windowmode()
+                self.overlay.windowmode() # pygame.Rect(round(screenSize()[0] / 2 - 410 / 2), round(screenSize()[1] / 2 - 410 / 2), 410, 410)
                 self.Foreground = True
 
         global ChangeAlpha
-        if ChangeAlpha == True:
+        if not self.overlay.overlay_mode and ChangeAlpha == True:
             # changing alpha
             if self.CustomMouse.position[0] > WindowRect[0] and self.CustomMouse.position[0] < WindowRect[2] and \
                     self.CustomMouse.position[1] > WindowRect[1] and self.CustomMouse.position[1] < WindowRect[3]:
@@ -1152,11 +1148,12 @@ class Window:
             else:
                 self.Alpha -= (self.Alpha - Colors.Transparency) * (1 / Framedelta) * 16
 
-            win32gui.SetLayeredWindowAttributes(Window, win32api.RGB(0, 0, 0), round(clamp(self.Alpha, 0, 255)),
+            win32gui.SetLayeredWindowAttributes(self.Window, win32api.RGB(0, 0, 0), round(clamp(self.Alpha, 0, 255)),
                                                 win32con.LWA_ALPHA)
         else:
             if not self.overlay.overlay_mode:
-                self.overlay.windowmode()
+                # self.overlay.windowmode()
+                pass
 
         if is_login_screen:
             return False
